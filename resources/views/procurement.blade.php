@@ -82,7 +82,6 @@
 
 @push('page_scripts')
     <script type="module">
-import 'jquery-validation';
 
         // Reset the form before showing the modal
         $('#itemDetailsModal').on('showJus.bs.modal', function (event) { 
