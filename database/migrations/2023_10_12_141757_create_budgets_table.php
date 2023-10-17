@@ -5,7 +5,7 @@ use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateItemTable extends Migration
+class CreateBudgetsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,14 +14,16 @@ class CreateItemTable extends Migration
      */
     public function up()
     {
-        Schema::create('items', function (Blueprint $table) {
-            $table->increments('id');
+        Schema::create('budgets', function (Blueprint $table) {
+            $table->integer('id')->primary();
             $table->dateTime('created_at')->default(new Expression('NOW()'));
             $table->dateTime('updated_at')->nullable();
             $table->dateTime('deleted_at')->nullable();
-            $table->string('internal_cod', 100)->nullable();
-            $table->string('name', 500)->nullable();
-            $table->double('unit_price')->nullable();
+            $table->unsignedInteger('item_id');
+            $table->double('quantity')->nullable();
+            $table->unsignedSmallInteger('status')->nullable();
+            
+            $table->foreign('item_id', 'fk_budgets_item')->references('id')->on('items')->onDelete('cascade')->onUpdate('cascade');
         });
     }
 
@@ -32,6 +34,6 @@ class CreateItemTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('item');
+        Schema::dropIfExists('budgets');
     }
 }
