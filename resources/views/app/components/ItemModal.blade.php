@@ -3,7 +3,7 @@
 <div class="modal fade" id="{{$modalId}}" tabindex="-1" aria-labelledby="{{$modalId}}Label" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form id="formItemDetails" role="form">
+            <form id="{{$modalId}}FormItemDetails" role="form">
                 <div class="modal-header">
                     <h5 class="modal-title" id="{{$modalId}}Label">Add New Item</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -21,7 +21,7 @@
                     <div class="form-group row">
                         <label for="internalCod" class="col-sm-2 col-form-label">Internal Code</label>
                         <div class="col-sm-10">
-                            <input type="text" class="form-control" id="txtInternalCod" name="internalcod"
+                            <input type="text" class="form-control" id="txtInternalCod" name="internal_cod"
                                 autocomplete="false" />
                         </div>
                     </div>
@@ -62,14 +62,7 @@
 <script type="module">
 
     let itemModal = $("#{{$modalId}}");
-
-    // Reset the form before showing the modal
-    itemModal.on('show.bs.modal', function(event) {
-        $("#txtName").val("");
-        $("#txtIntervalCod").val("");
-        $("#txtPrice").val("0.00");
-    });
-
+    let formModal = $('#{{$modalId}}FormItemDetails');
     let messageBox = itemModal.find('.alert');
 
     messageBox.on('close.bs.alert', function () {
@@ -78,15 +71,15 @@
         $(this).hide();
     });
 
-    $('#formItemDetails').validate({
+    let validator = formModal.validate({
         rules: {
             name: {
                 required: true,
             },
-            internalCod: {
+            internal_cod: {
                 minlength: 5
             },
-            unitPrice: {
+            unit_price: {
                 required: true,
                 min: 0
             },
@@ -95,10 +88,10 @@
             name: {
                 required: "Please, enter a name for this Item.",
             },
-            internalCod: {
+            internal_cod: {
                 minlength: "The code should have at least 5 characters."
             },
-            unitPrice: {
+            unit_price: {
                 required: "Please, enter the price of the item."
             },
         },
@@ -147,5 +140,17 @@
                 });
         }
     });
+
+    
+
+    // Reset the form before showing the modal
+    itemModal.on('hidden.bs.modal', function(event) {
+        validator.resetForm();
+        formModal[0].reset();
+        formModal.find('.error').removeClass("error");
+        formModal.find('.is-invalid').removeClass("is-invalid");
+        formModal.find('.form-control-feedback').remove();
+    });
+
 </script>
 @endpush
