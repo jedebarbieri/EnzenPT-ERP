@@ -37,7 +37,9 @@ class ItemController extends Controller
         $item = Item::create($request->validated());
         return response()->json([
             'message' => 'Item successfully created.',
-            'item' => ItemResource::make($item)
+            'data' => [
+                'item' => ItemResource::make($item)
+            ]
         ]);
     }
 

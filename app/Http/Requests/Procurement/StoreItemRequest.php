@@ -23,7 +23,7 @@ class StoreItemRequest extends FormRequest
     {
         return [
             'name' => 'required|string',
-            'internal_cod' => 'required|string|min:5',
+            'internal_cod' => 'string|min:5',
             'unit_price' => 'required|numeric|gte:0'
         ];
     }
