@@ -14,7 +14,7 @@ class CreateItemTable extends Migration
      */
     public function up()
     {
-        Schema::create('item', function (Blueprint $table) {
+        Schema::create('items', function (Blueprint $table) {
             $table->increments('id');
             $table->dateTime('created_at')->default(new Expression('NOW()'));
             $table->dateTime('updated_at')->nullable();

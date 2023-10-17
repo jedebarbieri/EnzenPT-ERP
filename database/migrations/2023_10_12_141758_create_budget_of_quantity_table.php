@@ -14,7 +14,7 @@ class CreateBudgetOfQuantityTable extends Migration
      */
     public function up()
     {
-        Schema::create('budget_of_quantity', function (Blueprint $table) {
+        Schema::create('budgets_of_quantity', function (Blueprint $table) {
             $table->increments('id');
             $table->dateTime('created_at')->default(new Expression('NOW()'));
             $table->dateTime('updated_at')->nullable();
@@ -24,7 +24,7 @@ class CreateBudgetOfQuantityTable extends Migration
             $table->dateTime('due_date')->nullable();
             $table->unsignedSmallInteger('status')->nullable();
             
-            $table->foreign('item_id', 'fk_budget_of_quantity_item')->references('id')->on('item')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('item_id', 'fk_budgets_of_quantity_item')->references('id')->on('items')->onDelete('cascade')->onUpdate('cascade');
         });
     }
 
