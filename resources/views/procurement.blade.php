@@ -17,7 +17,7 @@
             </div>
         </section>
         <section class="content">
-            <div class="content-fluid">
+            <div class="container-fluid p-3">
                 <div class="row">
                     <div class="col-sm-12">
                         <div class="card">
@@ -85,7 +85,6 @@
 
         // Reset the form before showing the modal
         $('#itemDetailsModal').on('showJus.bs.modal', function (event) { 
-            console.log("Justo!");
             $("#txtName").val("");
             $("#txtIntervalCod").val("");
             $("#txtPrice").val("");
