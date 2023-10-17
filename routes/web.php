@@ -20,6 +20,8 @@ Route::get('/', function () {
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
-Route::get('/procurement', [App\Http\Controllers\Procurement\ProcurementController::class, 'index'])->name('procurement');
+Route::get('/procurement', function() {
+    return view('procurement');
+})->name('procurement');
 
 Auth::routes();
