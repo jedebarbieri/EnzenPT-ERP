@@ -1,0 +1,8 @@
+.button-container {
+    opacity: 0; /* Inicialmente oculto */
+    transition: opacity 0.3s ease-in-out; /* Efecto de fade */
+}
+
+tr:hover .button-container {
+    opacity: 1; /* Mostrar al hacer hover */
+}

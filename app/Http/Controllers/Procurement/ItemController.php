@@ -122,6 +122,20 @@ class ItemController extends Controller
      */
     public function destroy(Item $item)
     {
-        //
+        // Verificar si el item existe
+        if ($item) {
+            // Marcar el item como eliminado (soft delete)
+            $item->delete();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Item successfully deleted.'
+            ]);
+        } else {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Item was not found.'
+            ], 404); // 404 Not Found
+        }
     }
 }
