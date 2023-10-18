@@ -7,6 +7,7 @@ use App\Http\Requests\Procurement\StoreItemRequest;
 use App\Http\Requests\Procurement\UpdateItemRequest;
 use App\Http\Resources\Procurement\ItemResource;
 use App\Models\Procurement\Item;
+use Illuminate\Http\Request;
 
 class ItemController extends Controller
 {
@@ -23,10 +24,55 @@ class ItemController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return ItemResource::collection(Item::all());
-        //return Item::paginate(3);
+        $columns = [
+            'id',
+            'name',
+            'internal_cod',
+            'unit_price'
+        ];
+
+        $query = Item::select($columns);
+
+        // Applying sort
+        if ($request->has('order')) {
+            $order = intval($request->input('order.0.column'));
+            $dir = $request->input('order.0.dir');
+            $query->orderBy($columns[$order], $dir);
+        }
+
+        // Applying filter
+        if ($request->has('search.value')) {
+            $searchValue = $request->input('search.value');
+            foreach ($columns as $column) {
+                $query->orWhere($column, 'like', '%' . $searchValue . '%');
+            }
+        }
+
+        // Pagination
+        $length = intval($request->input('length')) ?: 5;
+        $start = intval($request->input('start', 1));
+        $items = $query->offset($start)->limit($length);
+
+        // Obtener la página actual desde la solicitud
+        $page = intval($start / $length) + 1;
+
+        // Paginar la consulta con el length y la página
+        $items = $query->paginate($length, ['*'], 'page', $page);
+
+        // Transformar la colección utilizando ItemResource
+        $itemsResource = ItemResource::collection($items);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $itemsResource,
+            'metadata' => [
+                'recordsFiltered' => $items->total(),
+                'recordsTotal' => $items->total(),
+                'draw' => $request->input('draw') ?: 1,
+            ]
+        ]);
     }
 
     /**
@@ -36,10 +82,14 @@ class ItemController extends Controller
     {
         $item = Item::create($request->validated());
         return response()->json([
-            'message' => 'Item successfully created.',
+            'status' => 'success',
+            //'message' => 'Item successfully created.',
             'data' => [
                 'item' => ItemResource::make($item)
-            ]
+            ],
+            // 'metadata' => [
+
+            // ]
         ]);
     }
 

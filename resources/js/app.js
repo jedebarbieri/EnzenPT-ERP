@@ -2,7 +2,17 @@ import jQuery from 'jquery'
 window.$ = jQuery;
 
 import './bootstrap';
-import 'admin-lte';
 
 import 'jquery-validation';
-//import './common';
+
+import 'datatables.net'
+import 'datatables.net-responsive'
+import 'datatables.net-buttons'
+import 'datatables.net-bs4'
+import 'datatables.net-responsive-bs4'
+import 'datatables.net-buttons-bs4'
+
+
+import 'admin-lte';
+
+import './common';
