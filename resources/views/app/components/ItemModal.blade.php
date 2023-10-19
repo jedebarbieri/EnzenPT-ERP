@@ -10,6 +10,7 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
+                <input type="hidden" name="id" id="hdId" value=""/>
                 <div class="modal-body">
                     <div class="form-group row">
                         <label for="name" class="col-sm-2 col-form-label">Name</label>
@@ -61,17 +62,17 @@
 
 <script type="module">
 
-    let itemModal = $("#{{$modalId}}");
-    let formModal = $('#{{$modalId}}FormItemDetails');
-    let messageBox = itemModal.find('.alert');
+    var itemModal = $("#{{$modalId}}");
+    var formModal = $('#{{$modalId}}FormItemDetails');
+    var title = $("#{{$modalId}}Label");
+    var messageBox = itemModal.find('.alert');
 
     messageBox.on('close.bs.alert', function () {
         // Ocultar la alerta pero mantenerla en el DOM
-        console.log('cerrar');
         $(this).hide();
     });
 
-    let validator = formModal.validate({
+    var validator = formModal.validate({
         rules: {
             name: {
                 required: true,
@@ -107,11 +108,17 @@
             $(element).removeClass('is-invalid');
         },
         submitHandler: function(form) {
-            var formData = $(form).serialize();
-            axios.post('/api/items', formData)
+            var formData = window.arrayToJsonObject($(form).serializeArray());
+            let req;
+            if (formData.id) {
+                req = axios.put(`/api/items/${formData.id}`, formData);
+            } else {
+                req = axios.post("/api/items", formData);
+            }
+            req
                 .then(function(response) {
                     // Manejar la respuesta exitosa
-                    console.log(response.data);
+                    document.dispatchEvent(new CustomEvent('itemsTable.reloadTable'));
                     itemModal.modal('hide');
                 })
                 .catch(function(error) {
@@ -141,15 +148,25 @@
         }
     });
 
-    
-
     // Reset the form before showing the modal
     itemModal.on('hidden.bs.modal', function(event) {
         validator.resetForm();
         formModal[0].reset();
+        title.html("Add New Item");
         formModal.find('.error').removeClass("error");
         formModal.find('.is-invalid').removeClass("is-invalid");
         formModal.find('.form-control-feedback').remove();
+    });
+
+    // Evento para cargar este modal con la información proporcionada
+    document.addEventListener('itemModal.loadData', (event) => {
+        let itemData = event.detail.data;
+        title.html("Edit Item");
+        formModal.find("#hdId").val(itemData.id);
+        formModal.find("#txtName").val(itemData.name);
+        formModal.find("#txtInternalCod").val(itemData.internalCod);
+        formModal.find("#txtPrice").val(itemData.unitPrice);
+        itemModal.modal('show');
     });
 
 </script>

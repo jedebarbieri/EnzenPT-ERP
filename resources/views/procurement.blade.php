@@ -34,7 +34,7 @@
         </section>
     </div>
     @include('app.components.ItemModal', [
-        'modalId' => 'itemDetailsModal',
+        'modalId' => 'itemDetailsModal'
     ])
     @include('app.components.WarningConfirmationModal', [
         'modalId' => 'itemDetailsDeleteConfirmationModal',
@@ -64,7 +64,7 @@
             "searching": true,
             "ordering": true,
             "info": true,
-            "lengthMenu": [5, 10, 20, 50],
+            "lengthMenu": [10, 20, 50],
 
             "ajax": {
                 "url": "/api/items",
@@ -132,25 +132,25 @@
             }, ]
         });
 
-        $('#itemsTable').on('click', '.delete-btn', function() {
+        $('#itemsTable').on('click', '.delete-btn', function(event) {
             var itemId = $(this).data('id');
             // Mostrar cuadro de diálogo para confirmar eliminación
             $("#itemDetailsDeleteConfirmationModal").modal("show");
 
 
             // Configurar el evento clic para el botón de confirmación dentro del modal
-            $('#itemDetailsDeleteConfirmationModalConfirmDeleteBtn').off('click').on('click', function () {
+            $('#itemDetailsDeleteConfirmationModalConfirmDeleteBtn').off('click').on('click', () => {
                 // Aquí puedes realizar la lógica de eliminación
                 axios.delete(`api/items/${itemId}`)
-                    .then(function(response) {
+                    .then((response) => {
                         // Manejar la respuesta exitosa
                         $(`#itemsTable tbody tr[data-id="${itemId}"]`).fadeOut('slow', function() {
                             // Después de que se complete el fade, remover la fila del DOM
                             $(this).remove();
-                            itemsTable.ajax.reload(null, false);
+                            document.dispatchEvent(new CustomEvent('itemsTable.reloadTable'));
                         });
                     })
-                    .catch(function(error) {
+                    .catch((error) => {
                         // Manejar errores
                         if (error.response) {
                             // La solicitud fue hecha y el servidor respondió con un código de estado que no está en el rango 2xx
@@ -174,10 +174,31 @@
             });
         });
 
-        $('#itemsTable').on('click', '.edit-btn', function() {
+        $('#itemsTable').on('click', '.edit-btn', function(event) {
             var itemId = $(this).data('id');
             // Llamar al servicio para obtener los detalles del elemento con el ID itemId
             // Luego, cargar los datos en la ventana modal y mostrarla
+            let row = itemsTable.rows(`[data-id="${itemId}"]`);
+            
+            // Verificar si la fila existe
+            if (!row.any()) {
+                console.error('La fila con data-id', dataId, 'no fue encontrada en itemsTable.');
+                return;
+            }
+            
+            // Obtener el objeto de datos asociado a la fila
+            var rowData = row.data()[0];
+
+            document.dispatchEvent(new CustomEvent('itemModal.loadData', {
+                detail: {
+                    data: rowData
+                }
+            } ));
+        });
+
+        // Evento para recargar la tabla luego de alguna creación, eliminación o actualización
+        document.addEventListener('itemsTable.reloadTable', (event) => {
+            itemsTable.ajax.reload(null, false);
         });
     </script>
 @endpush

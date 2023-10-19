@@ -114,7 +114,17 @@ class ItemController extends Controller
      */
     public function update(UpdateItemRequest $request, Item $item)
     {
-        //
+        $item->update(
+            collect($request->validated())
+                ->except('id')
+                ->toArray()
+        );
+    
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Item updated successfully.',
+            'data' => new ItemResource($item),
+        ]);
     }
 
     /**
