@@ -45,7 +45,7 @@ class ItemCategory extends ModelCamelCase
      */
     public function getIsMainAttribute()
     {
-        return !$this->relationLoaded('parent') && is_null($this->attributes[self::PARENT_COLUMN_NAME]);
+        return $this->relationLoaded('parent') && is_null($this->attributes[self::PARENT_COLUMN_NAME]);
 
     }
 
