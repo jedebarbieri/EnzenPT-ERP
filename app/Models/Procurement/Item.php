@@ -9,8 +9,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * @property int $id
  * @property string $name
- * @property float $internalCod 
+ * @property string $internalCod 
  * @property float $unitPrice
+ * @property ItemCategory $category
  */
 class Item extends ModelCamelCase
 {
@@ -18,6 +19,15 @@ class Item extends ModelCamelCase
     protected $fillable = [
         "name",
         "internal_cod",
-        "unit_price"
+        "unit_price",
+        "item_category_id"
     ];
+
+    /**
+     * Obtiene la categoría a la que pertenece este ítem.
+     */
+    public function category()
+    {
+        return $this->belongsTo(ItemCategory::class, 'item_category_id');
+    }
 }
