@@ -20,7 +20,7 @@ class Item extends ModelCamelCase
         "name",
         "internal_cod",
         "unit_price",
-        "item_category_id"
+        "item_categories_id"
     ];
 
     /**
@@ -28,6 +28,6 @@ class Item extends ModelCamelCase
      */
     public function category()
     {
-        return $this->belongsTo(ItemCategory::class, 'item_category_id');
+        return $this->belongsTo(ItemCategory::class, 'item_categories_id');
     }
 }

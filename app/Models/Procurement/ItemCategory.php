@@ -75,6 +75,6 @@ class ItemCategory extends ModelCamelCase
      */
     public function items()
     {
-        return $this->hasMany(Item::class, 'item_category_id');
+        return $this->hasMany(Item::class, 'item_categories_id');
     }
 }
