@@ -77,4 +77,14 @@ class ItemCategory extends ModelCamelCase
     {
         return $this->hasMany(Item::class, 'item_categories_id');
     }
+
+    /**
+     * It returns a list of the main categories with their children list loaded
+     *
+     * @return ItemCategory[]
+     */
+    public static function getAllMainCategories()
+    {
+        return ItemCategory::whereNull(self::PARENT_COLUMN_NAME)->with('children')->get();
+    }
 }

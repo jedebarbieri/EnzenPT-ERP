@@ -3,8 +3,10 @@ window.$ = jQuery;
 
 import './bootstrap';
 
+// Validation Library
 import 'jquery-validation';
 
+// DataTable Library
 import 'datatables.net'
 import 'datatables.net-responsive'
 import 'datatables.net-buttons'
@@ -12,6 +14,8 @@ import 'datatables.net-bs4'
 import 'datatables.net-responsive-bs4'
 import 'datatables.net-buttons-bs4'
 
+// Select2 Library
+import select2 from 'select2'; select2();
 
 import 'admin-lte';
 

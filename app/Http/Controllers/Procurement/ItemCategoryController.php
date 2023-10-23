@@ -22,10 +22,10 @@ class ItemCategoryController extends Controller
 
     public function index()
     {
-        // Obtener todas las categorías principales
-        $mainCategories = ItemCategory::whereNull(ItemCategory::PARENT_COLUMN_NAME)->with('children')->get();
+        // Get all the main categories
+        $mainCategories = ItemCategory::getAllMainCategories();
 
-        // Transformar la colección de categorías usando ItemCategoryResource
+        // Transform the category collection using ItemCategoryResource
         $categoriesResource = ItemCategoryResource::collection($mainCategories);
 
         return response()->json([
