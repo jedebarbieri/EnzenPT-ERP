@@ -54,7 +54,7 @@ class ItemCategory extends ModelCamelCase
      *
      * @return string
      */
-    public function getPrefixCodeAttribute($divider = '-')
+    public function getPrefixCodeAttribute()
     {
         if (!$this->relationLoaded('parent')) {
             // If the relationship has not been loaded then let's load it
@@ -66,7 +66,7 @@ class ItemCategory extends ModelCamelCase
             return $this->prefix;
         } else {
             // This category has a parent, we continue the recursion.
-            return $this->parent->getPrefixCodeAttribute() . $divider . $this->prefix;
+            return $this->parent->getPrefixCodeAttribute() . '-' . $this->prefix;
         }
     }
 

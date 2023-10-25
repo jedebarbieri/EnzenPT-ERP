@@ -64,7 +64,7 @@
             "searching": true,
             "ordering": true,
             "info": true,
-            "lengthMenu": [10, 20, 50],
+            "lengthMenu": [20, 100, 200],
 
             "ajax": {
                 "url": "/api/items",
@@ -81,14 +81,14 @@
                     "visible": false // Oculta la columna "Id"
                 },
                 {
-                    "data": "name",
-                    "title": "Name"
-                },
-                {
                     "data": "internalCod",
                     "title": "Internal Code",
                     "width": "0%",
                     "class": "text-nowrap"
+                },
+                {
+                    "data": "name",
+                    "title": "Name"
                 },
                 {
                     "data": "unitPrice",

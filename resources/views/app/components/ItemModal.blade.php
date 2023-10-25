@@ -1,3 +1,7 @@
+@php
+    use App\Models\Procurement\ItemCategory;
+    $categoriesList = ItemCategory::getAllMainCategories();
+@endphp
 <!-- resources/views/app/components/ItemModal.blade.php -->
 
 <div class="modal fade" id="{{$modalId}}" tabindex="-1" aria-labelledby="{{$modalId}}Label" aria-hidden="true">
@@ -13,16 +17,25 @@
                 <input type="hidden" name="id" id="hdId" value=""/>
                 <div class="modal-body">
                     <div class="form-group row">
-                        <label for="name" class="col-sm-2 col-form-label">Name</label>
-                        <div class="col-sm-10">
-                            <input type="text" class="form-control" id="txtName" name="name"
-                                autocomplete="false" />
-                        </div>
-                    </div>
-                    <div class="form-group row">
                         <label for="internalCod" class="col-sm-2 col-form-label">Internal Code</label>
                         <div class="col-sm-10">
                             <input type="text" class="form-control" id="txtInternalCod" name="internal_cod"
+                                autocomplete="false" />
+                        </div>
+                    </div>
+                    @component('app.components.SelectDropdown', [
+                        'name' => $modalId . 'ItemCategorySelect',
+                        'label' => 'Category',
+                        'elements' => $categoriesList,
+                        'displayFunc' => function($category) {
+                            return $category->prefixCode . " - " . $category->name;
+                        }
+                    ])
+                    @endcomponent
+                    <div class="form-group row">
+                        <label for="name" class="col-sm-2 col-form-label">Name</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="txtName" name="name"
                                 autocomplete="false" />
                         </div>
                     </div>

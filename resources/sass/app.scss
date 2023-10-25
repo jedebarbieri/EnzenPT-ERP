@@ -13,4 +13,11 @@
 // Select2
 @import "~select2/src/scss/core.scss";
 
+.select2-container .select2-selection--single {
+    height: auto;
+}
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 100%;
+}
+
 @import "custom.scss";
