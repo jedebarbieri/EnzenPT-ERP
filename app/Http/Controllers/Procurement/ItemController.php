@@ -33,7 +33,7 @@ class ItemController extends Controller
             'unit_price'
         ];
 
-        $query = Item::select($columns);
+        $query = Item::query()->with('category');
 
         // Applying sort
         if ($request->has('order')) {
