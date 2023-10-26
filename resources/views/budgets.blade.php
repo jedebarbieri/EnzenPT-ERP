@@ -30,9 +30,9 @@
             </div>
         </section>
     </div>
-    {{-- @include('app.components.BudgetModal', [
+    @include('app.components.BudgetModal', [
         'modalId' => 'budgetDetailsModal'
-    ]) --}}
+    ])
     @include('app.components.WarningConfirmationModal', [
         'modalId' => 'budgetDeleteConfirmationModal',
         'message' => 'Do you really want to remove this budget?',
@@ -142,7 +142,7 @@
         });
 
         $('#budgetsTable').on('click', '.delete-btn', function(event) {
-            var itemId = $(this).data('id');
+            var budgetId = $(this).data('id');
             // Mostrar cuadro de diálogo para confirmar eliminación
             $("#budgetDeleteConfirmationModal").modal("show");
 
@@ -150,10 +150,10 @@
             // Configurar el evento clic para el botón de confirmación dentro del modal
             $('#budgetDeleteConfirmationModalConfirmDeleteBtn').off('click').on('click', () => {
                 // Aquí puedes realizar la lógica de eliminación
-                axios.delete(`api/items/${itemId}`)
+                axios.delete(`api/budgets/${budgetId}`)
                     .then((response) => {
                         // Manejar la respuesta exitosa
-                        $(`#budgetsTable tbody tr[data-id="${itemId}"]`).fadeOut('slow', function() {
+                        $(`#budgetsTable tbody tr[data-id="${budgetId}"]`).fadeOut('slow', function() {
                             // Después de que se complete el fade, remover la fila del DOM
                             $(this).remove();
                             document.dispatchEvent(new CustomEvent('budgetsTable.reloadTable'));
@@ -184,10 +184,11 @@
         });
 
         $('#budgetsTable').on('click', '.edit-btn', function(event) {
-            var itemId = $(this).data('id');
-            // Llamar al servicio para obtener los detalles del elemento con el ID itemId
-            // Luego, cargar los datos en la ventana modal y mostrarla
-            let row = itemsTable.rows(`[data-id="${itemId}"]`);
+            var budgetId = $(this).data('id');
+
+            
+
+            let row = itemsTable.rows(`[data-id="${budgetId}"]`);
 
             // Verificar si la fila existe
             if (!row.any()) {
@@ -198,7 +199,7 @@
             // Obtener el objeto de datos asociado a la fila
             var rowData = row.data()[0];
 
-            document.dispatchEvent(new CustomEvent('itemModal.loadData', {
+            document.dispatchEvent(new CustomEvent('budgetModal.loadData', {
                 detail: {
                     data: rowData
                 }

@@ -99,9 +99,24 @@ class BudgetController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Budget $budget)
     {
-        //
+        try {
+            // Load the budget details relationship
+            $budget->load('budgetDetails.item');
+            
+            return response()->json([
+                'status' => 'success',
+                'data' => [
+                    'budget' => BudgetResource::make($budget)
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Budget not found.'
+            ]);
+        }
     }
 
     /**
