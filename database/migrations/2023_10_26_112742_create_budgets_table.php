@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
@@ -15,15 +14,17 @@ class CreateBudgetsTable extends Migration
     public function up()
     {
         Schema::create('budgets', function (Blueprint $table) {
-            $table->integer('id')->primary();
-            $table->dateTime('created_at')->default(new Expression('NOW()'));
+            $table->increments('id');
+            $table->dateTime('created_at')->default(now());
             $table->dateTime('updated_at')->nullable();
             $table->dateTime('deleted_at')->nullable();
-            $table->unsignedInteger('item_id');
-            $table->double('quantity')->nullable();
             $table->unsignedSmallInteger('status')->nullable();
-            
-            $table->foreign('item_id', 'fk_budgets_item')->references('id')->on('items')->onDelete('cascade')->onUpdate('cascade');
+            $table->string('name', 500)->nullable();
+            $table->double('gain_margin')->nullable();
+            $table->string('project_name', 500)->nullable();
+            $table->string('project_number', 500)->nullable();
+            $table->string('project_location', 500)->nullable();
+            $table->double('total_power_pick')->nullable();
         });
     }
 
