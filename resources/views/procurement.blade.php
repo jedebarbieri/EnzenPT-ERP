@@ -21,9 +21,6 @@
                 <div class="row">
                     <div class="col-sm-12">
                         <div class="card">
-                            <div class="card-header">
-                                <h3 class="card-title">Item Prices</h3>
-                            </div>
                             <div class="card-body">
                                 <table id="itemsTable" class="table table-bordered table-hover"></table>
                             </div>
@@ -38,6 +35,7 @@
     ])
     @include('app.components.WarningConfirmationModal', [
         'modalId' => 'itemDetailsDeleteConfirmationModal',
+        'message' => 'Do you really want to remove this item?'
     ])
 @endsection
 

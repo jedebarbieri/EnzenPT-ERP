@@ -12,7 +12,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                Do you really want to remove this item?
+                {{ $message }}
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
