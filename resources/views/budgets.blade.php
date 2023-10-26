@@ -43,6 +43,8 @@
     <template id="buttonsOptionsPerLineTemplate">
         <td class="text-right text-nowrap" style="width: 0%">
             <div class="button-container">
+                <button class="btn btn-success btn-sm view-btn" data-id="__ID__" title="PDF Download"><i
+                        class="fas fa-file-pdf"></i></button>
                 <button class="btn btn-primary btn-sm edit-btn" data-id="__ID__" title="Edit"><i
                         class="fas fa-edit"></i></button>
                 <button class="btn btn-outline-danger btn-sm delete-btn" data-id="__ID__" title="Delete"><i
