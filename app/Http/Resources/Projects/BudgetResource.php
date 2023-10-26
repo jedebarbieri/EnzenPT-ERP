@@ -17,7 +17,7 @@ class BudgetResource extends JsonResource
         return [
             'id' => $this->id,
             'amount' => $this->amount,
-            'items' => BudgetItemResource::collection($this->items),
+            'items' => empty($this->items) ? [] : BudgetItemResource::collection($this->items),
             'status' => $this->status,
             'name' => $this->name,
             'gainMargin' => $this->gainMargin,

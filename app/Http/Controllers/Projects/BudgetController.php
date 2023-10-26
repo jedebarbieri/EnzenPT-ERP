@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Projects;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Projects\BudgetResource;
+use App\Models\Projects\Budget;
 use Illuminate\Http\Request;
 
 class BudgetController extends Controller
@@ -10,9 +12,56 @@ class BudgetController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $columns = [
+            'id',
+            'name',
+            'project_name',
+            'proejct_number',
+            'total_power_pick'
+        ];
+
+        $query = Budget::query();
+
+        // Applying sort
+        if ($request->has('order')) {
+            $order = intval($request->input('order.0.column'));
+            $dir = $request->input('order.0.dir');
+            $query->orderBy($columns[$order], $dir);
+        }
+
+        // Applying filter
+        if ($request->has('search.value')) {
+            $searchValue = $request->input('search.value');
+            foreach ($columns as $column) {
+                $query->orWhere($column, 'like', '%' . $searchValue . '%');
+            }
+        }
+
+        // Pagination
+        $length = intval($request->input('length')) ?: Controller::PAGINATION_DEFAULT_PER_PAGE;
+        $start = intval($request->input('start', 1));
+        $budgets = $query->offset($start)->limit($length);
+
+        // Obtener la página actual desde la solicitud
+        $page = intval($start / $length) + 1;
+
+        // Paginar la consulta con el length y la página
+        $budgets = $query->paginate($length, ['*'], 'page', $page);
+
+        // Transformar la colección utilizando ItemResource
+        $budgetsResource = BudgetResource::collection($budgets);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $budgetsResource,
+            'metadata' => [
+                'recordsFiltered' => $budgets->total(),
+                'recordsTotal' => $budgets->total(),
+                'draw' => $request->input('draw') ?: 1,
+            ]
+        ]);
     }
 
     /**

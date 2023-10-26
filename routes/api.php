@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Procurement\ItemCategoryController;
 use App\Http\Controllers\Procurement\ItemController;
+use App\Http\Controllers\Projects\BudgetController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -22,5 +23,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::apiResources([
     'items' => ItemController::class,
-    'itemCategories' => ItemCategoryController::class
+    'itemCategories' => ItemCategoryController::class,
+    'budgets' => BudgetController::class
 ]);
