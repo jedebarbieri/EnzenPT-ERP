@@ -24,4 +24,8 @@ Route::get('/procurement', function() {
     return view('procurement');
 })->name('procurement');
 
+Route::get('/budgets', function() {
+    return view('budgets');
+})->name('budgetsHome');
+
 Auth::routes();
