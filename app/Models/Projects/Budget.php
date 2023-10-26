@@ -43,6 +43,6 @@ class Budget extends ModelCamelCase
      */
     public function budgetDetails() 
     {
-        return $this->hasMany(BudgetDetails::class);
+        return $this->hasMany(BudgetDetail::class, 'budgets_id');
     }
 }

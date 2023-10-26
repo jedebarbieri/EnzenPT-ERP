@@ -21,7 +21,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class BudgetDetail extends ModelCamelCase
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $fillable = [
         "items_id",
