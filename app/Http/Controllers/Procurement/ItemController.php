@@ -51,7 +51,7 @@ class ItemController extends Controller
         }
 
         // Pagination
-        $length = intval($request->input('length')) ?: 5;
+        $length = intval($request->input('length')) ?: Controller::PAGINATION_DEFAULT_PER_PAGE;
         $start = intval($request->input('start', 1));
         $items = $query->offset($start)->limit($length);
 
