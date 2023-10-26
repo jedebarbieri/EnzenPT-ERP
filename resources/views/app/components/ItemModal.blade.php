@@ -1,6 +1,8 @@
 @php
     use App\Models\Procurement\ItemCategory;
     $categoriesList = ItemCategory::getAllMainCategories();
+
+    $selCategoryId = $modalId . 'ItemCategorySelect';
 @endphp
 <!-- resources/views/app/components/ItemModal.blade.php -->
 
@@ -24,7 +26,8 @@
                         </div>
                     </div>
                     @component('app.components.SelectDropdown', [
-                        'name' => $modalId . 'ItemCategorySelect',
+                        'id' => $selCategoryId,
+                        'name' => 'item_categories_id',
                         'label' => 'Category',
                         'elements' => $categoriesList,
                         'displayFunc' => function($category) {
@@ -165,6 +168,7 @@
     itemModal.on('hidden.bs.modal', function(event) {
         validator.resetForm();
         formModal[0].reset();
+        formModal.find("#{{ $selCategoryId }}").val(null).trigger('change');
         title.html("Add New Item");
         formModal.find('.error').removeClass("error");
         formModal.find('.is-invalid').removeClass("is-invalid");
@@ -174,11 +178,17 @@
     // Evento para cargar este modal con la información proporcionada
     document.addEventListener('itemModal.loadData', (event) => {
         let itemData = event.detail.data;
+        // @TODO Show data incongruency error
+        if (itemData.category === null) {
+            console.error("This item does not have any category. This is a data incongruency error. Please contact the System Administrator.");
+            return;
+        }
         title.html("Edit Item");
         formModal.find("#hdId").val(itemData.id);
         formModal.find("#txtName").val(itemData.name);
         formModal.find("#txtInternalCod").val(itemData.internalCod);
-        formModal.find("#txtPrice").val(itemData.unitPrice);
+        formModal.find("#txtPrice").val(itemData.unitPrice);        
+        formModal.find("#{{ $selCategoryId }}").val(itemData.category.id).trigger('change');
         itemModal.modal('show');
     });
 

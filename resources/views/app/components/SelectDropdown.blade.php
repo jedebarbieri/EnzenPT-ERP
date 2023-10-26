@@ -13,7 +13,7 @@ function getDisplayName($displayFunc, $element) {
 <div class="form-group row">
     <label class="col-sm-2" for="{{ $name }}">{{ $label }}</label>
     <div class="col-sm-10">
-        <select id="{{ $name }}" name="{{ $name }}" class="form-control select2" style="width: 100%;">
+        <select id="{{ $id }}" name="{{ $name }}" class="form-control select2" style="width: 100%;">
             <option value="">Select...</option>
             @if (isset($elements))
                 @foreach ($elements as $element)
@@ -36,7 +36,7 @@ function getDisplayName($displayFunc, $element) {
     <script type="module">
         // This is thinked to allow the dinamic loading of this component.
     @if (isset($ajaxUrl))
-        $("#{{ $name }}").select2({
+        $("#{{ $id }}").select2({
             ajax: {
                 url: "{{ $ajaxUrl }}",
                 dataType: 'json',
@@ -68,7 +68,7 @@ function getDisplayName($displayFunc, $element) {
             }
         });
     @else
-        $("#{{ $name }}").select2();
+        $("#{{ $id }}").select2();
     @endif
     </script>
 @endpush
