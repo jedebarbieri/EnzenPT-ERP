@@ -35,7 +35,7 @@
     ]) --}}
     @include('app.components.WarningConfirmationModal', [
         'modalId' => 'budgetDeleteConfirmationModal',
-        'message' => 'Do you really want to remove this budget?'
+        'message' => 'Do you really want to remove this budget?',
     ])
 @endsection
 
@@ -51,7 +51,7 @@
         </td>
     </template>
     <script type="module">
-        var budgetsTable = $('#projectsTable').DataTable({
+        var budgetsTable = $('#budgetsTable').DataTable({
             "responsive": true,
             "lengthChange": true,
             "autoWidth": false,
@@ -73,35 +73,47 @@
                     return json.data;
                 }
             },
-            "columns": [
-                // {
-                //     "data": "id",
-                //     "title": "Id",
-                //     "visible": false // Oculta la columna "Id"
-                // },
-                // {
-                //     "data": "internalCod",
-                //     "title": "Internal Code",
-                //     "width": "0%",
-                //     "class": "text-nowrap"
-                // },
-                // {
-                //     "data": "name",
-                //     "title": "Name"
-                // },
-                // {
-                //     "data": "unitPrice",
-                //     "title": "Unit Price",
-                //     "width": "0%",
-                //     "class": "text-nowrap",
-                //     "render": function(data, type, row) {
-                //         // Formatear el valor como moneda en euros
-                //         return new Intl.NumberFormat('pt-PT', {
-                //             style: 'currency',
-                //             currency: 'EUR'
-                //         }).format(data);
-                //     }
-                // },
+            "columns": [{
+                    "data": "id",
+                    "title": "Id",
+                    "visible": false // Oculta la columna "Id"
+                },
+                {
+                    "data": "name",
+                    "title": "Name"
+                },
+                {
+                    "data": "status",
+                    "title": "Status",
+                    "width": "0%",
+                    "class": "text-nowrap",
+                    "render": function(data, type, row) {
+                        let color;
+                        if (data.value === 0) {
+                            color = "secondary";
+                        } else if (data.value === 1) {
+                            color = "success";
+                        } else if (data.value === 2) {
+                            color = "danger";
+                        } else {
+                            color = "secondary";
+                        }
+                        return $('<span/>', {
+                            "class": `badge badge-${color}`,
+                            "text": data.display
+                        }).prop("outerHTML");
+                    }
+                },
+                {
+                    "data": "updatedAt",
+                    "title": "Last Update",
+                    "width": "0%",
+                    "class": "text-nowrap text-right",
+                    "render": function(data, type, row) {
+                        let date = new Date(data);
+                        return date.toLocaleString('pt-PT', window.shortDateFormat);
+                    }
+                }
             ],
             headerCallback: function(thead, data, start, end, display) {
                 if ($(thead).find("#optCol").length === 0) {
@@ -124,11 +136,7 @@
 
                 // Añadimos atributo de data-id a cada fila
                 $(row).attr("data-id", data.id);
-            },
-            "columnDefs": [{
-                "targets": [3], // Índice de la columna "Unit Price"
-                "className": "text-right" // Clase de alineación a la derecha
-            }, ]
+            }
         });
 
         $('#budgetsTable').on('click', '.delete-btn', function(event) {
@@ -178,13 +186,13 @@
             // Llamar al servicio para obtener los detalles del elemento con el ID itemId
             // Luego, cargar los datos en la ventana modal y mostrarla
             let row = itemsTable.rows(`[data-id="${itemId}"]`);
-            
+
             // Verificar si la fila existe
             if (!row.any()) {
                 console.error('La fila con data-id', dataId, 'no fue encontrada en itemsTable.');
                 return;
             }
-            
+
             // Obtener el objeto de datos asociado a la fila
             var rowData = row.data()[0];
 
@@ -192,7 +200,7 @@
                 detail: {
                     data: rowData
                 }
-            } ));
+            }));
         });
 
         // Evento para recargar la tabla luego de alguna creación, eliminación o actualización

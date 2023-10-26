@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Projects;
 
+use App\Http\Controllers\Projects\BudgetController;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -18,12 +19,13 @@ class BudgetResource extends JsonResource
             'id' => $this->id,
             'amount' => $this->amount,
             'items' => empty($this->items) ? [] : BudgetItemResource::collection($this->items),
-            'status' => $this->status,
+            'status' => BudgetController::statusName($this->status),
             'name' => $this->name,
             'gainMargin' => $this->gainMargin,
             'projectNumber' => $this->projectNumber,
             'projectLocation' => $this->projectLocation,
-            'totalPowerPick' => $this->totalPowerPick
+            'totalPowerPick' => $this->totalPowerPick,
+            'updatedAt' => $this->updatedAt->toIso8601String()
         ];
     }
 }

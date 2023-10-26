@@ -17,9 +17,8 @@ class BudgetController extends Controller
         $columns = [
             'id',
             'name',
-            'project_name',
-            'proejct_number',
-            'total_power_pick'
+            'status',
+            'updated_at'
         ];
 
         $query = Budget::query();
@@ -62,6 +61,23 @@ class BudgetController extends Controller
                 'draw' => $request->input('draw') ?: 1,
             ]
         ]);
+    }
+
+    public static function statusName($status)
+    {
+        $name = "Draft";
+        switch ($status) {
+            case Budget::STATUS_APPROVED:
+                $name = "Approved";
+                break;
+            case Budget::STATUS_REJECTED:
+                $name = "Rejected";
+                break;
+        }
+        return [
+            "value" => intval($status),
+            "display" => $name
+        ];
     }
 
     /**
