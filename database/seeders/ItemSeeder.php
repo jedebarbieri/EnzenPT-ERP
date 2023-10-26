@@ -3,10 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\Procurement\Item;
-use App\Models\Procurement\ItemCategory;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Termwind\Components\Dd;
 
 class ItemSeeder extends Seeder
 {
