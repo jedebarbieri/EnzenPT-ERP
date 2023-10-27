@@ -18,11 +18,11 @@ class BudgetDetailsResource extends JsonResource
         return [
             'id' => $this->id,
             'item' => new ItemResource($this->item),
-            'unitPrice' => $this->unitPrice,
+            'unitPrice' => $this->unit_price,
             'quantity' => $this->quantity,
-            'taxPercentage' => $this->taxPercentage,
+            'taxPercentage' => $this->tax_percentage,
             'discount' => $this->discount,
-            'sellPrice' => $this->sellPrice
+            'sellPrice' => $this->sell_price
         ];
     }
 }

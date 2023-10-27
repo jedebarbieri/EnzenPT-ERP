@@ -2,8 +2,8 @@
 
 namespace App\Models\Projects;
 
-use App\Models\ModelCamelCase;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 
@@ -21,7 +21,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property float $totalPowerPick This is the total of the maximum power that this project can provide.
  *                                 This data is used to calculate the cost of each item or category per Watt Pick ( 0.00 € / Wp)
  */
-class Budget extends ModelCamelCase
+class Budget extends Model
 {
     use HasFactory, SoftDeletes;
 

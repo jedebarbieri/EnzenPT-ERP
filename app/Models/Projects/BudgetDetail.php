@@ -1,10 +1,9 @@
 <?php
 namespace App\Models\Projects;
 
-use App\Models\ModelCamelCase;
 use App\Models\Procurement\Item;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * This class is used to define the budget of any project
@@ -19,7 +18,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property float $discount This is the amount of money that will be deducted from the total for this line item.
  *                           This will apply on the $sellPrice to calculate the total.
  */
-class BudgetDetail extends ModelCamelCase
+class BudgetDetail extends Model
 {
     use HasFactory;
     

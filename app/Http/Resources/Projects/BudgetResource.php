@@ -37,11 +37,11 @@ class BudgetResource extends JsonResource
             'budgetDetails' => BudgetDetailsResource::collection($this->budgetDetails),
             'status' => self::statusName($this->status),
             'name' => $this->name,
-            'gainMargin' => $this->gainMargin,
-            'projectNumber' => $this->projectNumber,
-            'projectLocation' => $this->projectLocation,
-            'totalPowerPick' => $this->totalPowerPick,
-            'updatedAt' => $this->updatedAt->toIso8601String()
+            'gainMargin' => $this->gain_margin,
+            'projectNumber' => $this->project_number,
+            'projectLocation' => $this->project_location,
+            'totalPowerPick' => $this->total_power_pick,
+            'updatedAt' => $this->updated_at->toIso8601String()
         ];
     }
 }

@@ -2,8 +2,8 @@
 
 namespace App\Models\Procurement;
 
-use App\Models\ModelCamelCase;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $prefixCode
  * @property Item[] $items
  */
-class ItemCategory extends ModelCamelCase
+class ItemCategory extends Model
 {
     use HasFactory, SoftDeletes;
 

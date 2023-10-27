@@ -2,8 +2,8 @@
 
 namespace App\Models\Procurement;
 
-use App\Models\ModelCamelCase;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property float $unitPrice
  * @property ItemCategory $itemCategory
  */
-class Item extends ModelCamelCase
+class Item extends Model
 {
     use HasFactory, SoftDeletes;
     protected $fillable = [

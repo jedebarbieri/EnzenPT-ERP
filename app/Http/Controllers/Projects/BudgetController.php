@@ -21,7 +21,7 @@ class BudgetController extends Controller
             'updated_at'
         ];
 
-        $query = Budget::query();
+        $query = Budget::without('budgetDetails');
 
         // Applying sort
         if ($request->has('order')) {
@@ -48,6 +48,10 @@ class BudgetController extends Controller
 
         // Paginar la consulta con el length y la página
         $budgets = $query->paginate($length, ['*'], 'page', $page);
+
+        $budgets->each(function ($budget) {
+            $budget->setRelation('budgetDetails', []);
+        });
 
         // Transformar la colección utilizando ItemResource
         $budgetsResource = BudgetResource::collection($budgets);
