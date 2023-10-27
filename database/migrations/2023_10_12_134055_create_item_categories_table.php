@@ -18,8 +18,8 @@ class CreateItemCategoriesTable extends Migration
             $table->dateTime('updated_at')->nullable();
             $table->dateTime('deleted_at')->nullable();
             $table->string('prefix', 45)->nullable();
-            $table->unsignedInteger('parent_item_categories_id')->nullable();
-            $table->foreign('parent_item_categories_id', 'fk_item_categories_parent_item')->references('id')->on('item_categories')->onDelete('cascade')->onUpdate('cascade');
+            $table->unsignedInteger('parent_id')->nullable();
+            $table->foreign('parent_id', 'fk_item_categories_parent')->references('id')->on('item_categories')->onDelete('cascade')->onUpdate('cascade');
         });
     }
 

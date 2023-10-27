@@ -14,12 +14,11 @@ class ItemCategoryResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $resp = [
+        return [
             'id' => $this->id,
             'name' => $this->name,
             'code' => $this->getPrefixCodeAttribute(),
             'children' => ItemCategoryResource::collection($this->children)
         ];
-        return $resp;
     }
 }

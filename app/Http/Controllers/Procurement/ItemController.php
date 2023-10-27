@@ -33,7 +33,7 @@ class ItemController extends Controller
             'unit_price'
         ];
 
-        $query = Item::query()->with('category');
+        $query = Item::query()->with('itemCategory');
 
         // Applying sort
         if ($request->has('order')) {
@@ -83,13 +83,9 @@ class ItemController extends Controller
         $item = Item::create($request->validated());
         return response()->json([
             'status' => 'success',
-            //'message' => 'Item successfully created.',
             'data' => [
                 'item' => ItemResource::make($item)
             ],
-            // 'metadata' => [
-
-            // ]
         ]);
     }
 

@@ -6,7 +6,7 @@ use App\Http\Resources\Procurement\ItemResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class BudgetItemResource extends JsonResource
+class BudgetDetailsResource extends JsonResource
 {
     /**
      * Transform the resource into an array.

@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * This class is used to define the budget of any project
  * 
  * @property int $id Is the system identificator
+ * @property BudgetDetail[] $budgetDetails This is the list of the budgetDetails related to this budget. Each one has a relationship with the item
  * @property int $status This is the status of the Budget (to be defined)
  * @property string $name An optional name for this budget
  * @property float $gainMargin The default percentage of gain for whole budget. This value can be overwrite within the line detail level
@@ -43,6 +44,6 @@ class Budget extends ModelCamelCase
      */
     public function budgetDetails() 
     {
-        return $this->hasMany(BudgetDetail::class, 'budgets_id');
+        return $this->hasMany(BudgetDetail::class);
     }
 }

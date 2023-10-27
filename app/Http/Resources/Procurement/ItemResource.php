@@ -19,7 +19,7 @@ class ItemResource extends JsonResource
             'name' => $this->name,
             'internalCod' => $this->internalCod,
             'unitPrice' => $this->unitPrice,
-            'category' => new ItemCategoryResource($this->category)
+            'itemCategory' => new ItemCategoryResource($this->itemCategory)
         ];
     }
 }

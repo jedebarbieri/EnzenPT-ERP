@@ -20,7 +20,7 @@ class ItemCategory extends ModelCamelCase
 {
     use HasFactory, SoftDeletes;
 
-    const PARENT_COLUMN_NAME = 'parent_item_categories_id';
+    const PARENT_COLUMN_NAME = 'parent_id';
 
     protected $fillable = [
         "name",
@@ -75,7 +75,7 @@ class ItemCategory extends ModelCamelCase
      */
     public function items()
     {
-        return $this->hasMany(Item::class, 'item_categories_id');
+        return $this->hasMany(Item::class);
     }
 
     /**

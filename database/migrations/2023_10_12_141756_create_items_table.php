@@ -22,8 +22,8 @@ class CreateItemsTable extends Migration
             $table->string('internal_cod', 100)->nullable();
             $table->string('name', 500)->nullable();
             $table->double('unit_price')->nullable();
-            $table->unsignedInteger('item_categories_id')->nullable();
-            $table->foreign('item_categories_id')->references('id')->on('item_categories')->onDelete('cascade')->onUpdate('cascade');
+            $table->unsignedInteger('item_category_id')->nullable();
+            $table->foreign('item_category_id')->references('id')->on('item_categories')->onDelete('cascade')->onUpdate('cascade');
         });
     }
 

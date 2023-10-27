@@ -245,7 +245,7 @@ class ItemSeeder extends Seeder
                 Item::create([
                     'internal_cod' => $item['internal_cod'],
                     'name' => ucwords(strtolower($item['name'])),
-                    'item_categories_id' => $categoryMap[$categoryPrefix]['id'],
+                    'item_category_id' => $categoryMap[$categoryPrefix]['id'],
                 ]);
             } else {
                 // Puedes manejar casos donde el prefix no coincide con ninguna categoría

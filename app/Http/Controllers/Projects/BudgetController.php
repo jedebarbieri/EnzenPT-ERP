@@ -63,23 +63,6 @@ class BudgetController extends Controller
         ]);
     }
 
-    public static function statusName($status)
-    {
-        $name = "Draft";
-        switch ($status) {
-            case Budget::STATUS_APPROVED:
-                $name = "Approved";
-                break;
-            case Budget::STATUS_REJECTED:
-                $name = "Rejected";
-                break;
-        }
-        return [
-            "value" => intval($status),
-            "display" => $name
-        ];
-    }
-
     /**
      * Show the form for creating a new resource.
      */
@@ -103,18 +86,19 @@ class BudgetController extends Controller
     {
         try {
             // Load the budget details relationship
-            $budget->load('budgetDetails.item');
+
+            $budget->load('budgetDetails.item.itemCategory');
             
             return response()->json([
                 'status' => 'success',
                 'data' => [
-                    'budget' => BudgetResource::make($budget)
+                    'budget' => new BudgetResource($budget)
                 ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Budget not found.'
+                'message' => $e->getMessage()
             ]);
         }
     }
