@@ -37,15 +37,15 @@
                                     <div class="form-group">
                                         <label for="txtBudgetName" class="">Name</label>
                                         <input type="text" class="form-control" id="txtBudgetName" name="name"
-                                                autocomplete="false" />
+                                            autocomplete="false" />
                                     </div>
                                 </div>
                                 <div class="col-sm-3">
                                     <div class="form-group">
                                         <label for="txtTotalPowerPick" class="">Total Power Pick</label>
                                         <div class="input-group">
-                                            <input type="text" class="form-control" id="txtTotalPowerPick" name="total_power_pick"
-                                                    autocomplete="false" />
+                                            <input type="text" class="form-control text-right" id="txtTotalPowerPick"
+                                                name="total_power_pick" autocomplete="false" value="0.00" />
                                             <div class="input-group-append">
                                                 <span class="input-group-text">€/Wp</span>
                                             </div>
@@ -56,8 +56,8 @@
                                     <div class="form-group">
                                         <label for="txtGainMargin" class="">Gain Margin</label>
                                         <div class="input-group">
-                                            <input type="text" class="form-control" id="txtGainMargin" name="gain_margin"
-                                                    autocomplete="false" />
+                                            <input type="text" class="form-control text-right" id="txtGainMargin"
+                                                name="gain_margin" autocomplete="false" value="0.00" />
                                             <div class="input-group-append">
                                                 <span class="input-group-text">%</span>
                                             </div>
@@ -69,22 +69,22 @@
                                 <div class="col-sm-4">
                                     <div class="form-group">
                                         <label for="txtProjectName" class="">Project Name</label>
-                                        <input type="text" class="form-control" id="txtProjectName" name="project_name"
-                                                autocomplete="false" />
+                                        <input type="text" class="form-control" id="txtProjectName"
+                                            name="project_name" autocomplete="false" />
                                     </div>
                                 </div>
                                 <div class="col-sm-4">
                                     <div class="form-group">
                                         <label for="txtProjectNumber" class="">Project Number</label>
-                                        <input type="text" class="form-control" id="txtProjectNumber" name="project_number"
-                                               autocomplete="false" />
+                                        <input type="text" class="form-control" id="txtProjectNumber"
+                                            name="project_number" autocomplete="false" />
                                     </div>
                                 </div>
                                 <div class="col-sm-4">
                                     <div class="form-group">
                                         <label for="txtProjectLocation" class="">Project Location</label>
-                                        <input type="text" class="form-control" id="txtProjectLocation" name="project_location"
-                                               autocomplete="false" />
+                                        <input type="text" class="form-control" id="txtProjectLocation"
+                                            name="project_location" autocomplete="false" />
                                     </div>
                                 </div>
                             </div>
@@ -102,7 +102,7 @@
                     <div class="card-header">
                         <nav class="navbar p-0">
                             <h6 class="card-title text-bold">Supplies List</h6>
-                            
+
                             <button type="button" class="btn btn-primary">
                                 <i class="fa fa-plus mr-2"></i> Add Item
                             </button>
@@ -112,7 +112,7 @@
                                 <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
                             </form> --}}
                         </nav>
-                        
+
                     </div>
                     <div class="card-body">
 
@@ -146,10 +146,10 @@
 
 @push('page_scripts')
     <script type="module">
-        var itemModal = $("#{{ $modalId }}");
+        var budgetModal = $("#{{ $modalId }}");
         var formModal = $('#{{ $modalId }}FormBudgetMainInfo');
         var title = $("#{{ $modalId }}Label");
-        var messageBox = itemModal.find('.alert');
+        var messageBox = budgetModal.find('.alert');
 
         messageBox.on('close.bs.alert', function() {
             // Ocultar la alerta pero mantenerla en el DOM
@@ -161,28 +161,48 @@
                 name: {
                     required: true,
                 },
-                internal_cod: {
-                    minlength: 5
+                total_power_pick: {
+                    min: 0.00
                 },
-                unit_price: {
-                    required: true,
-                    min: 0
+                gain_margin: {
+                    min: 0.00
                 },
+                project_name: {
+                    require: true,
+                    minlength: 3
+                },
+                project_number: {
+                    require: false,
+                    minlength: 3
+                },
+                project_location: {
+                    require: false,
+                    minlength: 3
+                }
             },
             messages: {
                 name: {
-                    required: "Please, enter a name for this Item.",
+                    required: "Please, enter a name for this Budget.",
                 },
-                internal_cod: {
-                    minlength: "The code should have at least 5 characters."
+                total_power_pick: {
+                    min: "Enter a valid value."
                 },
-                unit_price: {
-                    required: "Please, enter the price of the item."
+                gain_margin: {
+                    min: "Enter a valid value."
                 },
+                project_name: {
+                    minlength: "3 characters minimum."
+                },
+                project_number: {
+                    minlength: "3 characters minimum."
+                },
+                project_location: {
+                    minlength: "3 characters minimum."
+                }
             },
             errorElement: 'span',
             errorPlacement: function(error, element) {
-                error.addClass('invalid-feedback col-sm-10 ml-auto');
+                error.addClass('invalid-feedback');
                 element.closest('.form-group').append(error);
             },
             highlight: function(element, errorClass, validClass) {
@@ -195,21 +215,21 @@
                 var formData = window.arrayToJsonObject($(form).serializeArray());
                 let req;
                 if (formData.id) {
-                    req = axios.put(`/api/items/${formData.id}`, formData);
+                    req = axios.put(`/api/budgets/${formData.id}`, formData);
                 } else {
-                    req = axios.post("/api/items", formData);
+                    req = axios.post("/api/budgets", formData);
                 }
                 req
                     .then(function(response) {
                         // Manejar la respuesta exitosa
-                        document.dispatchEvent(new CustomEvent('itemsTable.reloadTable'));
-                        itemModal.modal('hide');
+                        document.dispatchEvent(new CustomEvent('budgetsTable.reloadTable'));
+                        budgetModal.modal('hide');
                     })
                     .catch(function(error) {
-                        let messageBox = itemModal.find('.modal-body .alert');
+                        let messageBox = budgetModal.find('.modal-body .alert');
                         if (messageBox.length == 0) {
                             messageBox = $("#modalAlertTemplate").contents().clone().removeAttr('id');
-                            itemModal.find('.modal-body').prepend(messageBox);
+                            budgetModal.find('.modal-body').prepend(messageBox);
                         }
                         // Manejar errores
                         if (error.response) {
@@ -233,33 +253,27 @@
         });
 
         // Reset the form before showing the modal
-        itemModal.on('hidden.bs.modal', function(event) {
+        budgetModal.on('hidden.bs.modal', function(event) {
             validator.resetForm();
             formModal[0].reset();
-            formModal.find("#{{ $selCategoryId }}").val(null).trigger('change');
-            title.html("Add New Item");
+            title.html("New Budget");
             formModal.find('.error').removeClass("error");
             formModal.find('.is-invalid').removeClass("is-invalid");
             formModal.find('.form-control-feedback').remove();
         });
 
         // Evento para cargar este modal con la información proporcionada
-        document.addEventListener('itemModal.loadData', (event) => {
-            let itemData = event.detail.data;
-            // @TODO Show data incongruency error
-            if (itemData.category === null) {
-                console.error(
-                    "This item does not have any category. This is a data incongruency error. Please contact the System Administrator."
-                );
-                return;
-            }
-            title.html("Edit Item");
-            formModal.find("#hdId").val(itemData.id);
-            formModal.find("#txtName").val(itemData.name);
-            formModal.find("#txtInternalCod").val(itemData.internalCod);
-            formModal.find("#txtPrice").val(itemData.unitPrice);
-            formModal.find("#{{ $selCategoryId }}").val(itemData.itemCategory.id).trigger('change');
-            itemModal.modal('show');
+        document.addEventListener('budgetModal.loadData', (event) => {
+            let budgetData = event.detail.data;
+            title.html("Edit Budget");
+            formModal.find("#hdId").val(budgetData.id);
+            formModal.find("#txtBudgetName").val(budgetData.name);
+            formModal.find("#txtTotalPowerPick").val(budgetData.totalPowerPick);
+            formModal.find("#txtGainMargin").val(Math.round(budgetData.gainMargin*10000)/100);
+            formModal.find("#txtProjectName").val(budgetData.projectName);
+            formModal.find("#txtProjectNumber").val(budgetData.projectNumber);
+            formModal.find("#txtProjectLocation").val(budgetData.projectLocation);
+            budgetModal.modal('show');
         });
     </script>
 @endpush

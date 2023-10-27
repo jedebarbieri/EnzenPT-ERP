@@ -38,6 +38,7 @@ class BudgetResource extends JsonResource
             'status' => self::statusName($this->status),
             'name' => $this->name,
             'gainMargin' => $this->gain_margin,
+            'projectName' => $this->project_name,
             'projectNumber' => $this->project_number,
             'projectLocation' => $this->project_location,
             'totalPowerPick' => $this->total_power_pick,

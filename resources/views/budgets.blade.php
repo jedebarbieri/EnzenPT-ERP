@@ -188,11 +188,11 @@
 
             
 
-            let row = itemsTable.rows(`[data-id="${budgetId}"]`);
+            let row = budgetsTable.rows(`[data-id="${budgetId}"]`);
 
             // Verificar si la fila existe
             if (!row.any()) {
-                console.error('La fila con data-id', dataId, 'no fue encontrada en itemsTable.');
+                console.error('La fila con data-id', dataId, 'no fue encontrada en budgetsTable.');
                 return;
             }
 
@@ -207,8 +207,8 @@
         });
 
         // Evento para recargar la tabla luego de alguna creación, eliminación o actualización
-        document.addEventListener('itemsTable.reloadTable', (event) => {
-            itemsTable.ajax.reload(null, false);
+        document.addEventListener('budgetsTable.reloadTable', (event) => {
+            budgetsTable.ajax.reload(null, false);
         });
     </script>
 @endpush
