@@ -168,15 +168,15 @@
                     min: 0.00
                 },
                 project_name: {
-                    require: true,
+                    required: true,
                     minlength: 3
                 },
                 project_number: {
-                    require: false,
+                    required: false,
                     minlength: 3
                 },
                 project_location: {
-                    require: false,
+                    required: false,
                     minlength: 3
                 }
             },

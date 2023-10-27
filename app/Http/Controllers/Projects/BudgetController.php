@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Projects;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Projects\UpdateBudgetRequest;
+use App\Http\Requests\Projects\StoreBudgetRequest;
 use App\Http\Resources\Projects\BudgetResource;
 use App\Models\Projects\Budget;
 use Illuminate\Http\Request;
@@ -78,9 +80,15 @@ class BudgetController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreBudgetRequest $request)
     {
-        //
+        $budget = Budget::create($request->validated());
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'budget' => BudgetResource::make($budget)
+            ],
+        ]);
     }
 
     /**
@@ -118,9 +126,19 @@ class BudgetController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdateBudgetRequest $request, Budget $budget)
     {
-        //
+        $budget->update(
+            collect($request->validated())
+                ->except('id')
+                ->toArray()
+        );
+    
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Budget updated successfully.',
+            'data' => new BudgetResource($budget),
+        ]);
     }
 
     /**
