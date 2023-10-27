@@ -27,7 +27,7 @@
                     </div>
                     @component('app.components.SelectDropdown', [
                         'id' => $selCategoryId,
-                        'name' => 'item_categories_id',
+                        'name' => 'item_category_id',
                         'label' => 'Category',
                         'elements' => $categoriesList,
                         'displayFunc' => function($category) {
@@ -188,7 +188,7 @@
         formModal.find("#txtName").val(itemData.name);
         formModal.find("#txtInternalCod").val(itemData.internalCod);
         formModal.find("#txtPrice").val(itemData.unitPrice);        
-        formModal.find("#{{ $selCategoryId }}").val(itemData.category.id).trigger('change');
+        formModal.find("#{{ $selCategoryId }}").val(itemData.itemCategory.id).trigger('change');
         itemModal.modal('show');
     });
 

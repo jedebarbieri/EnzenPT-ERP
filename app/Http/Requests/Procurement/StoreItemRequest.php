@@ -25,7 +25,7 @@ class StoreItemRequest extends FormRequest
             'name' => 'required|string',
             'internal_cod' => 'string|min:5',
             'unit_price' => 'required|numeric|gte:0',
-            'item_categories_id' => 'required|numeric|gte:0'
+            'item_category_id' => 'required|numeric|gte:0'
         ];
     }
 }
