@@ -1,8 +1,33 @@
+// Classes for tool icons in datatable Options column
 .button-container {
-    opacity: 0; /* Inicialmente oculto */
-    transition: opacity 0.3s ease-in-out; /* Efecto de fade */
+    opacity: 0;
+    /* Initialy hidden */
+    transition: opacity 0.3s ease-in-out;
+    /* Fade Effect */
 }
 
 tr:hover .button-container {
-    opacity: 1; /* Mostrar al hacer hover */
+    opacity: 1;
+    /* Shows when hover */
+}
+
+
+// Classes for elements "contenteditable"
+
+
+
+
+// Extending modal
+
+@include media-breakpoint-up(xxl) {
+    .modal-xxl {
+        max-width: none;
+    }
+}
+
+// I don't know why it is adding a right padding as inline style.
+// I did this to fix it.
+.modal {
+    padding-right: 17px !important;
+    padding-left: 17px !important;
 }
