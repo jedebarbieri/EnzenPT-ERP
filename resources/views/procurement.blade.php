@@ -22,7 +22,7 @@
                     <div class="col-sm-12">
                         <div class="card">
                             <div class="card-body">
-                                <table id="itemsTable" class="table table-bordered table-hover"></table>
+                                <table id="itemsTable" class="table table-hover"></table>
                             </div>
                         </div>
                     </div>
