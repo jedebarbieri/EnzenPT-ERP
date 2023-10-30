@@ -116,7 +116,7 @@
                     </div>
                     <div class="card-body">
 
-
+                        <table id="budgetDetailsTable" class="table table-hover"></table>
 
                     </div>
                     <div class="card-footer text-right">
@@ -145,11 +145,23 @@
 
 
 @push('page_scripts')
+    <template id="buttonsOptionsPerBudgetDetailTemplate">
+        <td class="text-right text-nowrap" style="width: 0%">
+            <div class="button-container">
+                <button class="btn btn-outline-danger btn-sm delete-btn" data-id="__ID__" title="Delete"><i
+                        class="fas fa-trash"></i></button>
+            </div>
+        </td>
+    </template>
+
     <script type="module">
         var budgetModal = $("#{{ $modalId }}");
         var formModal = $('#{{ $modalId }}FormBudgetMainInfo');
         var title = $("#{{ $modalId }}Label");
         var messageBox = budgetModal.find('.alert');
+
+        // Reference to the datatable instance to store all the budget details
+        var budgetDetailsTable = null;
 
         messageBox.on('close.bs.alert', function() {
             // Ocultar la alerta pero mantenerla en el DOM
@@ -269,11 +281,131 @@
             formModal.find("#hdId").val(budgetData.id);
             formModal.find("#txtBudgetName").val(budgetData.name);
             formModal.find("#txtTotalPowerPick").val(budgetData.totalPowerPick);
-            formModal.find("#txtGainMargin").val(Math.round(budgetData.gainMargin*10000)/100);
+            formModal.find("#txtGainMargin").val(Math.round(budgetData.gainMargin * 10000) / 100);
             formModal.find("#txtProjectName").val(budgetData.projectName);
             formModal.find("#txtProjectNumber").val(budgetData.projectNumber);
             formModal.find("#txtProjectLocation").val(budgetData.projectLocation);
             budgetModal.modal('show');
+
+            // Loading the budget details: list of items
+
+            if (!budgetDetailsTable) {
+                budgetDetailsTable = $('#budgetDetailsTable').DataTable({
+                    "responsive": true,
+                    "autoWidth": false,
+                    "processing": true,
+                    "serverSide": true,
+                    "paging": false,
+                    "searching": false,
+                    "ordering": false,
+                    "info": false,
+
+                    "ajax": {
+                        "url": `/api/budgets/${budgetData.id}`,
+                        "type": "GET",
+                        "dataSrc": "data.budget.budgetDetails"
+                    },
+                    "columns": [{
+                            "data": "id",
+                            "title": "Id",
+                            "visible": false // Oculta la columna "Id"
+                        },
+                        {
+                            "data": "item.internalCod",
+                            "title": "Cod.",
+                            "class": "text-nowrap",
+                            "width": "0%",
+                        },
+                        {
+                            "data": "item.name",
+                            "title": "Name"
+                        },
+                        {
+                            "data": "unitPrice",
+                            "title": "Unit P.",
+                            "class": "text-right",
+                            "width": "0%",
+                            "render": function(data, type, row) {
+                                // Formatear el valor como moneda en euros
+                                return new Intl.NumberFormat('pt-PT', {
+                                    style: 'currency',
+                                    currency: 'EUR'
+                                }).format(data);
+                            }
+                        },
+                        {
+                            "data": "quantity",
+                            "title": "Qty",
+                            "class": "text-right",
+                            "width": "0%",
+                            "render": function(data, type, row) {
+                                return parseFloat(data).toFixed(2);
+                            }
+                        },
+                        {
+                            "data": "taxPercentage",
+                            "title": "IVA %",
+                            "class": "text-right",
+                            "width": "0%",
+                            "render": function(data, type, row) {
+                                return (parseFloat(data) * 100).toFixed(2) + '%';
+                            }
+                        },
+                        {
+                            "data": "discount",
+                            "title": "Disc.",
+                            "class": "text-right",
+                            "width": "0%",
+                            "render": function(data, type, row) {
+                                // Formatear el valor como moneda en euros
+                                return new Intl.NumberFormat('pt-PT', {
+                                    style: 'currency',
+                                    currency: 'EUR'
+                                }).format(data);
+                            }
+                        },
+                        {
+                            "data": "sellPrice", // acá es donde tengo problemas
+                            "title": "Selling Price",
+                            "class": "text-right",
+                            "width": "0%",
+                            "render": function(data, type, row) {
+                                // Formatear el valor como moneda en euros
+                                return new Intl.NumberFormat('pt-PT', {
+                                    style: 'currency',
+                                    currency: 'EUR'
+                                }).format(data);
+                            }
+                        },
+                    ],
+                    headerCallback: function(thead, data, start, end, display) {
+                        if ($(thead).find("#optCol").length === 0) {
+                            $(thead).prepend($('<th/>', {
+                                id: "optCol",
+                                class: "text-center"
+                            }));
+                        }
+                    },
+                    createdRow: function(row, data, index) {
+                        // Clonar el contenido del template
+                        let clonedContent = $("#buttonsOptionsPerBudgetDetailTemplate").contents()
+                            .clone();
+
+                        // Reemplazar los placeholders con valores dinámicos
+                        clonedContent.find('.edit-btn').attr('data-id', data.id);
+
+                        // Añade la clase deseada a la fila
+                        $(row).prepend(clonedContent);
+
+                        // Añadimos atributo de data-id a cada fila
+                        $(row).attr("data-id", data.id);
+                    }
+                });
+            } else {
+                // Acá quiero actualizar la ruta AJAX y refrescar la tabla.
+                budgetDetailsTable.ajax.url(`/api/budgets/${budgetData.id}`).load();
+            }
+
         });
     </script>
 @endpush

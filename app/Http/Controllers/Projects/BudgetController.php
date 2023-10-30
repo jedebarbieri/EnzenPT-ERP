@@ -97,9 +97,16 @@ class BudgetController extends Controller
     public function show(Budget $budget)
     {
         try {
-            // Load the budget details relationship
 
-            $budget->load('budgetDetails.item.itemCategory');
+            // Load the budget details relationship and ordered by internal_cod
+            $budget = Budget::with([
+                'budgetDetails' => function ($query) {
+                    $query->join('items', 'budget_details.item_id', '=', 'items.id')
+                        ->orderBy('items.internal_cod')
+                        ->with('item.itemCategory');
+                }
+            ])->find($budget->id);
+
             
             return response()->json([
                 'status' => 'success',

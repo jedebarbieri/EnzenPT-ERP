@@ -186,8 +186,6 @@
         $('#budgetsTable').on('click', '.edit-btn', function(event) {
             var budgetId = $(this).data('id');
 
-            
-
             let row = budgetsTable.rows(`[data-id="${budgetId}"]`);
 
             // Verificar si la fila existe
