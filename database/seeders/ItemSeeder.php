@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Procurement\Item;
+use Faker\Factory;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -246,6 +247,7 @@ class ItemSeeder extends Seeder
                     'internal_cod' => $item['internal_cod'],
                     'name' => ucwords(strtolower($item['name'])),
                     'item_category_id' => $categoryMap[$categoryPrefix]['id'],
+                    'unit_price' => Factory::create()->randomFloat(2, 1, 100),
                 ]);
             } else {
                 // Puedes manejar casos donde el prefix no coincide con ninguna categoría

@@ -29,7 +29,7 @@ class BudgetDetailFactory extends Factory
         return [
             'unit_price' => $this->faker->randomFloat(2, 1, 100),
             'quantity' => $this->faker->randomFloat(0, 1, 10),
-            'tax_percentage' => 23,
+            'tax_percentage' => 0.23,
             'sell_price' => $this->faker->randomFloat(2, 10, 100),
             'discount' => $this->faker->boolean(5) ? $this->faker->randomFloat(2, 0, 5) : 0,
         ];
@@ -46,7 +46,6 @@ class BudgetDetailFactory extends Factory
 
             $unitPrice = $this->faker->randomFloat(2, 1, 100);
             $sellPrice = $this->faker->randomFloat(2, 10, 100);
-            $discount = $this->faker->boolean(5) ? $this->faker->randomFloat(2, 0, 5) : 0;
 
             if (empty($budgetDetail->budget)) {
                 throw new Exception("The reference budget is empty.");
@@ -74,7 +73,7 @@ class BudgetDetailFactory extends Factory
 
             $budgetDetail->unit_price = $unitPrice;
             $budgetDetail->sell_price = $sellPrice;
-            $budgetDetail->discount = $discount;
+            $budgetDetail->discount = $this->faker->boolean(5) ? $this->faker->randomFloat(4, 0, 1) * $sellPrice : 0;
             $budgetDetail->save();
         });
     }

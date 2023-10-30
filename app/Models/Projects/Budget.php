@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property BudgetDetail[] $budgetDetails This is the list of the budgetDetails related to this budget. Each one has a relationship with the item
  * @property int $status This is the status of the Budget (to be defined)
  * @property string $name An optional name for this budget
- * @property float $gain_margin The default percentage of gain for whole budget. This value can be overwrite within the line detail level
+ * @property float $gain_margin The default percentage of gain for whole budget. This value can be overwrite within the line detail level. It is from 0 to 1
  * @property string $project_name The name of the project which this budget belongs. * This will be moved to the project entity.
  * @property string $project_number The number of the project which this budget belong. * This will be moved to the project entity.
  * @property string $project_location The location of the project which this budget belongs. * This will be moved to the project entity.

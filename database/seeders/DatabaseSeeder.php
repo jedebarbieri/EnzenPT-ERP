@@ -19,5 +19,9 @@ class DatabaseSeeder extends Seeder
             'email' => 'justo.debarbieri@enzen.com',
             'password' => 'Enzen2023',
         ]);
+
+        $this->call(ItemCategoriesSeeder::class);
+        $this->call(ItemSeeder::class);
+        $this->call(BudgetSeeder::class);
     }
 }

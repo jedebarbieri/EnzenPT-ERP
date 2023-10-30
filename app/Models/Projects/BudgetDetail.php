@@ -11,12 +11,12 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $id
  * @property Item $item This is the relation to the item that this line represent
  * @property Budget $budget This is the reference to the budget that this line belogns
- * @property float $unitPrice This is the price of this item.
- * @property float $quantity This is the quantity of this item. It could be fractional.
- * @property float $taxPercentage This is the percentage of the tax to be applied to this item.
- * @property float $sellPrice This amount indicates the final selling price for this item.
+ * @property float $unit_price This is the price of this item.
+ * @property float $quantity This is the quantity of this item. It could be decimal.
+ * @property float $tax_percentage This is the percentage of the tax to be applied to this item. By default should be 23% (0.23) Its value is from 0 to 1.
  * @property float $discount This is the amount of money that will be deducted from the total for this line item.
  *                           This will apply on the $sellPrice to calculate the total.
+ * @property float $sell_price This amount indicates the final selling price for this item.
  */
 class BudgetDetail extends Model
 {
