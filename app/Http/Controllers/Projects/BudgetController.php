@@ -83,6 +83,7 @@ class BudgetController extends Controller
     public function store(StoreBudgetRequest $request)
     {
         $budget = Budget::create($request->validated());
+        $budget->setRelation('budgetDetails', []);
         return response()->json([
             'status' => 'success',
             'data' => [
@@ -107,7 +108,7 @@ class BudgetController extends Controller
                 }
             ])->find($budget->id);
 
-            
+
             return response()->json([
                 'status' => 'success',
                 'data' => [
@@ -135,16 +136,31 @@ class BudgetController extends Controller
      */
     public function update(UpdateBudgetRequest $request, Budget $budget)
     {
-        $budget->update(
-            collect($request->validated())
-                ->except('id')
-                ->toArray()
-        );
-    
+
+        // Verificar si la solicitud es de tipo PATCH
+        $isPatchRequest = $request->isMethod('patch');
+
+        // Obtener los datos validados del request
+        $validatedData = $request->validated();
+
+        // Actualizar según el tipo de solicitud
+        if ($isPatchRequest) {
+            // Si es una solicitud PATCH, actualizar solo los campos proporcionados
+            $budget->update($validatedData);
+        } else {
+            // Si es una solicitud PUT, actualizar todo el modelo
+            $budget->update(
+                collect($validatedData)
+                    ->except('id')
+                    ->toArray()
+            );
+        }
+        $budget->setRelation('budgetDetails', []);
+
         return response()->json([
             'status' => 'success',
             'message' => 'Budget updated successfully.',
-            'data' => new BudgetResource($budget),
+            'data' => BudgetResource::make($budget)
         ]);
     }
 
