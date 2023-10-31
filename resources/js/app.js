@@ -23,3 +23,6 @@ Inputmask();
 import 'admin-lte';
 
 import './common';
+
+import InputEditable from "./InputEditable";
+new InputEditable({});
