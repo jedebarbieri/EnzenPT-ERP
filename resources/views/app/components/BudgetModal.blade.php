@@ -323,72 +323,63 @@
                         {
                             "data": "unitPrice",
                             "title": "Unit P.",
-                            "class": "unit_price text-right",
+                            "class": "unit_price",
                             "width": "0%",
-                            "render": function(data, type, row) {
-                                // Format the value as euros currency
-                                return new Intl.NumberFormat('pt-PT', {
-                                    style: 'currency',
-                                    currency: 'EUR'
-                                }).format(data);
-                            }
                         },
-                        {
-                            "data": "quantity",
-                            "title": "Qty",
-                            "class": "quantity text-right",
-                            "width": "0%",
-                            "render": function(data, type, row) {
-                                return parseFloat(data).toFixed(2);
-                            }
-                        },
-                        {
-                            "data": "taxPercentage",
-                            "title": "IVA %",
-                            "class": "taxPercentage text-right",
-                            "width": "0%",
-                            "render": function(data, type, row) {
-                                return (parseFloat(data) * 100).toFixed(2) + '%';
-                            }
-                        },
-                        {
-                            "data": "discount",
-                            "title": "Disc.",
-                            "class": "discount text-right",
-                            "width": "0%",
-                            "render": function(data, type, row) {
-                                // Format the value as euros currency
-                                return new Intl.NumberFormat('pt-PT', {
-                                    style: 'currency',
-                                    currency: 'EUR'
-                                }).format(data);
-                            }
-                        },
-                        {
-                            "data": "sellPrice", // acá es donde tengo problemas
-                            "title": "Selling Price",
-                            "class": "sellPrice text-right",
-                            "width": "0%",
-                            "render": function(data, type, row) {
-                                // Format the value as euros currency
-                                return new Intl.NumberFormat('pt-PT', {
-                                    style: 'currency',
-                                    currency: 'EUR'
-                                }).format(data);
-                            }
-                        },
+                        // {
+                        //     "data": "quantity",
+                        //     "title": "Qty",
+                        //     "class": "quantity text-right",
+                        //     "width": "0%",
+                        //     "render": function(data, type, row) {
+                        //         return parseFloat(data).toFixed(2);
+                        //     }
+                        // },
+                        // {
+                        //     "data": "taxPercentage",
+                        //     "title": "IVA %",
+                        //     "class": "taxPercentage text-right",
+                        //     "width": "0%",
+                        //     "render": function(data, type, row) {
+                        //         return (parseFloat(data) * 100).toFixed(2) + '%';
+                        //     }
+                        // },
+                        // {
+                        //     "data": "discount",
+                        //     "title": "Disc.",
+                        //     "class": "discount text-right",
+                        //     "width": "0%",
+                        //     "render": function(data, type, row) {
+                        //         // Format the value as euros currency
+                        //         return new Intl.NumberFormat('pt-PT', {
+                        //             style: 'currency',
+                        //             currency: 'EUR'
+                        //         }).format(data);
+                        //     }
+                        // },
+                        // {
+                        //     "data": "sellPrice", // acá es donde tengo problemas
+                        //     "title": "Selling Price",
+                        //     "class": "sellPrice text-right",
+                        //     "width": "0%",
+                        //     "render": function(data, type, row) {
+                        //         // Format the value as euros currency
+                        //         return new Intl.NumberFormat('pt-PT', {
+                        //             style: 'currency',
+                        //             currency: 'EUR'
+                        //         }).format(data);
+                        //     }
+                        // },
                     ],
-                    "columnDefs": [
-                        {
-                            // Apply classes only to some cells
-                            "targets": [3, 4, 5, 6, 7],
-                            "createdCell": function(td, cellData, rowData, row, col) {
-                                if ($(td).closest('tbody')) {
-                                    $(td).addClass(' py-0 pr-0');
-                                }
-                            }
-                        }
-                    ],
+                    "columnDefs": [{
+                        // // Apply classes only to some cells
+                        // "targets": [3, 4, 5, 6, 7],
+                        // "createdCell": function(td, cellData, rowData, row, col) {
+                        //     if ($(td).closest('tbody')) {
+                        //         $(td).addClass(' py-0 pr-0');
+                        //     }
+                        // }
+                    }],
                     headerCallback: function(thead, data, start, end, display) {
                         if ($(thead).find("#optCol").length === 0) {
                             $(thead).prepend($('<th/>', {
@@ -414,52 +405,54 @@
                         // Input for the Unit Price
                         let unitPriceCell = $(row).find("td.unit_price");
                         const unitPriceInpEditable = new InputEditable({
-                            apiService: "tuServicio",
+                            apiService: `api/budgets/${budgetData.id}/budgetDetails/${data.id}`,
                             nodeAttributes: {
                                 html: unitPriceCell.text(),
-                            }
+                            },
+                            additionalClasses: "text-right",
+                            maskOptions: InputEditable.DEFAULT_MASK_OPTIONS
                         });
                         unitPriceCell.empty().append(unitPriceInpEditable.inputElement);
 
-                        // Input for Quantity
-                        let quantityCell = $(row).find("td.quantity");
-                        const quantityInpEditable = new InputEditable({
-                            apiService: "tuServicio",
-                            nodeAttributes: {
-                                html: quantityCell.text(),
-                            }
-                        });
-                        quantityCell.empty().append(quantityInpEditable.inputElement);
+                        // // Input for Quantity
+                        // let quantityCell = $(row).find("td.quantity");
+                        // const quantityInpEditable = new InputEditable({
+                        //     apiService: `api/budgets/${budgetData.id}/budgetDetails/${data.id}`,
+                        //     nodeAttributes: {
+                        //         html: quantityCell.text(),
+                        //     }
+                        // });
+                        // quantityCell.empty().append(quantityInpEditable.inputElement);
 
-                        // Input for the IVA
-                        let taxPercentageCell = $(row).find("td.taxPercentage");
-                        const taxPercentageInpEditable = new InputEditable({
-                            apiService: "tuServicio",
-                            nodeAttributes: {
-                                html: taxPercentageCell.text(),
-                            }
-                        });
-                        taxPercentageCell.empty().append(taxPercentageInpEditable.inputElement);
+                        // // Input for the IVA
+                        // let taxPercentageCell = $(row).find("td.taxPercentage");
+                        // const taxPercentageInpEditable = new InputEditable({
+                        //     apiService: `api/budgets/${budgetData.id}/budgetDetails/${data.id}`,
+                        //     nodeAttributes: {
+                        //         html: taxPercentageCell.text(),
+                        //     }
+                        // });
+                        // taxPercentageCell.empty().append(taxPercentageInpEditable.inputElement);
 
-                        // Input for the Discount
-                        let discountCell = $(row).find("td.discount");
-                        const discountInpEditable = new InputEditable({
-                            apiService: "tuServicio",
-                            nodeAttributes: {
-                                html: discountCell.text(),
-                            }
-                        });
-                        discountCell.empty().append(discountInpEditable.inputElement);
+                        // // Input for the Discount
+                        // let discountCell = $(row).find("td.discount");
+                        // const discountInpEditable = new InputEditable({
+                        //     apiService: `api/budgets/${budgetData.id}/budgetDetails/${data.id}`,
+                        //     nodeAttributes: {
+                        //         html: discountCell.text(),
+                        //     }
+                        // });
+                        // discountCell.empty().append(discountInpEditable.inputElement);
 
-                        // Input for the Sell Pricie
-                        let sellPriceCell = $(row).find("td.sellPrice");
-                        const sellPriceInpEditable = new InputEditable({
-                            apiService: "tuServicio",
-                            nodeAttributes: {
-                                html: sellPriceCell.text(),
-                            }
-                        });
-                        sellPriceCell.empty().append(sellPriceInpEditable.inputElement);
+                        // // Input for the Sell Pricie
+                        // let sellPriceCell = $(row).find("td.sellPrice");
+                        // const sellPriceInpEditable = new InputEditable({
+                        //     apiService: `api/budgets/${budgetData.id}/budgetDetails/${data.id}`,
+                        //     nodeAttributes: {
+                        //         html: sellPriceCell.text(),
+                        //     }
+                        // });
+                        // sellPriceCell.empty().append(sellPriceInpEditable.inputElement);
 
                     }
                 });
@@ -478,13 +471,94 @@
          *  
          **/
         class InputEditable {
+            /**
+             * Associated input element for the component.
+             * @type {HTMLElement}
+             * @public
+             */
             inputElement = null;
+
+            /**
+             * API service used for updates.
+             * @type {string}
+             * @public
+             */
             apiService = "";
+
+            /**
+             * Object used to send aditional data to the service
+             * @type {Object}
+             * @public
+             */
+            apiData = {};
+
+            /**
+             * Callback invoked when the value changes.
+             * @type {Function|null}
+             * @public
+             */
             onChangeCallback = null;
+
+            /**
+             * Callback invoked when the component loses focus.
+             * @type {Function|null}
+             * @public
+             */
             onBlurCallback = null;
-            nodeType = 'span';
+
+            /**
+             * Attributes of the node used to render the component.
+             * @type {Object}
+             * @public
+             */
             nodeAttributes = {};
 
+            /**
+             * Value associated with the editable component.
+             * This is the abstract value (the real value). It is not the formatted string.
+             * @type {string}
+             * @public
+             */
+            value = null;
+
+            /**
+             * This is the type of the real value. It can be "string" or "number"
+             * @type {string}
+             * @public
+             */
+            valueType = "string";
+
+            /**
+             * Determine if the input will show a mask or not.
+             * @type {Inputmask}
+             * @public
+             */
+            inputmask = null;
+
+            static DEFAULT_MASK_OPTIONS = {
+                alias: 'currency',
+                groupSeparator: '.',
+                radixPoint: ',',
+                autoGroup: true,
+                rightAlign: true,
+                digits: 2,
+                suffix: ' €',
+                prefix: '',
+                placeholder: '0,00',
+            };
+
+            /**
+             * Constructor for the InputEditable class.
+             * @param {Object} options - Configuration options for the component.
+             * @param {HTMLElement} options.inputElement - Associated input element.
+             * @param {string} options.apiService - API service for updates.
+             * @param {Function|null} options.onChangeCallback - Value change callback.
+             * @param {Function|null} options.onBlurCallback - Blur callback.
+             * @param {string} options.nodeType - Type of node for rendering.
+             * @param {Object} options.nodeAttributes - Node attributes for rendering.
+             * @param {Object} options.maskOptions - Options to create the Inputmask instance if it is necesary
+             * @param {*} options.value - Initial value of the component.
+             */
             constructor(options) {
                 Object.assign(this, options);
 
@@ -494,20 +568,66 @@
                     this.nodeAttributes = {
                         ...{
                             "type": "text",
-                            "class": `content-editable ${this.additionalClasses}`
+                            "class": `content-editable ${this.additionalClasses ?? ''}`,
                         },
                         ...options.nodeAttributes
                     };
 
-                    this.inputElement = $(`<${ this.nodeType }/>`, this.nodeAttributes);
+                    this.inputElement = $(`<input/>`, this.nodeAttributes);
                 }
+
+                if (this.maskOptions && !this.inputmask) {
+                    this.inputmask = new Inputmask(this.maskOptions);
+                    //console.log(this.inputmask);
+                    this.inputmask.mask(this.inputElement);
+                }
+
+                // Doing a cross reference
+                this.inputElement.data("InputEditableInstance", this);
+
+                // Now we will add listeners to dispatch the patchEvent
+
+                this.inputElement.click((event) => {
+                    this.inputElement.prop("contentEditable", true);
+                    this.inputElement
+                        .focus(); // Agregamos esto para enfocar el elemento automáticamente al hacer clic
+                });
+
+                this.inputElement.blur((event) => {
+
+                    console.log(this.getRawValue());
+
+                    // Luego puedes llamar a tu método patchEvent aquí
+                    //this.patchEvent();
+                })
+            }
+
+
+            /**
+             * Gets the real number on the input if the type is number.
+             * @returns {string} the raw value
+             */
+            getRawValue() {
+                // Removes separators and decimal characters. 
+                return this.value = parseFloat(this.inputElement.val().replace(/\./g, '').replace(',', '.'));
             }
 
             /**
-             * Will execute the api service to update the data.
+             * Executes the API service to update the data.
+             * @public
              */
             patchEvent() {
+                console.log("saving... NOT IMPLEMENTED YET");
+                return;
+                let req;
+                axios.patch(this.apiService, this.apiData)
+                    .then(function(response) {
+                        // Manejar la respuesta exitosa
 
+                    })
+                    .catch(function(error) {
+                        // Manejamos el error
+                    });
             }
         }
     </script>

@@ -18,6 +18,7 @@ tr:hover .button-container {
     cursor: text;
     background: none;
     border-color: transparent;
+    min-width: 100px;
     &:hover {
         background: $white; 
         border-color: $gray-400
