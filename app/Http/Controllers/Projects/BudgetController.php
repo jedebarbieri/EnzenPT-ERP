@@ -8,6 +8,7 @@ use App\Http\Requests\Projects\StoreBudgetRequest;
 use App\Http\Resources\Projects\BudgetResource;
 use App\Models\Projects\Budget;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class BudgetController extends Controller
 {
@@ -99,21 +100,31 @@ class BudgetController extends Controller
     {
         try {
 
+            // DB::enableQueryLog();
             // Load the budget details relationship and ordered by internal_cod
             $budget = Budget::with([
                 'budgetDetails' => function ($query) {
                     $query->join('items', 'budget_details.item_id', '=', 'items.id')
+                        ->select("*", "budget_details.unit_price as overwriten_unit_price", "items.unit_price as item_unit_price")
                         ->orderBy('items.internal_cod')
                         ->with('item.itemCategory');
                 }
             ])->find($budget->id);
+            
+            // $queries = DB::getQueryLog();
 
+            foreach ($budget->budgetDetails as $budgetDetail) {
+                $budgetDetail->unit_price = $budgetDetail->overwriten_unit_price;
+            }
 
             return response()->json([
                 'status' => 'success',
                 'data' => [
                     'budget' => new BudgetResource($budget)
                 ],
+                // 'metadata' => [
+                //     'queries' => $queries,
+                // ]
             ]);
         } catch (\Exception $e) {
             return response()->json([
