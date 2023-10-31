@@ -326,59 +326,39 @@
                             "class": "unit_price",
                             "width": "0%",
                         },
-                        // {
-                        //     "data": "quantity",
-                        //     "title": "Qty",
-                        //     "class": "quantity text-right",
-                        //     "width": "0%",
-                        //     "render": function(data, type, row) {
-                        //         return parseFloat(data).toFixed(2);
-                        //     }
-                        // },
-                        // {
-                        //     "data": "taxPercentage",
-                        //     "title": "IVA %",
-                        //     "class": "taxPercentage text-right",
-                        //     "width": "0%",
-                        //     "render": function(data, type, row) {
-                        //         return (parseFloat(data) * 100).toFixed(2) + '%';
-                        //     }
-                        // },
-                        // {
-                        //     "data": "discount",
-                        //     "title": "Disc.",
-                        //     "class": "discount text-right",
-                        //     "width": "0%",
-                        //     "render": function(data, type, row) {
-                        //         // Format the value as euros currency
-                        //         return new Intl.NumberFormat('pt-PT', {
-                        //             style: 'currency',
-                        //             currency: 'EUR'
-                        //         }).format(data);
-                        //     }
-                        // },
-                        // {
-                        //     "data": "sellPrice", // acá es donde tengo problemas
-                        //     "title": "Selling Price",
-                        //     "class": "sellPrice text-right",
-                        //     "width": "0%",
-                        //     "render": function(data, type, row) {
-                        //         // Format the value as euros currency
-                        //         return new Intl.NumberFormat('pt-PT', {
-                        //             style: 'currency',
-                        //             currency: 'EUR'
-                        //         }).format(data);
-                        //     }
-                        // },
+                        {
+                            "data": "quantity",
+                            "title": "Qty",
+                            "class": "quantity text-right",
+                            "width": "0%",
+                        },
+                        {
+                            "data": "taxPercentage",
+                            "title": "IVA %",
+                            "class": "taxPercentage text-right",
+                            "width": "0%",
+                        },
+                        {
+                            "data": "discount",
+                            "title": "Disc.",
+                            "class": "discount text-right",
+                            "width": "0%",
+                        },
+                        {
+                            "data": "sellPrice", // acá es donde tengo problemas
+                            "title": "Selling Price",
+                            "class": "sellPrice text-right",
+                            "width": "0%",
+                        },
                     ],
                     "columnDefs": [{
-                        // // Apply classes only to some cells
-                        // "targets": [3, 4, 5, 6, 7],
-                        // "createdCell": function(td, cellData, rowData, row, col) {
-                        //     if ($(td).closest('tbody')) {
-                        //         $(td).addClass(' py-0 pr-0');
-                        //     }
-                        // }
+                        // Apply classes only to some cells
+                        "targets": [3, 4, 5, 6, 7],
+                        "createdCell": function(td, cellData, rowData, row, col) {
+                            if ($(td).closest('tbody')) {
+                                $(td).addClass(' py-0 pr-0');
+                            }
+                        }
                     }],
                     headerCallback: function(thead, data, start, end, display) {
                         if ($(thead).find("#optCol").length === 0) {
@@ -407,52 +387,61 @@
                         const unitPriceInpEditable = new InputEditable({
                             apiService: `api/budgets/${budgetData.id}/budgetDetails/${data.id}`,
                             nodeAttributes: {
-                                html: unitPriceCell.text(),
+                                value: unitPriceCell.text(),
                             },
                             additionalClasses: "text-right",
-                            maskOptions: InputEditable.DEFAULT_MASK_OPTIONS
+                            maskOptions: InputEditable.DEFAULT_CURRENCY_MASK_OPTIONS,
                         });
                         unitPriceCell.empty().append(unitPriceInpEditable.inputElement);
 
-                        // // Input for Quantity
-                        // let quantityCell = $(row).find("td.quantity");
-                        // const quantityInpEditable = new InputEditable({
-                        //     apiService: `api/budgets/${budgetData.id}/budgetDetails/${data.id}`,
-                        //     nodeAttributes: {
-                        //         html: quantityCell.text(),
-                        //     }
-                        // });
-                        // quantityCell.empty().append(quantityInpEditable.inputElement);
+                        // Input for Quantity
+                        let quantityCell = $(row).find("td.quantity");
+                        const quantityInpEditable = new InputEditable({
+                            apiService: `api/budgets/${budgetData.id}/budgetDetails/${data.id}`,
+                            nodeAttributes: {
+                                value: quantityCell.text(),
+                            },
+                            additionalClasses: "text-right",
+                            maskOptions: InputEditable.DEFAULT_DECIMAL_MASK_OPTIONS,
+                        });
+                        quantityCell.empty().append(quantityInpEditable.inputElement);
 
-                        // // Input for the IVA
-                        // let taxPercentageCell = $(row).find("td.taxPercentage");
-                        // const taxPercentageInpEditable = new InputEditable({
-                        //     apiService: `api/budgets/${budgetData.id}/budgetDetails/${data.id}`,
-                        //     nodeAttributes: {
-                        //         html: taxPercentageCell.text(),
-                        //     }
-                        // });
-                        // taxPercentageCell.empty().append(taxPercentageInpEditable.inputElement);
+                        // Input for the IVA
+                        let taxPercentageCell = $(row).find("td.taxPercentage");
+                        const taxPercentageInpEditable = new InputEditable({
+                            apiService: `api/budgets/${budgetData.id}/budgetDetails/${data.id}`,
+                            valueType: "percentage",
+                            nodeAttributes: {
+                                value: taxPercentageCell.text(),
+                            },
+                            additionalClasses: "text-right",
+                            maskOptions: InputEditable.DEFAULT_PERCENTAGE_MASK_OPTIONS,
+                        });
+                        taxPercentageCell.empty().append(taxPercentageInpEditable.inputElement);
 
-                        // // Input for the Discount
-                        // let discountCell = $(row).find("td.discount");
-                        // const discountInpEditable = new InputEditable({
-                        //     apiService: `api/budgets/${budgetData.id}/budgetDetails/${data.id}`,
-                        //     nodeAttributes: {
-                        //         html: discountCell.text(),
-                        //     }
-                        // });
-                        // discountCell.empty().append(discountInpEditable.inputElement);
+                        // Input for the Discount
+                        let discountCell = $(row).find("td.discount");
+                        const discountInpEditable = new InputEditable({
+                            apiService: `api/budgets/${budgetData.id}/budgetDetails/${data.id}`,
+                            nodeAttributes: {
+                                value: discountCell.text(),
+                            },
+                            additionalClasses: "text-right",
+                            maskOptions: InputEditable.DEFAULT_CURRENCY_MASK_OPTIONS,
+                        });
+                        discountCell.empty().append(discountInpEditable.inputElement);
 
-                        // // Input for the Sell Pricie
-                        // let sellPriceCell = $(row).find("td.sellPrice");
-                        // const sellPriceInpEditable = new InputEditable({
-                        //     apiService: `api/budgets/${budgetData.id}/budgetDetails/${data.id}`,
-                        //     nodeAttributes: {
-                        //         html: sellPriceCell.text(),
-                        //     }
-                        // });
-                        // sellPriceCell.empty().append(sellPriceInpEditable.inputElement);
+                        // Input for the Sell Pricie
+                        let sellPriceCell = $(row).find("td.sellPrice");
+                        const sellPriceInpEditable = new InputEditable({
+                            apiService: `api/budgets/${budgetData.id}/budgetDetails/${data.id}`,
+                            nodeAttributes: {
+                                value: sellPriceCell.text(),
+                            },
+                            additionalClasses: "text-right",
+                            maskOptions: InputEditable.DEFAULT_CURRENCY_MASK_OPTIONS,
+                        });
+                        sellPriceCell.empty().append(sellPriceInpEditable.inputElement);
 
                     }
                 });
@@ -517,9 +506,9 @@
              * Value associated with the editable component.
              * This is the abstract value (the real value). It is not the formatted string.
              * @type {string}
-             * @public
+             * @private
              */
-            value = null;
+            _rawValue = null;
 
             /**
              * This is the type of the real value. It can be "string" or "number"
@@ -535,16 +524,40 @@
              */
             inputmask = null;
 
-            static DEFAULT_MASK_OPTIONS = {
+            static DEFAULT_CURRENCY_MASK_OPTIONS = {
                 alias: 'currency',
-                groupSeparator: '.',
-                radixPoint: ',',
+                groupSeparator: ' ',
+                radixPoint: '.',
                 autoGroup: true,
                 rightAlign: true,
                 digits: 2,
                 suffix: ' €',
                 prefix: '',
+                placeholder: '0.00',
+            };
+
+            static DEFAULT_PERCENTAGE_MASK_OPTIONS = {
+                alias: 'numeric',
+                groupSeparator: ' ',
+                radixPoint: '.',
+                autoGroup: true,
+                rightAlign: true,
+                digits: 2,
+                suffix: ' %',
+                prefix: '',
                 placeholder: '0,00',
+            };
+
+            static DEFAULT_DECIMAL_MASK_OPTIONS = {
+                alias: 'numeric',
+                groupSeparator: ' ',
+                radixPoint: '.',
+                autoGroup: true,
+                rightAlign: true,
+                digits: 2,
+                suffix: '',
+                prefix: '',
+                placeholder: '0.00',
             };
 
             /**
@@ -578,28 +591,41 @@
 
                 if (this.maskOptions && !this.inputmask) {
                     this.inputmask = new Inputmask(this.maskOptions);
-                    //console.log(this.inputmask);
+                    this.inputmask.$el = this.inputElement;
                     this.inputmask.mask(this.inputElement);
                 }
 
                 // Doing a cross reference
                 this.inputElement.data("InputEditableInstance", this);
+                this.value = this.nodeAttributes.value;
 
-                // Now we will add listeners to dispatch the patchEvent
-
-                this.inputElement.click((event) => {
-                    this.inputElement.prop("contentEditable", true);
-                    this.inputElement
-                        .focus(); // Agregamos esto para enfocar el elemento automáticamente al hacer clic
+                this.inputElement.change((event) => {
+                    let inputVal = event.currentTarget.inputmask.unmaskedvalue();
+                    if (this.valueType == "percentage") {
+                        inputVal /= 100;
+                    }
+                    this.value = inputVal;
                 });
 
+                // Now we will add listeners to dispatch the patchEvent
                 this.inputElement.blur((event) => {
+                    this.patchEvent();
+                });
+            }
 
-                    console.log(this.getRawValue());
+            /**
+             * Sets a raw value for this instance and will show in the input the formatted version
+             */
+            set value(val) {
+                this._rawValue = val;
 
-                    // Luego puedes llamar a tu método patchEvent aquí
-                    //this.patchEvent();
-                })
+                let showVal = this._rawValue
+                if (this.valueType == "percentage") {
+                    showVal = this._rawValue * 100;
+                }
+                this.inputElement.val(showVal);
+
+                this.inputmask.mask(this.inputElement);
             }
 
 
@@ -607,9 +633,9 @@
              * Gets the real number on the input if the type is number.
              * @returns {string} the raw value
              */
-            getRawValue() {
+            get value() {
                 // Removes separators and decimal characters. 
-                return this.value = parseFloat(this.inputElement.val().replace(/\./g, '').replace(',', '.'));
+                return this._rawValue;
             }
 
             /**
@@ -618,6 +644,7 @@
              */
             patchEvent() {
                 console.log("saving... NOT IMPLEMENTED YET");
+                console.log(this.value);
                 return;
                 let req;
                 axios.patch(this.apiService, this.apiData)
