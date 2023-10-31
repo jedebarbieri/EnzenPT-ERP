@@ -13,7 +13,16 @@ tr:hover .button-container {
 
 
 // Classes for elements "contenteditable"
-
+.content-editable {
+    @extend .form-control;
+    cursor: text;
+    background: none;
+    border-color: transparent;
+    &:hover {
+        background: $white; 
+        border-color: $gray-400
+    }
+}
 
 
 

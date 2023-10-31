@@ -116,7 +116,7 @@
                     </div>
                     <div class="card-body">
 
-                        <table id="budgetDetailsTable" class="table table-hover"></table>
+                        <table id="budgetDetailsTable" class="table table-hover table-valign-middle"></table>
 
                     </div>
                     <div class="card-footer text-right">
@@ -323,10 +323,10 @@
                         {
                             "data": "unitPrice",
                             "title": "Unit P.",
-                            "class": "text-right",
+                            "class": "unit_price text-right",
                             "width": "0%",
                             "render": function(data, type, row) {
-                                // Formatear el valor como moneda en euros
+                                // Format the value as euros currency
                                 return new Intl.NumberFormat('pt-PT', {
                                     style: 'currency',
                                     currency: 'EUR'
@@ -336,7 +336,7 @@
                         {
                             "data": "quantity",
                             "title": "Qty",
-                            "class": "text-right",
+                            "class": "quantity text-right",
                             "width": "0%",
                             "render": function(data, type, row) {
                                 return parseFloat(data).toFixed(2);
@@ -345,7 +345,7 @@
                         {
                             "data": "taxPercentage",
                             "title": "IVA %",
-                            "class": "text-right",
+                            "class": "taxPercentage text-right",
                             "width": "0%",
                             "render": function(data, type, row) {
                                 return (parseFloat(data) * 100).toFixed(2) + '%';
@@ -354,10 +354,10 @@
                         {
                             "data": "discount",
                             "title": "Disc.",
-                            "class": "text-right",
+                            "class": "discount text-right",
                             "width": "0%",
                             "render": function(data, type, row) {
-                                // Formatear el valor como moneda en euros
+                                // Format the value as euros currency
                                 return new Intl.NumberFormat('pt-PT', {
                                     style: 'currency',
                                     currency: 'EUR'
@@ -367,16 +367,27 @@
                         {
                             "data": "sellPrice", // acá es donde tengo problemas
                             "title": "Selling Price",
-                            "class": "text-right",
+                            "class": "sellPrice text-right",
                             "width": "0%",
                             "render": function(data, type, row) {
-                                // Formatear el valor como moneda en euros
+                                // Format the value as euros currency
                                 return new Intl.NumberFormat('pt-PT', {
                                     style: 'currency',
                                     currency: 'EUR'
                                 }).format(data);
                             }
                         },
+                    ],
+                    "columnDefs": [
+                        {
+                            // Apply classes only to some cells
+                            "targets": [3, 4, 5, 6, 7],
+                            "createdCell": function(td, cellData, rowData, row, col) {
+                                if ($(td).closest('tbody')) {
+                                    $(td).addClass(' py-0 pr-0');
+                                }
+                            }
+                        }
                     ],
                     headerCallback: function(thead, data, start, end, display) {
                         if ($(thead).find("#optCol").length === 0) {
@@ -399,6 +410,57 @@
 
                         // Añadimos atributo de data-id a cada fila
                         $(row).attr("data-id", data.id);
+
+                        // Input for the Unit Price
+                        let unitPriceCell = $(row).find("td.unit_price");
+                        const unitPriceInpEditable = new InputEditable({
+                            apiService: "tuServicio",
+                            nodeAttributes: {
+                                html: unitPriceCell.text(),
+                            }
+                        });
+                        unitPriceCell.empty().append(unitPriceInpEditable.inputElement);
+
+                        // Input for Quantity
+                        let quantityCell = $(row).find("td.quantity");
+                        const quantityInpEditable = new InputEditable({
+                            apiService: "tuServicio",
+                            nodeAttributes: {
+                                html: quantityCell.text(),
+                            }
+                        });
+                        quantityCell.empty().append(quantityInpEditable.inputElement);
+
+                        // Input for the IVA
+                        let taxPercentageCell = $(row).find("td.taxPercentage");
+                        const taxPercentageInpEditable = new InputEditable({
+                            apiService: "tuServicio",
+                            nodeAttributes: {
+                                html: taxPercentageCell.text(),
+                            }
+                        });
+                        taxPercentageCell.empty().append(taxPercentageInpEditable.inputElement);
+
+                        // Input for the Discount
+                        let discountCell = $(row).find("td.discount");
+                        const discountInpEditable = new InputEditable({
+                            apiService: "tuServicio",
+                            nodeAttributes: {
+                                html: discountCell.text(),
+                            }
+                        });
+                        discountCell.empty().append(discountInpEditable.inputElement);
+
+                        // Input for the Sell Pricie
+                        let sellPriceCell = $(row).find("td.sellPrice");
+                        const sellPriceInpEditable = new InputEditable({
+                            apiService: "tuServicio",
+                            nodeAttributes: {
+                                html: sellPriceCell.text(),
+                            }
+                        });
+                        sellPriceCell.empty().append(sellPriceInpEditable.inputElement);
+
                     }
                 });
             } else {
@@ -407,5 +469,46 @@
             }
 
         });
+
+        /**
+         * This class will update one value using a PATCH service.
+         * It will call the service on ENTER press, blurout, TAB press.
+         * It will show a loading animation.
+         * It will show an error message if necesssary
+         *  
+         **/
+        class InputEditable {
+            inputElement = null;
+            apiService = "";
+            onChangeCallback = null;
+            onBlurCallback = null;
+            nodeType = 'span';
+            nodeAttributes = {};
+
+            constructor(options) {
+                Object.assign(this, options);
+
+                if (!this.inputElement) {
+                    // We will construct the default element
+
+                    this.nodeAttributes = {
+                        ...{
+                            "type": "text",
+                            "class": `content-editable ${this.additionalClasses}`
+                        },
+                        ...options.nodeAttributes
+                    };
+
+                    this.inputElement = $(`<${ this.nodeType }/>`, this.nodeAttributes);
+                }
+            }
+
+            /**
+             * Will execute the api service to update the data.
+             */
+            patchEvent() {
+
+            }
+        }
     </script>
 @endpush
