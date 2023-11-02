@@ -20,7 +20,7 @@
 
                 <form id="{{ $modalId }}FormBudgetMainInfo" role="form">
                     <input type="hidden" name="id" id="hdId" value="" />
-                    <div class="card collapsed-card">
+                    <div class="card">
                         <div class="card-header">
                             <nav class="navbar p-0">
                                 <h6 class="card-title text-bold">General Info</h6>
