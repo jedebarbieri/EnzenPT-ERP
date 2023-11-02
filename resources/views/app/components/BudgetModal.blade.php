@@ -99,7 +99,7 @@
                         <nav class="navbar p-0">
                             <h6 class="card-title text-bold">Supplies List</h6>
 
-                            <button type="button" class="btn btn-primary">
+                            <button type="button" class="btn btn-primary addItemBtn">
                                 <i class="fa fa-plus mr-2"></i> Add Item
                             </button>
                             {{-- <form class="form-inline">
@@ -112,11 +112,12 @@
                     </div>
                     <div class="card-body">
 
-                        <table id="{{ $modalId }}budgetDetailsTable" class="table table-hover table-valign-middle"></table>
+                        <table id="{{ $modalId }}budgetDetailsTable"
+                            class="table table-hover table-valign-middle"></table>
 
                     </div>
                     <div class="card-footer text-right">
-                        <button type="button" class="btn btn-primary">
+                        <button type="button" class="btn btn-primary addItemBtn">
                             <i class="fa fa-plus mr-2"></i> Add Item
                         </button>
                     </div>
@@ -268,7 +269,8 @@
          * @param {jQuery} row
          */
         function calculateTotalRow(row) {
-            let totalWOTax = row.calculablesColums.sellPriceInpEditable.value * row.calculablesColums.quantityInpEditable.value - row.calculablesColums.discountInpEditable.value;
+            let totalWOTax = row.calculablesColums.sellPriceInpEditable.value * row.calculablesColums.quantityInpEditable
+                .value - row.calculablesColums.discountInpEditable.value;
             let totalWTax = totalWOTax + totalWOTax * row.calculablesColums.taxPercentageInpEditable.value;
             let mask = new Inputmask(InputEditable.DEFAULT_CURRENCY_MASK_OPTIONS);
             $(row).find(".total-col").text(mask.format(totalWOTax.toFixed(2)));
@@ -561,16 +563,18 @@
 
         $("#{{ $modalId }}budgetDetailsTable").on('click', '.delete-btn', function(event) {
             var budgetDetailId = $(this).data('id');
-            
+
             // Aquí puedes realizar la lógica de eliminación
             axios.delete(`api/budgets/${budgetId}/budgetDetails/${budgetDetailId}`)
                 .then((response) => {
                     // Manejar la respuesta exitosa
-                    $(`#{{ $modalId }}budgetDetailsTable tbody tr[data-id="${budgetDetailId}"]`).fadeOut('slow', function() {
-                        // Después de que se complete el fade, remover la fila del DOM
-                        $(this).remove();
-                        document.dispatchEvent(new CustomEvent('budgetDetailsTable.reloadTable'));
-                    });
+                    $(`#{{ $modalId }}budgetDetailsTable tbody tr[data-id="${budgetDetailId}"]`).fadeOut(
+                        'slow',
+                        function() {
+                            // Después de que se complete el fade, remover la fila del DOM
+                            $(this).remove();
+                            document.dispatchEvent(new CustomEvent('budgetDetailsTable.reloadTable'));
+                        });
                 })
                 .catch((error) => {
                     // Manejar errores
@@ -591,10 +595,74 @@
                 });
         });
 
-        
         // Evento para recargar la tabla luego de alguna creación, eliminación o actualización
         document.addEventListener('budgetDetailsTable.reloadTable', (event) => {
             budgetDetailsTable.ajax.reload(null, false);
         });
+
+        $(".addItemBtn").on('click', function(event) {
+            addRow();
+        });
+
+        function addRow() {
+
+            budgetDetailsTable.settings()[0].oFeatures.bServerSide = false;
+
+            // Agregar una nueva fila al final de la tabla
+            let rowNode = budgetDetailsTable.row.add({
+                "id": 0,
+                "item": {
+                    "internalCod": "",
+                    "name": "",
+                },
+                "unitPrice": 0.00,
+                "sellPrice": 0.00,
+                "quantity": 0.00,
+                "taxPercentage": 0.00,
+                "discount": 0.00,
+            }).draw(false).node();
+
+            budgetDetailsTable.settings()[0].oFeatures.bServerSide = true;
+
+            $(rowNode).find("td").eq(2).html("").append(
+                $('<select/>', {
+                    class: "form-control select2",
+                    style: "width: 100%;"
+                })
+            );
+
+            $(rowNode).find(".delete-btn").remove();
+
+            // Hacer una solicitud AJAX para obtener todos los datos
+            $.ajax({
+                url: `/api/budgets/${budgetId}/availableItems`,
+                dataType: 'json',
+                success: function(data) {
+                    // Transformar los datos de la respuesta en el formato que Select2 espera
+                    let select2Data = data.data.map(function(item) {
+                        return {
+                            id: item.id,
+                            text: item.internalCod + ' - ' + item.name
+                        };
+                    });
+
+                    // Inicializar Select2 con los datos obtenidos
+                    $(rowNode).find('.select2').select2({
+                        dropdownParent: budgetModal,
+                        data: select2Data
+                    }).on('select2:select', function(e) {
+                        // Cuando se selecciona un elemento, realizar una llamada al servidor para agregar una nueva fila a la base de datos
+                        let itemId = e.params.data.id;
+                        $.post(`/api/budgets/${budgetId}/budgetDetails`, {
+                            item_id: itemId,
+                            budget_id: budgetId
+                        }, function() {
+                            // Recargar la tabla
+                            document.dispatchEvent(new CustomEvent('budgetDetailsTable.reloadTable'));
+                        });
+                    });
+                }
+            });
+        }
     </script>
 @endpush

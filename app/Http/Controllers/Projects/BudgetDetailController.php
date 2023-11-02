@@ -3,11 +3,12 @@
 namespace App\Http\Controllers\Projects;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Projects\StoreBudgetDetailRequest;
 use App\Http\Requests\Projects\UpdateBudgetDetailRequest;
 use App\Http\Resources\Projects\BudgetDetailsResource;
+use App\Models\Procurement\Item;
 use App\Models\Projects\Budget;
 use App\Models\Projects\BudgetDetail;
-use Illuminate\Http\Request;
 
 class BudgetDetailController extends Controller
 {
@@ -22,9 +23,34 @@ class BudgetDetailController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreBudgetDetailRequest $request, Budget $budget)
     {
-        //
+        try {
+            $item = Item::findOrFail($request->input('item_id'));
+
+            $validatedData = $request->validated();
+
+            $data = array_merge($validatedData, [
+                'budget_id' => $budget->id,
+                'unit_price' => $item->unit_price,
+                'sell_price' => $item->unit_price * (1 + $budget->gain_margin),
+                'quantity' => 1,
+                'tax_percentage' => 0.23,
+            ]);
+            
+            $budgetDetail = BudgetDetail::create($data);
+            
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Budget detail created successfully.',
+                'data' => BudgetDetailsResource::make($budgetDetail)
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Budget detail could not be created.' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
