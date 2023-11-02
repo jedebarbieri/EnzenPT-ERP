@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Projects;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Projects\UpdateBudgetDetailRequest;
 use App\Http\Resources\Projects\BudgetDetailsResource;
+use App\Models\Projects\Budget;
 use App\Models\Projects\BudgetDetail;
 use Illuminate\Http\Request;
 
@@ -31,13 +32,25 @@ class BudgetDetailController extends Controller
      */
     public function show(string $id)
     {
-        //
+        try {
+            $budgetDetail = BudgetDetail::with('item.itemCategory')->findOrFail($id);
+
+            return response()->json([
+                'status' => 'success',
+                'data' => BudgetDetailsResource::make($budgetDetail)
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ], 404);
+        }
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateBudgetDetailRequest $request, BudgetDetail $budgetDetail)
+    public function update(UpdateBudgetDetailRequest $request, Budget $budget, BudgetDetail $budgetDetail)
     {
 
         // Verificar si la solicitud es de tipo PATCH
