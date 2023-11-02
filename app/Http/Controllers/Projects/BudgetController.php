@@ -181,8 +181,19 @@ class BudgetController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Budget $budget)
     {
-        //
+        try {
+            $budget->delete();
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Budget deleted successfully.',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Budget could not be deleted.',
+            ]);
+        }
     }
 }

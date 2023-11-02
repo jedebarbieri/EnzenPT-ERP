@@ -1,8 +1,4 @@
 @php
-    use App\Models\Procurement\ItemCategory;
-    $categoriesList = ItemCategory::getAllMainCategories();
-
-    $selCategoryId = $modalId . 'ItemCategorySelect';
 @endphp
 <!-- resources/views/app/components/BudgetModal.blade.php -->
 
@@ -116,7 +112,7 @@
                     </div>
                     <div class="card-body">
 
-                        <table id="budgetDetailsTable" class="table table-hover table-valign-middle"></table>
+                        <table id="{{ $modalId }}budgetDetailsTable" class="table table-hover table-valign-middle"></table>
 
                     </div>
                     <div class="card-footer text-right">
@@ -134,15 +130,6 @@
     </div>
 </div>
 
-<template id="modalAlertTemplate">
-    <div class="alert alert-danger alert-dismissible fade show" role="alert" style="display:none">
-        <div class="message"></div>
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-</template>
-
 
 @push('page_scripts')
     <template id="buttonsOptionsPerBudgetDetailTemplate">
@@ -156,6 +143,7 @@
 
     <script type="module">
         var budgetModal = $("#{{ $modalId }}");
+        var budgetId = null;
         var formModal = $('#{{ $modalId }}FormBudgetMainInfo');
         var title = $("#{{ $modalId }}Label");
         var messageBox = budgetModal.find('.alert');
@@ -292,7 +280,7 @@
             let budgetData = event.detail.data;
             const apiServiceBase = `/api/budgets/${budgetData.id}/budgetDetails/`;
             title.html("Edit Budget");
-            formModal.find("#hdId").val(budgetData.id);
+            formModal.find("#hdId").val(budgetId = budgetData.id);
             formModal.find("#txtBudgetName").val(budgetData.name);
             formModal.find("#txtTotalPowerPick").val(budgetData.totalPowerPick);
             formModal.find("#txtGainMargin").val(Math.round(budgetData.gainMargin * 10000) / 100);
@@ -304,7 +292,7 @@
             // Loading the budget details: list of items
 
             if (!budgetDetailsTable) {
-                budgetDetailsTable = $('#budgetDetailsTable').DataTable({
+                budgetDetailsTable = $('#{{ $modalId }}budgetDetailsTable').DataTable({
                     "responsive": true,
                     "autoWidth": false,
                     "processing": true,
@@ -401,7 +389,7 @@
                             .clone();
 
                         // Setting the id reference
-                        clonedContent.find('.edit-btn').attr('data-id', data.id);
+                        clonedContent.find('.delete-btn').attr('data-id', data.id);
 
                         // Adding the options col
                         $(row).prepend(clonedContent);
@@ -566,10 +554,47 @@
                     }
                 });
             } else {
-                // Acá quiero actualizar la ruta AJAX y refrescar la tabla.
                 budgetDetailsTable.ajax.url(`/api/budgets/${budgetData.id}`).load();
             }
 
+        });
+
+        $("#{{ $modalId }}budgetDetailsTable").on('click', '.delete-btn', function(event) {
+            var budgetDetailId = $(this).data('id');
+            
+            // Aquí puedes realizar la lógica de eliminación
+            axios.delete(`api/budgets/${budgetId}/budgetDetails/${budgetDetailId}`)
+                .then((response) => {
+                    // Manejar la respuesta exitosa
+                    $(`#{{ $modalId }}budgetDetailsTable tbody tr[data-id="${budgetDetailId}"]`).fadeOut('slow', function() {
+                        // Después de que se complete el fade, remover la fila del DOM
+                        $(this).remove();
+                        document.dispatchEvent(new CustomEvent('budgetDetailsTable.reloadTable'));
+                    });
+                })
+                .catch((error) => {
+                    // Manejar errores
+                    if (error.response) {
+                        // La solicitud fue hecha y el servidor respondió con un código de estado que no está en el rango 2xx
+                        console.error(error.response.data);
+                        console.error(error.response.status);
+                        console.error(error.response.headers);
+                        // Imprimimos la respuesta del servidor en la ventana
+                    } else if (error.request) {
+                        // La solicitud fue hecha pero no se recibió ninguna respuesta
+                        console.log("Sin respuesta");
+                        console.error(error.request);
+                    } else {
+                        // Algo sucedió en el proceso de configuración de la solicitud que generó el error
+                        console.error('Error', error.message);
+                    }
+                });
+        });
+
+        
+        // Evento para recargar la tabla luego de alguna creación, eliminación o actualización
+        document.addEventListener('budgetDetailsTable.reloadTable', (event) => {
+            budgetDetailsTable.ajax.reload(null, false);
         });
     </script>
 @endpush
