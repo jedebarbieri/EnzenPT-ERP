@@ -16,20 +16,6 @@ class InputEditable {
     inputElement = null;
 
     /**
-     * API service used for updates.
-     * @type {string}
-     * @public
-     */
-    apiService = "";
-
-    /**
-     * Object used to send aditional data to the service
-     * @type {Object}
-     * @public
-     */
-    apiData = {};
-
-    /**
      * Callback invoked when the value changes.
      * @type {Function|null}
      * @public
@@ -194,11 +180,45 @@ class InputEditable {
                 inputVal /= 100;
             }
             this.value = inputVal;
+            if (!event.data) {
+                event.data = {};
+            }
+            // Lose the focus to hide the input
+            this.inputElement.blur();
+
+            event.data.newValue = this.value;
+            this.onChangeCallback?.(event);
         });
+
+        // set the listener to press enter and acts like a tab press
+        this.inputElement.keydown((event) => {
+            if (event.keyCode == 13 || event.keyCode == 9) {
+                event.preventDefault();
+                event.stopPropagation();
+                // We will simulate a tab press
+                this.inputElement.blur();
+
+                // Obtén todos los elementos de la clase
+                var allElements = this.inputElement.closest("table").find("input.content-editable");
+
+                // Obtén el índice del elemento actual
+                var currentIndex = allElements.index(this.inputElement);
+
+                // Obtén el índice del siguiente elemento
+                var nextIndex = currentIndex + (event.shiftKey && event.keyCode == 9 ? - 1 : 1);
+
+                allElements.eq(nextIndex).focus().select();
+            }
+        });
+
 
         // Now we will add listeners to dispatch the patchEvent
         this.inputElement.blur((event) => {
-            this.patchEvent();
+            if (!event.data) {
+                event.data = {};
+            }
+            event.data.newValue = this.value;
+            this.onBlurCallback?.(event);
         });
     }
 
@@ -225,25 +245,6 @@ class InputEditable {
     get value() {
         // Removes separators and decimal characters. 
         return this._rawValue;
-    }
-
-    /**
-     * Executes the API service to update the data.
-     * @public
-     */
-    patchEvent() {
-        console.log("saving... NOT IMPLEMENTED YET");
-        console.log(this.value);
-        return;
-        let req;
-        axios.patch(this.apiService, this.apiData)
-            .then(function (response) {
-                // Manejar la respuesta exitosa
-
-            })
-            .catch(function (error) {
-                // Manejamos el error
-            });
     }
 }
 
