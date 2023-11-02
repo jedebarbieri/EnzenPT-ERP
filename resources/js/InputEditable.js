@@ -59,11 +59,11 @@ class InputEditable {
     _rawValue = null;
 
     /**
-     * This is the type of the real value. It can be "string" or "number"
+     * This is the type of the real value. It can be "string", "integer", "decimal", "percentage", "currency"
      * @type {string}
      * @public
      */
-    valueType = "string";
+    valueType = InputEditable.TYPE_STRING;
 
     /**
      * Determine if the input will show a mask or not.
@@ -72,6 +72,15 @@ class InputEditable {
      */
     inputmask = null;
 
+    /**
+     * Define the options for the mask
+     * @type {Object} 
+     */
+    maskOptions = InputEditable.DEFAULT_DECIMAL_MASK_OPTIONS;
+
+    /**
+     * Define the default configuration for a mask of type currency
+     */
     static DEFAULT_CURRENCY_MASK_OPTIONS = {
         alias: 'currency',
         groupSeparator: ' ',
@@ -84,6 +93,9 @@ class InputEditable {
         placeholder: '0.00',
     };
 
+    /**
+     * Define the default configuration for a mask of type percentage
+     */
     static DEFAULT_PERCENTAGE_MASK_OPTIONS = {
         alias: 'numeric',
         groupSeparator: ' ',
@@ -96,6 +108,9 @@ class InputEditable {
         placeholder: '0,00',
     };
 
+    /**
+     * Define the default configuration for a mask of type decimal
+     */
     static DEFAULT_DECIMAL_MASK_OPTIONS = {
         alias: 'numeric',
         groupSeparator: ' ',
@@ -107,6 +122,31 @@ class InputEditable {
         prefix: '',
         placeholder: '0.00',
     };
+
+    /**
+     * Indicates the value for type currency
+     */
+    static TYPE_CURRENCY = "currency";
+
+    /**
+     * Indicates the value for type percentage
+     */
+    static TYPE_PERCENTAGE = "percentage";
+
+    /**
+     * Indicates the value for type decimal
+     */
+    static TYPE_DECIMAL = "decimal";
+
+    /**
+     * Indicates the value for type integer
+     */
+    static TYPE_INTEGER = "integer";
+
+    /**
+     * Indicates the value for type string
+     */
+    static TYPE_STRING = "string";
 
     /**
      * Constructor for the InputEditable class.
@@ -149,7 +189,8 @@ class InputEditable {
 
         this.inputElement.change((event) => {
             let inputVal = event.currentTarget.inputmask.unmaskedvalue();
-            if (this.valueType == "percentage") {
+            if (this.valueType == InputEditable.TYPE_PERCENTAGE) {
+                // We will divide by 100 to get the real value
                 inputVal /= 100;
             }
             this.value = inputVal;
