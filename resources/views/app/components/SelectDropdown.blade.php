@@ -37,6 +37,7 @@ function getDisplayName($displayFunc, $element) {
         // This is thinked to allow the dinamic loading of this component.
     @if (isset($ajaxUrl))
         $("#{{ $id }}").select2({
+            dropdownParent: $("#{{ $dropdownParent }}"),
             ajax: {
                 url: "{{ $ajaxUrl }}",
                 dataType: 'json',
@@ -68,7 +69,9 @@ function getDisplayName($displayFunc, $element) {
             }
         });
     @else
-        $("#{{ $id }}").select2();
+        $("#{{ $id }}").select2({
+            dropdownParent: $("#{{ $dropdownParent }}"),
+        });
     @endif
     </script>
 @endpush

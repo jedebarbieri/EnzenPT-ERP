@@ -28,6 +28,7 @@
                     @component('app.components.SelectDropdown', [
                         'id' => $selCategoryId,
                         'name' => 'item_category_id',
+                        'dropdownParent' => $modalId,
                         'label' => 'Category',
                         'elements' => $categoriesList,
                         'displayFunc' => function($category) {
