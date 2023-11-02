@@ -163,15 +163,6 @@
         // Reference to the datatable instance to store all the budget details
         var budgetDetailsTable = null;
 
-        // List of all calculable columns
-        const calculablesColums = {
-            unitPriceInpEditable: null,
-            quantityInpEditable: null,
-            taxPercentageInpEditable: null,
-            discountInpEditable: null,
-            sellPriceInpEditable: null,
-        };
-
         messageBox.on('close.bs.alert', function() {
             // Ocultar la alerta pero mantenerla en el DOM
             $(this).hide();
@@ -289,8 +280,8 @@
          * @param {jQuery} row
          */
         function calculateTotalRow(row) {
-            let totalWOTax = calculablesColums.sellPriceInpEditable.value * calculablesColums.quantityInpEditable.value - calculablesColums.discountInpEditable.value;
-            let totalWTax = totalWOTax + totalWOTax * calculablesColums.taxPercentageInpEditable.value;
+            let totalWOTax = row.calculablesColums.sellPriceInpEditable.value * row.calculablesColums.quantityInpEditable.value - row.calculablesColums.discountInpEditable.value;
+            let totalWTax = totalWOTax + totalWOTax * row.calculablesColums.taxPercentageInpEditable.value;
             let mask = new Inputmask(InputEditable.DEFAULT_CURRENCY_MASK_OPTIONS);
             $(row).find(".total-col").text(mask.format(totalWOTax.toFixed(2)));
             $(row).find(".total-tax-col").text(mask.format(totalWTax.toFixed(2)));
@@ -299,6 +290,7 @@
         // Evento para cargar este modal con la información proporcionada
         document.addEventListener('budgetModal.loadData', (event) => {
             let budgetData = event.detail.data;
+            const apiServiceBase = `/api/budgets/${budgetData.id}/budgetDetails/`;
             title.html("Edit Budget");
             formModal.find("#hdId").val(budgetData.id);
             formModal.find("#txtBudgetName").val(budgetData.name);
@@ -349,7 +341,7 @@
                             "width": "0%",
                         },
                         {
-                            "data": "sellPrice", 
+                            "data": "sellPrice",
                             "title": "Selling Price",
                             "class": "sellPrice text-right",
                             "width": "0%",
@@ -417,33 +409,97 @@
                         // Adding the id reference
                         $(row).attr("data-id", data.id);
 
+                        // List of all calculable columns in this row
+                        row.calculablesColums = {
+                            unitPriceInpEditable: null,
+                            quantityInpEditable: null,
+                            taxPercentageInpEditable: null,
+                            discountInpEditable: null,
+                            sellPriceInpEditable: null,
+                        };
+
+                        let apiService = `${apiServiceBase}${data.id}`;
+
                         // Input for the Unit Price
                         let unitPriceCell = $(row).find("td.unit_price");
-                        calculablesColums.unitPriceInpEditable = new InputEditable({
-                            apiService: `api/budgets/${budgetData.id}/budgetDetails/${data.id}`,
+                        row.calculablesColums.unitPriceInpEditable = new InputEditable({
                             nodeAttributes: {
                                 value: unitPriceCell.text(),
                             },
                             additionalClasses: "text-right",
                             maskOptions: InputEditable.DEFAULT_CURRENCY_MASK_OPTIONS,
+                            onChangeCallback: function(event) {
+                                axios.patch(apiService, {
+                                        id: data.id,
+                                        unit_price: event.data.newValue,
+                                    })
+                                    .then(function(response) {
+                                        // Manejar la respuesta exitosa
+                                        calculateTotalRow(row);
+                                    })
+                                    .catch(function(error) {
+                                        // Manejamos el error
+                                    });
+                            }
                         });
-                        unitPriceCell.empty().append(calculablesColums.unitPriceInpEditable.inputElement);
+                        unitPriceCell.empty().append(row.calculablesColums.unitPriceInpEditable
+                            .inputElement);
+
+                        // Input for the Sell Pricie
+                        let sellPriceCell = $(row).find("td.sellPrice");
+                        row.calculablesColums.sellPriceInpEditable = new InputEditable({
+                            apiService: `api/budgets/${budgetData.id}/budgetDetails/${data.id}`,
+                            nodeAttributes: {
+                                value: sellPriceCell.text(),
+                            },
+                            additionalClasses: "text-right",
+                            maskOptions: InputEditable.DEFAULT_CURRENCY_MASK_OPTIONS,
+                            onChangeCallback: function(event) {
+                                axios.patch(apiService, {
+                                        id: data.id,
+                                        sell_price: event.data.newValue,
+                                    })
+                                    .then(function(response) {
+                                        // Manejar la respuesta exitosa
+                                        calculateTotalRow(row);
+                                    })
+                                    .catch(function(error) {
+                                        // Manejamos el error
+                                    });
+                            }
+                        });
+                        sellPriceCell.empty().append(row.calculablesColums.sellPriceInpEditable
+                            .inputElement);
 
                         // Input for Quantity
                         let quantityCell = $(row).find("td.quantity");
-                        calculablesColums.quantityInpEditable = new InputEditable({
+                        row.calculablesColums.quantityInpEditable = new InputEditable({
                             apiService: `api/budgets/${budgetData.id}/budgetDetails/${data.id}`,
                             nodeAttributes: {
                                 value: quantityCell.text(),
                             },
                             additionalClasses: "text-right",
                             maskOptions: InputEditable.DEFAULT_DECIMAL_MASK_OPTIONS,
+                            onChangeCallback: function(event) {
+                                axios.patch(apiService, {
+                                        id: data.id,
+                                        quantity: event.data.newValue,
+                                    })
+                                    .then(function(response) {
+                                        // Manejar la respuesta exitosa
+                                        calculateTotalRow(row);
+                                    })
+                                    .catch(function(error) {
+                                        // Manejamos el error
+                                    });
+                            }
                         });
-                        quantityCell.empty().append(calculablesColums.quantityInpEditable.inputElement);
+                        quantityCell.empty().append(row.calculablesColums.quantityInpEditable
+                            .inputElement);
 
                         // Input for the IVA
                         let taxPercentageCell = $(row).find("td.taxPercentage");
-                        calculablesColums.taxPercentageInpEditable = new InputEditable({
+                        row.calculablesColums.taxPercentageInpEditable = new InputEditable({
                             apiService: `api/budgets/${budgetData.id}/budgetDetails/${data.id}`,
                             valueType: "percentage",
                             nodeAttributes: {
@@ -451,47 +507,60 @@
                             },
                             additionalClasses: "text-right",
                             maskOptions: InputEditable.DEFAULT_PERCENTAGE_MASK_OPTIONS,
+                            onChangeCallback: function(event) {
+                                axios.patch(apiService, {
+                                        id: data.id,
+                                        tax_percentage: event.data.newValue,
+                                    })
+                                    .then(function(response) {
+                                        // Manejar la respuesta exitosa
+                                        calculateTotalRow(row);
+                                    })
+                                    .catch(function(error) {
+                                        // Manejamos el error
+                                    });
+                            }
                         });
-                        taxPercentageCell.empty().append(calculablesColums.taxPercentageInpEditable.inputElement);
+                        taxPercentageCell.empty().append(row.calculablesColums.taxPercentageInpEditable
+                            .inputElement);
 
                         // Input for the Discount
                         let discountCell = $(row).find("td.discount");
-                        calculablesColums.discountInpEditable = new InputEditable({
+                        row.calculablesColums.discountInpEditable = new InputEditable({
                             apiService: `api/budgets/${budgetData.id}/budgetDetails/${data.id}`,
                             nodeAttributes: {
                                 value: discountCell.text(),
                             },
                             additionalClasses: "text-right",
                             maskOptions: InputEditable.DEFAULT_CURRENCY_MASK_OPTIONS,
+                            onChangeCallback: function(event) {
+                                axios.patch(apiService, {
+                                        id: data.id,
+                                        discount: event.data.newValue,
+                                    })
+                                    .then(function(response) {
+                                        // Manejar la respuesta exitosa
+                                        calculateTotalRow(row);
+                                    })
+                                    .catch(function(error) {
+                                        // Manejamos el error
+                                    });
+                            }
                         });
-                        discountCell.empty().append(calculablesColums.discountInpEditable.inputElement);
-
-                        // Input for the Sell Pricie
-                        let sellPriceCell = $(row).find("td.sellPrice");
-                        calculablesColums.sellPriceInpEditable = new InputEditable({
-                            apiService: `api/budgets/${budgetData.id}/budgetDetails/${data.id}`,
-                            nodeAttributes: {
-                                value: sellPriceCell.text(),
-                            },
-                            additionalClasses: "text-right",
-                            maskOptions: InputEditable.DEFAULT_CURRENCY_MASK_OPTIONS,
-                        });
-                        sellPriceCell.empty().append(calculablesColums.sellPriceInpEditable.inputElement);
+                        discountCell.empty().append(row.calculablesColums.discountInpEditable
+                            .inputElement);
 
                         // Adding the total columns
-                        $(row).append(
-                            $('<td/>').append(
-                                $('<span/>', { 
+                        $(row)
+                            .append(
+                                $('<td/>', {
                                     class: "total-col text-right text-nowrap"
                                 })
-                            )
-                        ).append(
-                            $('<td/>').append(
-                                $('<span/>', { 
+                            ).append(
+                                $('<td/>', {
                                     class: "total-tax-col text-right text-nowrap"
                                 })
-                            )
-                        );
+                            );
 
                         calculateTotalRow(row);
                     }
