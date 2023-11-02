@@ -291,8 +291,9 @@
         function calculateTotalRow(row) {
             let totalWOTax = calculablesColums.sellPriceInpEditable.value * calculablesColums.quantityInpEditable.value - calculablesColums.discountInpEditable.value;
             let totalWTax = totalWOTax + totalWOTax * calculablesColums.taxPercentageInpEditable.value;
-            $(row).find(".total-col").text(totalWOTax.toFixed(2));
-            $(row).find(".total-tax-col").text(totalWTax.toFixed(2));
+            let mask = new Inputmask(InputEditable.DEFAULT_CURRENCY_MASK_OPTIONS);
+            $(row).find(".total-col").text(mask.format(totalWOTax.toFixed(2)));
+            $(row).find(".total-tax-col").text(mask.format(totalWTax.toFixed(2)));
         }
 
         // Evento para cargar este modal con la información proporcionada
