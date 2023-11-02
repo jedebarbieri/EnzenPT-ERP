@@ -85,14 +85,22 @@ class BudgetController extends Controller
      */
     public function store(StoreBudgetRequest $request)
     {
-        $budget = Budget::create($request->validated());
-        $budget->setRelation('budgetDetails', []);
-        return response()->json([
-            'status' => 'success',
-            'data' => [
-                'budget' => BudgetResource::make($budget)
-            ],
-        ]);
+        try {
+            $budget = Budget::create($request->validated());
+            $budget->setRelation('budgetDetails', []);
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Budget created successfully.',
+                'data' => [
+                    'budget' => BudgetResource::make($budget)
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Budget could not be created.',
+            ], 500);
+        }
     }
 
     /**
