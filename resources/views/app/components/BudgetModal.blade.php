@@ -163,6 +163,15 @@
         // Reference to the datatable instance to store all the budget details
         var budgetDetailsTable = null;
 
+        // List of all calculable columns
+        const calculablesColums = {
+            unitPriceInpEditable: null,
+            quantityInpEditable: null,
+            taxPercentageInpEditable: null,
+            discountInpEditable: null,
+            sellPriceInpEditable: null,
+        };
+
         messageBox.on('close.bs.alert', function() {
             // Ocultar la alerta pero mantenerla en el DOM
             $(this).hide();
@@ -275,10 +284,15 @@
         });
 
         /**
-         * Calculates the total of one row.
+         * Calculates the totals of this row. The row is the element <tr> of the table.
+         * 
+         * @param {jQuery} row
          */
         function calculateTotalRow(row) {
-
+            let totalWOTax = calculablesColums.sellPriceInpEditable.value * calculablesColums.quantityInpEditable.value - calculablesColums.discountInpEditable.value;
+            let totalWTax = totalWOTax + totalWOTax * calculablesColums.taxPercentageInpEditable.value;
+            $(row).find(".total-col").text(totalWOTax.toFixed(2));
+            $(row).find(".total-tax-col").text(totalWTax.toFixed(2));
         }
 
         // Evento para cargar este modal con la información proporcionada
@@ -330,7 +344,7 @@
                         {
                             "data": "unitPrice",
                             "title": "Unit P.",
-                            "class": "unit_price",
+                            "class": "unit_price text-right",
                             "width": "0%",
                         },
                         {
@@ -368,17 +382,23 @@
                         }
                     }],
                     headerCallback: function(thead, data, start, end, display) {
-                        if ($(thead).find("#optCol").length === 0) {
+                        if ($(thead).find("th.opt-col").length === 0) {
                             $(thead).prepend($('<th/>', {
-                                id: "optCol",
-                                class: "text-center"
+                                class: "opt-col text-center"
                             }));
                         }
-                        if ($(thead).find("#totalCol").length === 0) {
+                        if ($(thead).find("th.total-col").length === 0) {
                             $(thead).append($('<th/>', {
-                                id: "totalCol",
-                                class: "text-right",
-                                html: "Total"
+                                class: "total-col text-right",
+                                style: "width: 0%",
+                                html: "Total WO/IVA",
+                            }));
+                        }
+                        if ($(thead).find("th.total-tax-col").length === 0) {
+                            $(thead).append($('<th/>', {
+                                class: "total-tax-col text-right",
+                                style: "width: 0%",
+                                html: "Total W/IVA",
                             }));
                         }
                     },
@@ -398,7 +418,7 @@
 
                         // Input for the Unit Price
                         let unitPriceCell = $(row).find("td.unit_price");
-                        const unitPriceInpEditable = new InputEditable({
+                        calculablesColums.unitPriceInpEditable = new InputEditable({
                             apiService: `api/budgets/${budgetData.id}/budgetDetails/${data.id}`,
                             nodeAttributes: {
                                 value: unitPriceCell.text(),
@@ -406,11 +426,11 @@
                             additionalClasses: "text-right",
                             maskOptions: InputEditable.DEFAULT_CURRENCY_MASK_OPTIONS,
                         });
-                        unitPriceCell.empty().append(unitPriceInpEditable.inputElement);
+                        unitPriceCell.empty().append(calculablesColums.unitPriceInpEditable.inputElement);
 
                         // Input for Quantity
                         let quantityCell = $(row).find("td.quantity");
-                        const quantityInpEditable = new InputEditable({
+                        calculablesColums.quantityInpEditable = new InputEditable({
                             apiService: `api/budgets/${budgetData.id}/budgetDetails/${data.id}`,
                             nodeAttributes: {
                                 value: quantityCell.text(),
@@ -418,11 +438,11 @@
                             additionalClasses: "text-right",
                             maskOptions: InputEditable.DEFAULT_DECIMAL_MASK_OPTIONS,
                         });
-                        quantityCell.empty().append(quantityInpEditable.inputElement);
+                        quantityCell.empty().append(calculablesColums.quantityInpEditable.inputElement);
 
                         // Input for the IVA
                         let taxPercentageCell = $(row).find("td.taxPercentage");
-                        const taxPercentageInpEditable = new InputEditable({
+                        calculablesColums.taxPercentageInpEditable = new InputEditable({
                             apiService: `api/budgets/${budgetData.id}/budgetDetails/${data.id}`,
                             valueType: "percentage",
                             nodeAttributes: {
@@ -431,11 +451,11 @@
                             additionalClasses: "text-right",
                             maskOptions: InputEditable.DEFAULT_PERCENTAGE_MASK_OPTIONS,
                         });
-                        taxPercentageCell.empty().append(taxPercentageInpEditable.inputElement);
+                        taxPercentageCell.empty().append(calculablesColums.taxPercentageInpEditable.inputElement);
 
                         // Input for the Discount
                         let discountCell = $(row).find("td.discount");
-                        const discountInpEditable = new InputEditable({
+                        calculablesColums.discountInpEditable = new InputEditable({
                             apiService: `api/budgets/${budgetData.id}/budgetDetails/${data.id}`,
                             nodeAttributes: {
                                 value: discountCell.text(),
@@ -443,11 +463,11 @@
                             additionalClasses: "text-right",
                             maskOptions: InputEditable.DEFAULT_CURRENCY_MASK_OPTIONS,
                         });
-                        discountCell.empty().append(discountInpEditable.inputElement);
+                        discountCell.empty().append(calculablesColums.discountInpEditable.inputElement);
 
                         // Input for the Sell Pricie
                         let sellPriceCell = $(row).find("td.sellPrice");
-                        const sellPriceInpEditable = new InputEditable({
+                        calculablesColums.sellPriceInpEditable = new InputEditable({
                             apiService: `api/budgets/${budgetData.id}/budgetDetails/${data.id}`,
                             nodeAttributes: {
                                 value: sellPriceCell.text(),
@@ -455,16 +475,24 @@
                             additionalClasses: "text-right",
                             maskOptions: InputEditable.DEFAULT_CURRENCY_MASK_OPTIONS,
                         });
-                        sellPriceCell.empty().append(sellPriceInpEditable.inputElement);
+                        sellPriceCell.empty().append(calculablesColums.sellPriceInpEditable.inputElement);
 
-                        // Adding the total column
+                        // Adding the total columns
                         $(row).append(
                             $('<td/>').append(
                                 $('<span/>', { 
-                                    class: "total"
+                                    class: "total-col text-right text-nowrap"
+                                })
+                            )
+                        ).append(
+                            $('<td/>').append(
+                                $('<span/>', { 
+                                    class: "total-tax-col text-right text-nowrap"
                                 })
                             )
                         );
+
+                        calculateTotalRow(row);
                     }
                 });
             } else {
