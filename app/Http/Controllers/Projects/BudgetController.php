@@ -105,7 +105,12 @@ class BudgetController extends Controller
             $budget = Budget::with([
                 'budgetDetails' => function ($query) {
                     $query->join('items', 'budget_details.item_id', '=', 'items.id')
-                        ->select("*", "budget_details.unit_price as overwriten_unit_price", "items.unit_price as item_unit_price")
+                        ->select(
+                            "*",
+                            "budget_details.unit_price as overwriten_unit_price",
+                            "items.unit_price as item_unit_price",
+                            "budget_details.id as budget_detail_id",
+                        )
                         ->orderBy('items.internal_cod')
                         ->with('item.itemCategory');
                 }
@@ -114,6 +119,7 @@ class BudgetController extends Controller
             // $queries = DB::getQueryLog();
 
             foreach ($budget->budgetDetails as $budgetDetail) {
+                $budgetDetail->id = $budgetDetail->budget_detail_id;
                 $budgetDetail->unit_price = $budgetDetail->overwriten_unit_price;
             }
 
@@ -122,14 +128,11 @@ class BudgetController extends Controller
                 'data' => [
                     'budget' => new BudgetResource($budget)
                 ],
-                // 'metadata' => [
-                //     'queries' => $queries,
-                // ]
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ]);
         }
     }
