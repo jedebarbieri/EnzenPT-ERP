@@ -28,3 +28,5 @@ Route::apiResources([
     'budgets' => BudgetController::class,
     'budgets.budgetDetails' => BudgetDetailController::class,
 ]);
+
+Route::get('budgets/{budget}/availableItems', [BudgetController::class, 'availableItems']);

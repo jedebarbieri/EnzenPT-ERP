@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Projects;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Projects\UpdateBudgetRequest;
 use App\Http\Requests\Projects\StoreBudgetRequest;
+use App\Http\Resources\Procurement\ItemResource;
 use App\Http\Resources\Projects\BudgetResource;
+use App\Models\Procurement\Item;
 use App\Models\Projects\Budget;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -193,6 +195,29 @@ class BudgetController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Budget could not be deleted.',
+            ]);
+        }
+    }
+
+    public function availableItems(Budget $budget)
+    {
+
+        try {
+            // Obtener todos los elementos que no están en la tabla budget_details para el budgetId especificado
+            $items = Item::whereNotIn('id', function ($query) use ($budget) {
+                $query->select('item_id')
+                    ->from('budget_details')
+                    ->where('budget_id', $budget->id);
+            })->get();
+            
+            return response()->json([
+                'status' => 'success',
+                'data' => ItemResource::collection($items)
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error while retrieving available items.'
             ]);
         }
     }
