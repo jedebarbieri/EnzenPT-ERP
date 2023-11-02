@@ -2,6 +2,7 @@
 
 namespace App\Models\Projects;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -45,5 +46,50 @@ class Budget extends Model
     public function budgetDetails() 
     {
         return $this->hasMany(BudgetDetail::class);
+    }
+
+    
+
+    /**
+     * This is the getter and the setter for the tax_percentage attribute.
+     * This will round the value to 2 decimals and ensure that the value is between 0 and 1
+     * 
+     * @return Attribute
+     */
+    protected function gainMargin(): Attribute
+    {
+        return Attribute::make(
+            get: fn($value) => round(floatval($value), 2),
+            set: function($value) {
+                // We ensure that the value is between 0 and 1
+                $val = round(floatval($value), 2);
+                if ($val < 0) {
+                    $val = 0;
+                } elseif ($val > 1) {
+                    $val = 1;
+                }
+                return $val;
+            },
+        );
+    }
+
+    /**
+     * This is the getter and the setter for the total_power_pick attribute.
+     * This will round the value to 2 decimals and ensure that the value is not negative
+     * 
+     * @return Attribute
+     */
+    protected function totalPowerPick(): Attribute
+    {
+        return Attribute::make(
+            get: fn($value) => round(floatval($value), 2),
+            set: function($value) {
+                $val = round(floatval($value), 2);
+                if ($val < 0) {
+                    $val = 0;
+                }
+                return $val;
+            }
+        );
     }
 }
