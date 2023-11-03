@@ -43,6 +43,11 @@
                                         <input type="text" class="form-control" id="txtProjectNumber"
                                             name="project_number" autocomplete="false" />
                                     </div>
+                                    <div class="form-group">
+                                        <label for="txtProjectLocation" class="">Project Location</label>
+                                        <input type="text" class="form-control" id="txtProjectLocation"
+                                            name="project_location" autocomplete="false" />
+                                    </div>
                                 </div>
                                 <div class="col-sm-2"></div>
                                 <div class="col-sm-3">
@@ -99,7 +104,7 @@
                     </div>
                 </form>
 
-                <div class="card">
+                <div class="card" id="{{ $modalId }}SuppliesListCard">
                     <div class="card-header">
                         <nav class="navbar p-0">
                             <h6 class="card-title text-bold">Supplies List</h6>
@@ -259,8 +264,14 @@
                 req
                     .then(function(response) {
                         // Manejar la respuesta exitosa
+                        document.dispatchEvent(new CustomEvent('budgetModal.loadData', {
+                            detail: {
+                                data: response.data.data
+                            }
+                        }));
+
+                        // Recargamos la tabla principal de budgets
                         document.dispatchEvent(new CustomEvent('budgetsTable.reloadTable'));
-                        budgetModal.modal('hide');
                     })
                     .catch(function(error) {
                         let messageBox = budgetModal.find('.modal-body .alert');
@@ -297,6 +308,13 @@
             formModal.find('.error').removeClass("error");
             formModal.find('.is-invalid').removeClass("is-invalid");
             formModal.find('.form-control-feedback').remove();
+            $("lblPricePerWP").text("-- €/Wp");
+            $("lblFinalPrice").text("-- €");
+            // Reset the table
+            if (budgetDetailsTable) {
+                budgetDetailsTable.clear().draw();
+            }
+            $("#{{ $modalId }}SuppliesListCard").hide();
         });
 
         /**
@@ -384,6 +402,7 @@
         // Evento para cargar este modal con la información proporcionada
         document.addEventListener('budgetModal.loadData', (event) => {
             let budgetData = event.detail.data;
+            budgetId = budgetData.id;
             const apiServiceBase = `/api/budgets/${budgetData.id}/budgetDetails/`;
             title.html("Edit Budget");
             formModal.find("#hdId").val(budgetId = budgetData.id);
@@ -393,6 +412,9 @@
             formModal.find("#txtProjectName").val(budgetData.projectName);
             formModal.find("#txtProjectNumber").val(budgetData.projectNumber);
             formModal.find("#txtProjectLocation").val(budgetData.projectLocation);
+
+            $("#{{ $modalId }}SuppliesListCard").show();
+
             budgetModal.modal('show');
 
             // Loading the budget details: list of items
@@ -693,6 +715,11 @@
                 totalWTax: 0,
             };
 
+        });
+
+        // Event to handle any change on the total peak power
+        $("#txtTotalPeakPower").on('change', function(event) {
+            calculatePricePerWP();
         });
 
         $("#{{ $modalId }}budgetDetailsTable").on('click', '.delete-btn', function(event) {
