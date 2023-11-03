@@ -111,7 +111,31 @@
                     <div class="card-body">
 
                         <table id="{{ $modalId }}budgetDetailsTable"
-                            class="table table-hover table-valign-middle"></table>
+                            class="table table-hover table-valign-middle">
+                            <thead>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                            </thead>
+                            <tbody>
+                                <!-- Tus datos de fila aquí -->
+                            </tbody>
+                            <tfoot>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                            </tfoot>
+                        </table>
 
                     </div>
                     <div class="card-footer text-right">
@@ -280,6 +304,41 @@
             let mask = new Inputmask(InputEditable.DEFAULT_CURRENCY_MASK_OPTIONS);
             $(row).find(".total-col").text(mask.format(totalWOTax.toFixed(2)));
             $(row).find(".total-tax-col").text(mask.format(totalWTax.toFixed(2)));
+            calculateTotalTable();
+        }
+
+        /**
+         * Calculates the totals of the table.
+         */
+        function calculateTotalTable() {
+            let totalTaxAmount = 0;
+            let totalDiscount = 0;
+            let totalWOTax = 0;
+            let totalWTax = 0;
+
+            budgetDetailsTable.rows().every(function() {
+                let row = this.node();
+                let calCols = row.calculablesColums;
+
+                totalDiscount += parseFloat(calCols.discountInpEditable.value);
+
+                let totalWOTaxRow = calCols.sellPriceInpEditable.value * calCols.quantityInpEditable.value - calCols.discountInpEditable.value;
+                totalWOTax += totalWOTaxRow;
+
+                let totalWTaxRow = totalWOTaxRow / (1 - parseFloat(calCols.taxPercentageInpEditable.value));
+                totalWTax += totalWTaxRow;
+
+                totalTaxAmount += totalWTaxRow * parseFloat(calCols.taxPercentageInpEditable.value);
+            });
+
+            let mask = new Inputmask(InputEditable.DEFAULT_CURRENCY_MASK_OPTIONS);
+
+            let footer = $(budgetDetailsTable.table().node()).find("tfoot");
+
+            footer.find(".taxPercentage").text(mask.format(totalTaxAmount.toFixed(2)));
+            footer.find(".discount").text(mask.format(totalDiscount.toFixed(2)));
+            footer.find(".total-col").text(mask.format(totalWOTax.toFixed(2)));
+            footer.find(".total-tax-col").text(mask.format((totalWTax).toFixed(2)));
         }
 
         // Evento para cargar este modal con la información proporcionada
@@ -558,8 +617,31 @@
                             );
 
                         calculateTotalRow(row);
+                    },
+                    footerCallback: function(tfoot, data, start, end, display) {
+                        if ($(tfoot).find("th.opt-col").length === 0) {
+                            $(tfoot).prepend($('<th/>', {
+                                class: "opt-col text-center"
+                            }));
+                        }
+                        if ($(tfoot).find("th.total-col").length === 0) {
+                            $(tfoot).append($('<th/>', {
+                                class: "total-col text-right text-nowrap white-space-nowrap",
+                                style: "width: 0%",
+                                html: "0.00 €",
+                            }));
+                        }
+                        if ($(tfoot).find("th.total-tax-col").length === 0) {
+                            $(tfoot).append($('<th/>', {
+                                class: "total-tax-col text-right text-nowrap white-space-nowrap",
+                                style: "width: 0%",
+                                html: "0.00 €",
+                            }));
+                        }
+                        calculateTotalTable();
                     }
                 });
+
             } else {
                 budgetDetailsTable.ajax.url(`/api/budgets/${budgetData.id}`).load();
             }
