@@ -19,12 +19,12 @@ class StoreBudgetDetailRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'item_id' => 'required|integer',
-            'budget_id' => 'required|integer',
+            'item_id' => 'required|integer|gte:0',
+            'budget_id' => 'required|integer|gte:0',
             'unit_price' => 'numeric|nullable',
             'sell_price' => 'numeric|nullable',
-            'quantity' => 'integer|nullable',
-            'tax_percentage' => 'numeric|nullable',
+            'quantity' => 'numeric|nullable',
+            'tax_percentage' => 'numeric|gte:0|lte:1|nullable',
             'discount' => 'numeric|nullable',
         ];
     }

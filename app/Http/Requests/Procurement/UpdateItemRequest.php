@@ -23,9 +23,9 @@ class UpdateItemRequest extends FormRequest
     {
         return [
             'id' => 'required|numeric',
-            'name' => 'required|string',
-            'internal_cod' => 'required|string|min:5',
-            'unit_price' => 'required|numeric|gte:0',
+            'name' => 'strPing|nullable|min:3',
+            'internal_cod' => 'string|nullable|min:5',
+            'unit_price' => 'numeric|nullable|gte:0',
             'item_category_id' => 'required|numeric|gte:0'
         ];
     }

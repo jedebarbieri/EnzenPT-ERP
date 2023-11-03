@@ -41,8 +41,8 @@ class StoreBudgetRequest extends FormRequest
             'project_number' => 'string|nullable',
             'project_location' => 'string|nullable',
             'total_peak_power' => 'numeric|nullable|gte:0',
-            'gain_margin' => 'numeric|nullable|gte:0',
-            'status' => 'integer|nullable|in:' . implode(',', array_keys(Budget::STATUS))
+            'gain_margin' => 'numeric|gte:0|lte:1|nullable',
+            'status' => 'integer|nullable|in:' . implode(',', array_keys(Budget::STATUS)),
         ];
     }
 }

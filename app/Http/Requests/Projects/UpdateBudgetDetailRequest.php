@@ -24,11 +24,11 @@ class UpdateBudgetDetailRequest extends FormRequest
     {
         return [
             'id' => 'required|numeric',
-            'unit_price' => 'numeric|gte:0',
-            'quantity' => 'numeric|gte:0',
-            'tax_percentage' => 'numeric|gte:0|lte:1',
-            'discount' => 'numeric',
-            'sell_price' => 'numeric',
+            'unit_price' => 'numeric|nullable',
+            'sell_price' => 'numeric|nullable',
+            'quantity' => 'numeric|nullable',
+            'tax_percentage' => 'numeric|gte:0|lte:1|nullable',
+            'discount' => 'numeric|nullable',
         ];
     }
 }

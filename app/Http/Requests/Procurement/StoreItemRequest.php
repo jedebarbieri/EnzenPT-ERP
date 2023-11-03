@@ -22,9 +22,9 @@ class StoreItemRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string',
-            'internal_cod' => 'string|min:5|nullable',
-            'unit_price' => 'required|numeric|gte:0|nullable',
+            'name' => 'required|string|min:3',
+            'internal_cod' => 'string|nullable|min:5',
+            'unit_price' => 'numeric|nullable|gte:0',
             'item_category_id' => 'required|numeric|gte:0'
         ];
     }

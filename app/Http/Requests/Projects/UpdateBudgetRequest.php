@@ -25,13 +25,13 @@ class UpdateBudgetRequest extends FormRequest
     {
         return [
             'id' => 'required|numeric',
-            'name' => 'string',
-            'status' => 'numeric|gte:0',
-            'total_peak_power' => 'numeric|gte:0',
-            'gain_margin' => 'numeric|gte:0',
-            'project_name' => 'string|min:3',
-            'project_number' => 'string|min:3',
-            'project_location' => 'string|min:3',
+            'name' => 'string|nullable|min:3',
+            'status' => 'numeric|nullable|in:' . implode(',', array_keys(Budget::STATUS)),
+            'total_peak_power' => 'numeric|nullable|gte:0',
+            'gain_margin' => 'numeric|gte:0|lte:1|nullable',
+            'project_name' => 'string|nullable|min:3',
+            'project_number' => 'string|nullable|min:3',
+            'project_location' => 'string|nullable|min:3',
         ];
     }
 }
