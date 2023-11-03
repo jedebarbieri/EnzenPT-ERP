@@ -14,26 +14,37 @@
 
                 <form id="{{ $modalId }}FormBudgetMainInfo" role="form">
                     <input type="hidden" name="id" id="hdId" value="" />
-                    <div class="card">
+                    <div class="card card-light">
                         <div class="card-header">
                             <nav class="navbar p-0">
                                 <h6 class="card-title text-bold">General Info</h6>
                                 <div class="card-tools">
                                     <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                        <i class="fas fa-plus"></i>
+                                        <i class="fas fa-minus"></i>
                                     </button>
                                 </div>
                             </nav>
                         </div>
                         <div class="card-body">
                             <div class="row">
-                                <div class="col-sm-6">
+                                <div class="col-sm-4">
                                     <div class="form-group">
-                                        <label for="txtBudgetName" class="">Name</label>
+                                        <label for="txtBudgetName" class="">Budget Reference Name</label>
                                         <input type="text" class="form-control" id="txtBudgetName" name="name"
                                             autocomplete="false" />
                                     </div>
+                                    <div class="form-group">
+                                        <label for="txtProjectName" class="">Project Name</label>
+                                        <input type="text" class="form-control" id="txtProjectName"
+                                            name="project_name" autocomplete="false" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="txtProjectNumber" class="">Project Number</label>
+                                        <input type="text" class="form-control" id="txtProjectNumber"
+                                            name="project_number" autocomplete="false" />
+                                    </div>
                                 </div>
+                                <div class="col-sm-2"></div>
                                 <div class="col-sm-3">
                                     <div class="form-group">
                                         <label for="txtTotalPeakPower" class="">Total Peak Power</label>
@@ -43,6 +54,16 @@
                                             <div class="input-group-append">
                                                 <span class="input-group-text">€/Wp</span>
                                             </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="small-box bg-warning p-3">
+                                        <div class="inner">
+                                            <h3>0.1254 €/Wp</h3>
+                                            <p>Final price per Watt-Peak</p>
+                                        </div>
+                                        <div class="icon">
+                                            <i class="fas fa-bolt"></i>
                                         </div>
                                     </div>
                                 </div>
@@ -57,35 +78,21 @@
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-sm-4">
-                                    <div class="form-group">
-                                        <label for="txtProjectName" class="">Project Name</label>
-                                        <input type="text" class="form-control" id="txtProjectName"
-                                            name="project_name" autocomplete="false" />
-                                    </div>
-                                </div>
-                                <div class="col-sm-4">
-                                    <div class="form-group">
-                                        <label for="txtProjectNumber" class="">Project Number</label>
-                                        <input type="text" class="form-control" id="txtProjectNumber"
-                                            name="project_number" autocomplete="false" />
-                                    </div>
-                                </div>
-                                <div class="col-sm-4">
-                                    <div class="form-group">
-                                        <label for="txtProjectLocation" class="">Project Location</label>
-                                        <input type="text" class="form-control" id="txtProjectLocation"
-                                            name="project_location" autocomplete="false" />
+                                    <div class="small-box bg-success p-3">
+                                        <div class="inner">
+                                            <h3>1 542 125.45 €</h3>
+                                            <p>Final Selling Price</p>
+                                        </div>
+                                        <div class="icon">
+                                            <i class="fas fa-money-bill-wave"></i>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="card-footer text-right">
                             <button type="submit" class="btn btn-outline-primary">
-                                <i class="fas fa-save mr-2"></i> Save
+                                <i class="fas fa-save mr-2"></i> Save General Info
                             </button>
                         </div>
 
@@ -297,7 +304,7 @@
 
             let totalWOTax = calCols.sellPriceInpEditable.value * calCols.quantityInpEditable.value - calCols.discountInpEditable.value;
             totalWOTax = Math.round(totalWOTax * 100) / 100;
-            
+
             let totalWTax = totalWOTax / (1 - parseFloat(calCols.taxPercentageInpEditable.value));
             totalWTax = Math.round(totalWTax * 100) / 100;
 
@@ -745,7 +752,8 @@
                             budget_id: budgetId
                         }, function() {
                             // Recargar la tabla
-                            document.dispatchEvent(new CustomEvent('budgetDetailsTable.reloadTable'));
+                            document.dispatchEvent(new CustomEvent(
+                                'budgetDetailsTable.reloadTable'));
                         });
                     });
                 }
