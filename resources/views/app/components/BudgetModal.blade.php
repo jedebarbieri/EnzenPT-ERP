@@ -59,7 +59,7 @@
 
                                     <div class="small-box bg-warning p-3">
                                         <div class="inner">
-                                            <h3>0.1254 €/Wp</h3>
+                                            <h3 id="lblPricePerWP">-- €/Wp</h3>
                                             <p>Final price per Watt-Peak</p>
                                         </div>
                                         <div class="icon">
@@ -80,7 +80,7 @@
                                     </div>
                                     <div class="small-box bg-success p-3">
                                         <div class="inner">
-                                            <h3>1 542 125.45 €</h3>
+                                            <h3 id="lblFinalPrice">-- €</h3>
                                             <p>Final Selling Price</p>
                                         </div>
                                         <div class="icon">
@@ -177,6 +177,11 @@
         var formModal = $('#{{ $modalId }}FormBudgetMainInfo');
         var title = $("#{{ $modalId }}Label");
         var messageBox = budgetModal.find('.alert');
+
+        /**
+         * This is the final price per Watt-Peak of the budget.
+         */
+        var pricePerPW = 0.00;
 
         // Reference to the datatable instance to store all the budget details
         var budgetDetailsTable = null;
@@ -342,10 +347,38 @@
 
             let footer = $(budgetDetailsTable.table().node()).find("tfoot");
 
+            budgetDetailsTable.totals.totalTaxAmount = totalTaxAmount;
+            budgetDetailsTable.totals.totalDiscount = totalDiscount;
+            budgetDetailsTable.totals.totalWOTax = totalWOTax;
+            budgetDetailsTable.totals.totalWTax = totalWTax;
+            
             footer.find(".taxPercentage").text(mask.format(totalTaxAmount.toFixed(2)));
             footer.find(".discount").text(mask.format(totalDiscount.toFixed(2)));
             footer.find(".total-col").text(mask.format(totalWOTax.toFixed(2)));
             footer.find(".total-tax-col").text(mask.format((totalWTax).toFixed(2)));
+
+            calculatePricePerWP();
+            calculateFinalPrice();
+        }
+
+        /**
+         * Calculates the price per Watt-Peak when some data has changed.
+         * We asume that the totals have been calculated.
+         */
+        function calculatePricePerWP() {
+            pricePerPW = budgetDetailsTable.totals.totalWTax / parseFloat($("#txtTotalPeakPower").val());
+
+            let mask = new Inputmask(InputEditable.DEFAULT_PRICE_PER_WP_MASK_OPTIONS);
+            $("#lblPricePerWP").text(mask.format(pricePerPW.toFixed(4)));
+        }
+
+        /**
+         * Calculates the final price of the budget.
+         * We asume that the totals have been calculated.
+         */
+        function calculateFinalPrice() {
+            let mask = new Inputmask(InputEditable.DEFAULT_CURRENCY_MASK_OPTIONS);
+            $("#lblFinalPrice").text(mask.format(budgetDetailsTable.totals.totalWTax.toFixed(2)));
         }
 
         // Evento para cargar este modal con la información proporcionada
@@ -652,6 +685,13 @@
             } else {
                 budgetDetailsTable.ajax.url(`/api/budgets/${budgetData.id}`).load();
             }
+
+            budgetDetailsTable.totals = {
+                totalTaxAmount: 0,
+                totalDiscount: 0,
+                totalWOTax: 0,
+                totalWTax: 0,
+            };
 
         });
 
