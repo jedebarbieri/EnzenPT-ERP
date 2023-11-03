@@ -27,7 +27,7 @@ class UpdateBudgetRequest extends FormRequest
             'id' => 'required|numeric',
             'name' => 'string',
             'status' => 'numeric|gte:0',
-            'total_power_pick' => 'numeric|gte:0',
+            'total_peak_power' => 'numeric|gte:0',
             'gain_margin' => 'numeric|gte:0',
             'project_name' => 'string|min:3',
             'project_number' => 'string|min:3',

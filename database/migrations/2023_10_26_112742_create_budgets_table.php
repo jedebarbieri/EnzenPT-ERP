@@ -24,7 +24,7 @@ class CreateBudgetsTable extends Migration
             $table->string('project_name', 500)->nullable();
             $table->string('project_number', 500)->nullable();
             $table->string('project_location', 500)->nullable();
-            $table->double('total_power_pick')->nullable();
+            $table->double('total_peak_power')->nullable();
         });
     }
 

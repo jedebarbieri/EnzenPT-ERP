@@ -19,8 +19,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $project_name The name of the project which this budget belongs. * This will be moved to the project entity.
  * @property string $project_number The number of the project which this budget belong. * This will be moved to the project entity.
  * @property string $project_location The location of the project which this budget belongs. * This will be moved to the project entity.
- * @property float $total_power_pick This is the total of the maximum power that this project can provide.
- *                                 This data is used to calculate the cost of each item or category per Watt Pick ( 0.00 € / Wp)
+ * @property float $total_peak_power This is the total of the maximum power that this project can provide.
+ *                                 This data is used to calculate the cost of each item or category per Watt Peak ( 0.00 € / Wp)
  */
 class Budget extends Model
 {
@@ -37,7 +37,7 @@ class Budget extends Model
         "project_name",
         "project_number",
         "project_location",
-        "total_power_pick"
+        "total_peak_power"
     ];
 
     /**
@@ -74,12 +74,12 @@ class Budget extends Model
     }
 
     /**
-     * This is the getter and the setter for the total_power_pick attribute.
+     * This is the getter and the setter for the total_peak_power attribute.
      * This will round the value to 2 decimals and ensure that the value is not negative
      * 
      * @return Attribute
      */
-    protected function totalPowerPick(): Attribute
+    protected function totalPeakPower(): Attribute
     {
         return Attribute::make(
             get: fn($value) => round(floatval($value), 2),

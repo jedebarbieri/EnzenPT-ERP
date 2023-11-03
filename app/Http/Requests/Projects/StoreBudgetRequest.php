@@ -14,7 +14,7 @@ class StoreBudgetRequest extends FormRequest
     {
         // Establecer valores por defecto si no se proporcionaron en la solicitud
         $this->merge([
-            'total_power_pick' => $this->input('total_power_pick', 0),
+            'total_peak_power' => $this->input('total_peak_power', 0),
             'gain_margin' => $this->input('gain_margin', 0),
             'status' => $this->input('status', Budget::STATUS_DRAFT)
         ]);
@@ -37,7 +37,7 @@ class StoreBudgetRequest extends FormRequest
     {
         return [
             'name' => 'required|string',
-            'total_power_pick' => 'numeric|gte:0',
+            'total_peak_power' => 'numeric|gte:0',
             'gain_margin' => 'numeric|gte:0',
             'project_name' => 'required|string|min:3',
             'project_number' => 'required|string|min:3',

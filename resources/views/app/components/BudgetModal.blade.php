@@ -36,10 +36,10 @@
                                 </div>
                                 <div class="col-sm-3">
                                     <div class="form-group">
-                                        <label for="txtTotalPowerPick" class="">Total Power Pick</label>
+                                        <label for="txtTotalPeakPower" class="">Total Peak Power</label>
                                         <div class="input-group">
-                                            <input type="text" class="form-control text-right" id="txtTotalPowerPick"
-                                                name="total_power_pick" autocomplete="false" value="0.00" />
+                                            <input type="text" class="form-control text-right" id="txtTotalPeakPower"
+                                                name="total_peak_power" autocomplete="false" value="0.00" />
                                             <div class="input-group-append">
                                                 <span class="input-group-text">€/Wp</span>
                                             </div>
@@ -184,7 +184,7 @@
                 name: {
                     required: true,
                 },
-                total_power_pick: {
+                total_peak_power: {
                     min: 0.00
                 },
                 gain_margin: {
@@ -208,7 +208,7 @@
                 name: {
                     required: "Please, enter a name for this Budget.",
                 },
-                total_power_pick: {
+                total_peak_power: {
                     min: "Enter a valid value."
                 },
                 gain_margin: {
@@ -348,7 +348,7 @@
             title.html("Edit Budget");
             formModal.find("#hdId").val(budgetId = budgetData.id);
             formModal.find("#txtBudgetName").val(budgetData.name);
-            formModal.find("#txtTotalPowerPick").val(budgetData.totalPowerPick);
+            formModal.find("#txtTotalPeakPower").val(budgetData.totalPeakPower);
             formModal.find("#txtGainMargin").val(Math.round(budgetData.gainMargin * 10000) / 100);
             formModal.find("#txtProjectName").val(budgetData.projectName);
             formModal.find("#txtProjectNumber").val(budgetData.projectNumber);

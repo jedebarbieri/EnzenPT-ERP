@@ -41,7 +41,7 @@ class BudgetResource extends JsonResource
             'projectName' => $this->project_name,
             'projectNumber' => $this->project_number,
             'projectLocation' => $this->project_location,
-            'totalPowerPick' => $this->total_power_pick,
+            'totalPeakPower' => $this->total_peak_power,
             'updatedAt' => $this->updated_at->toIso8601String()
         ];
     }
