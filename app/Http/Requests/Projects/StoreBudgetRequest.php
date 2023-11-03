@@ -36,13 +36,13 @@ class StoreBudgetRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'string|min:3',
+            'name' => 'required|string|min:3',
+            'project_name' => 'string|nullable',
+            'project_number' => 'string|nullable',
+            'project_location' => 'string|nullable',
             'total_peak_power' => 'numeric|gte:0',
             'gain_margin' => 'numeric|gte:0',
-            'project_name' => 'string|min:3',
-            'project_number' => 'string|min:3',
-            'project_location' => 'string|min:3',
-            'status' => 'integer|in:' . implode(',', Budget::STATUS)
+            'status' => 'integer|in:' . implode(',', array_keys(Budget::STATUS))
         ];
     }
 }

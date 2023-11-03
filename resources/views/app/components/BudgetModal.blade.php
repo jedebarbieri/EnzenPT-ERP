@@ -208,18 +208,6 @@
                     min: 0.00,
                     max: 100.00
                 },
-                project_name: {
-                    required: true,
-                    minlength: 3
-                },
-                project_number: {
-                    required: false,
-                    minlength: 3
-                },
-                project_location: {
-                    required: false,
-                    minlength: 3
-                }
             },
             messages: {
                 name: {
@@ -229,17 +217,9 @@
                     min: "Enter a valid value."
                 },
                 gain_margin: {
-                    min: "Enter a valid value."
+                    min: "Enter a valid value.",
+                    max: "Enter a valid value."
                 },
-                project_name: {
-                    minlength: "3 characters minimum."
-                },
-                project_number: {
-                    minlength: "3 characters minimum."
-                },
-                project_location: {
-                    minlength: "3 characters minimum."
-                }
             },
             errorElement: 'span',
             errorPlacement: function(error, element) {
@@ -259,6 +239,7 @@
                 if (formData.id) {
                     req = axios.put(`/api/budgets/${formData.id}`, formData);
                 } else {
+                    formData.id = null;
                     req = axios.post("/api/budgets", formData);
                 }
                 req
