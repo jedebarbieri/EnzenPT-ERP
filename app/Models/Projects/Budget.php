@@ -30,6 +30,12 @@ class Budget extends Model
     const STATUS_APPROVED = 1;
     const STATUS_REJECTED = 2;
 
+    const STATUS = [
+        self::STATUS_DRAFT => "Draft",
+        self::STATUS_APPROVED => "Approved",
+        self::STATUS_REJECTED => "Rejected"
+    ];
+
     protected $fillable = [
         "status",
         "name",

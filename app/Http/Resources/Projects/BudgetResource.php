@@ -9,22 +9,18 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class BudgetResource extends JsonResource
 {
 
+    /**
+     * Return an array with the status name and value
+     * @param int $status
+     */
     public static function statusName($status)
     {
-        $name = "Draft";
-        switch ($status) {
-            case Budget::STATUS_APPROVED:
-                $name = "Approved";
-                break;
-            case Budget::STATUS_REJECTED:
-                $name = "Rejected";
-                break;
-        }
         return [
             "value" => intval($status),
-            "display" => $name
+            "display" => Budget::STATUS[$status],
         ];
     }
+
     /**
      * Transform the resource into an array.
      *
@@ -35,7 +31,10 @@ class BudgetResource extends JsonResource
         return [
             'id' => $this->id,
             'budgetDetails' => BudgetDetailsResource::collection($this->budgetDetails),
-            'status' => self::statusName($this->status),
+            'status' => [
+                "value" => intval($this->status),
+                "display" => Budget::STATUS[$this->status],
+            ],
             'name' => $this->name,
             'gainMargin' => $this->gain_margin,
             'projectName' => $this->project_name,
