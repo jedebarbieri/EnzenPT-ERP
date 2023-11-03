@@ -1,5 +1,3 @@
-@php
-@endphp
 <!-- resources/views/app/components/BudgetModal.blade.php -->
 
 <div class="modal fade" id="{{ $modalId }}" tabindex="-1" aria-labelledby="{{ $modalId }}Label"
@@ -166,7 +164,8 @@
                     min: 0.00
                 },
                 gain_margin: {
-                    min: 0.00
+                    min: 0.00,
+                    max: 100.00
                 },
                 project_name: {
                     required: true,
@@ -214,6 +213,7 @@
             },
             submitHandler: function(form) {
                 var formData = window.arrayToJsonObject($(form).serializeArray());
+                formData.gain_margin = parseFloat(formData.gain_margin) / 100;
                 let req;
                 if (formData.id) {
                     req = axios.put(`/api/budgets/${formData.id}`, formData);
