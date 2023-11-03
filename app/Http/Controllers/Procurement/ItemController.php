@@ -93,7 +93,17 @@ class ItemController extends Controller
     public function store(StoreItemRequest $request)
     {
         try {
-            $item = Item::create($request->validated());
+            $validatedData = $request->validated();
+
+            // Valores por defecto cuando se guarda por primera vez
+            $data = array_merge([
+                'internal_cod' => '',
+                'name' => '',
+                'unit_price' => 0,
+            ], $validatedData);
+
+            $item = Item::create($data);
+
             return response()->json([
                 'status' => 'success',
                 'data' => [
@@ -117,8 +127,22 @@ class ItemController extends Controller
     public function update(UpdateItemRequest $request, Item $item)
     {
         try {
+
+            // Obtener los datos validados del request
+            $data = $validatedData = $request->validated();
+
+            // Actualizar según el tipo de solicitud
+            if (!$request->isMethod('patch')) {
+                // Si el tipo de request es PUT, actualizar todo el modelo
+                $data = array_merge([
+                    'internal_cod' => '',
+                    'name' => '',
+                    'unit_price' => 0,
+                ], $validatedData);
+            }
+
             $item->update(
-                collect($request->validated())
+                collect($data)
                     ->except('id')
                     ->toArray()
             );

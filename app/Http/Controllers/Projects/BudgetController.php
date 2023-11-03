@@ -93,8 +93,21 @@ class BudgetController extends Controller
     public function store(StoreBudgetRequest $request)
     {
         try {
-            $budget = Budget::create($request->validated());
+            $validatedData = $request->validated();
+
+            // Valores por defecto cuando se guarda por primera vez
+            $data = array_merge([
+                'project_name' => '',
+                'project_number' => '',
+                'project_location' => '',
+                'total_peak_power' => 0,
+                'gain_margin' => 0,
+                'status' => Budget::STATUS_DRAFT
+            ], $validatedData);
+
+            $budget = Budget::create($data);
             $budget->setRelation('budgetDetails', []);
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Budget created successfully.',
@@ -168,24 +181,30 @@ class BudgetController extends Controller
 
         try {
 
-            // Verificar si la solicitud es de tipo PATCH
-            $isPatchRequest = $request->isMethod('patch');
-
             // Obtener los datos validados del request
-            $validatedData = $request->validated();
+            $data = $validatedData = $request->validated();
 
             // Actualizar según el tipo de solicitud
-            if ($isPatchRequest) {
-                // Si es una solicitud PATCH, actualizar solo los campos proporcionados
-                $budget->update($validatedData);
-            } else {
-                // Si es una solicitud PUT, actualizar todo el modelo
-                $budget->update(
-                    collect($validatedData)
-                        ->except('id')
-                        ->toArray()
-                );
+            if (!$request->isMethod('patch')) {
+                // Si el tipo de request es PUT, actualizar todo el modelo
+                $data = array_merge([
+                    'status' => Budget::STATUS_DRAFT,
+                    'name' => "",
+                    'gain_margin' => 0,
+                    'project_name' => "",
+                    'project_number' => "",
+                    'project_location' => "",
+                    'total_peak_power' => 0,
+                ], $validatedData);
             }
+
+            $budget->update(
+                collect($data)
+                    // Excluir los campos que no se pueden actualizar
+                    ->except('id')
+                    ->toArray()
+            );
+
             $budget->setRelation('budgetDetails', []);
 
             return response()->json([

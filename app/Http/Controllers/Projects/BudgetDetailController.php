@@ -28,13 +28,14 @@ class BudgetDetailController extends Controller
 
             $validatedData = $request->validated();
 
-            $data = array_merge($validatedData, [
+            // Valores por defecto cuando se guarda por primera vez
+            $data = array_merge([
                 'budget_id' => $budget->id,
                 'unit_price' => $item->unit_price,
                 'sell_price' => $item->unit_price * (1 + $budget->gain_margin),
                 'quantity' => 1,
                 'tax_percentage' => 0.23,
-            ]);
+            ], $validatedData);
             
             $budgetDetail = BudgetDetail::create($data);
             
@@ -83,25 +84,29 @@ class BudgetDetailController extends Controller
     public function update(UpdateBudgetDetailRequest $request, Budget $budget, BudgetDetail $budgetDetail)
     {
         try {
-
-            // Verificar si la solicitud es de tipo PATCH
-            $isPatchRequest = $request->isMethod('patch');
-
             // Obtener los datos validados del request
-            $validatedData = $request->validated();
+            $data = $validatedData = $request->validated();
 
             // Actualizar según el tipo de solicitud
-            if ($isPatchRequest) {
-                // Si es una solicitud PATCH, actualizar solo los campos proporcionados
-                $budgetDetail->update($validatedData);
-            } else {
-                // Si es una solicitud PUT, actualizar todo el modelo
-                $budgetDetail->update(
-                    collect($validatedData)
-                        ->except('id, item_id, budget_id') // Así puedo excluir algunos campos para la actualización?
-                        ->toArray()
-                );
+
+            if (!$request->isMethod('patch')) {
+                // Si el tipo de request es PUT, actualizar todo el modelo
+                $data = array_merge([
+                    'unit_price' => 0,
+                    'quantity' => 0,
+                    'tax_percentage' => 0,
+                    'discount' => 0,
+                    'sell_price' => 0,
+                ], $validatedData);
             }
+
+            $budgetDetail->update(
+                collect($data)
+                    // Excluir los campos que no se pueden actualizar
+                    ->except('id, item_id, budget_id')
+                    ->toArray()
+            );
+
             $budgetDetail->setRelation('budget', []);
             $budgetDetail->setRelation('item.itemCategory', []);
 
