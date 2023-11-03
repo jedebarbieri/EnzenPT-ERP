@@ -21,11 +21,11 @@ class StoreBudgetDetailRequest extends FormRequest
         return [
             'item_id' => 'required|integer',
             'budget_id' => 'required|integer',
-            'unit_price' => 'numeric',
-            'sell_price' => 'numeric',
-            'quantity' => 'integer',
-            'tax_percentage' => 'numeric',
-            'discount' => 'numeric',
+            'unit_price' => 'numeric|nullable',
+            'sell_price' => 'numeric|nullable',
+            'quantity' => 'integer|nullable',
+            'tax_percentage' => 'numeric|nullable',
+            'discount' => 'numeric|nullable',
         ];
     }
 }
