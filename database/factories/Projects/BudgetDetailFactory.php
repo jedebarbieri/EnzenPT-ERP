@@ -59,20 +59,24 @@ class BudgetDetailFactory extends Factory
                 $unitPrice = $budgetDetail->item->unit_price;
             } else {
                 // 30% de las veces con variación del precio unitario original
-                $variation = $this->faker->randomFloat(2, 0.05, 0.2);
-                $unitPrice = $budgetDetail->item->unit_price + ($budgetDetail->item->unit_price * $variation * ($this->faker->boolean() ? 1 : -1));
+                // 95% de las veces la variación es positiva
+                // La variación es entre 5% y 20%
+                $variation = $this->faker->randomFloat(4, 0.05, 0.2) * ($this->faker->boolean(95) ? 1 : -1);
+                $unitPrice = $budgetDetail->item->unit_price + ($budgetDetail->item->unit_price * $variation);
             }
 
-            // 90% de las veces el sell_price es como la referencia
-            if ($this->faker->boolean(90)) {
+            // 90% de las veces el sell_price es mayor que el unit_price en lo que el gain_margin define
+            if ($this->faker->boolean(95)) {
                 $sellPrice = $budgetDetail->item->unit_price * ($budgetDetail->budget->gain_margin + 1);
             } else {
-                // 10% de las veces variación mínima del margen de ganancia
-                $sellPrice = $budgetDetail->item->unit_price * ($budgetDetail->budget->gain_margin + $this->faker->randomFloat(2, 0, 0.1));
+                // 5% de las veces el sell_price es mayor que el unit_price con un margen de ganancia aleatorio entre 0 y 10%
+                $sellPrice = $budgetDetail->item->unit_price * ($this->faker->randomFloat(4, 0, 0.1) + 1);
             }
 
             $budgetDetail->unit_price = $unitPrice;
             $budgetDetail->sell_price = $sellPrice;
+
+            // El descuento debe aplicarse el 5% de las veces y no debe exceder el 10% del sell_price
             $budgetDetail->discount = $this->faker->boolean(5) ? $this->faker->randomFloat(4, 0, 1) * $sellPrice : 0;
             $budgetDetail->save();
         });

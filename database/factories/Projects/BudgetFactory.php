@@ -15,7 +15,7 @@ class BudgetFactory extends Factory
         return [
             'status' => $this->faker->randomElement([Budget::STATUS_DRAFT, Budget::STATUS_APPROVED, Budget::STATUS_REJECTED]),
             'name' => ucwords($this->faker->word),
-            'gain_margin' => $this->faker->randomFloat(2, 0.05, 0.5),
+            'gain_margin' => $this->faker->randomFloat(2, 0.05, 0.3),
             'project_name' => ucwords($this->faker->words(3, true)),
             'project_number' => $this->faker->regexify('[A-Z0-9]{5}'),
             'project_location' => fake('pt_PT')->city,
