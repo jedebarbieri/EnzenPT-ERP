@@ -30,7 +30,9 @@ class ItemCategoryController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'data' => $categoriesResource
+                'data' => [
+                    'categoryList' => $categoriesResource,
+                ],
             ]);
         } catch (\Throwable $th) {
             return response()->json([

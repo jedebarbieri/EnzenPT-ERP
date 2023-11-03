@@ -68,7 +68,9 @@ class ItemController extends Controller
     
             return response()->json([
                 'status' => 'success',
-                'data' => $itemsResource,
+                'data' => [
+                    'itemList' => $itemsResource,
+                ],
                 'metadata' => [
                     'recordsFiltered' => $items->total(),
                     'recordsTotal' => $items->total(),
@@ -150,7 +152,9 @@ class ItemController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Item updated successfully.',
-                'data' => new ItemResource($item),
+                'data' => [
+                    'item' => new ItemResource($item),
+                ],
             ]);
 
         } catch (\Throwable $th) {

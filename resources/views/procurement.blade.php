@@ -70,7 +70,7 @@
                 "dataSrc": function(json) {
                     json.recordsFiltered = json.metadata.recordsFiltered;
                     json.recordsTotal = json.metadata.recordsTotal;
-                    return json.data;
+                    return json.data.itemList;
                 }
             },
             "columns": [{

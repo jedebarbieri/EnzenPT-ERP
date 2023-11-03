@@ -68,7 +68,9 @@ class BudgetController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'data' => $budgetsResource,
+                'data' => [
+                    'budgetList' => $budgetsResource,
+                ],
                 'metadata' => [
                     'recordsFiltered' => $budgets->total(),
                     'recordsTotal' => $budgets->total(),
@@ -210,7 +212,9 @@ class BudgetController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Budget updated successfully.',
-                'data' => BudgetResource::make($budget)
+                'data' => [
+                    'budget' => BudgetResource::make($budget)
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -247,7 +251,6 @@ class BudgetController extends Controller
 
     public function availableItems(Budget $budget)
     {
-
         try {
             // Obtener todos los elementos que no están en la tabla budget_details para el budgetId especificado
             $items = Item::whereNotIn('id', function ($query) use ($budget) {
@@ -258,7 +261,9 @@ class BudgetController extends Controller
             
             return response()->json([
                 'status' => 'success',
-                'data' => ItemResource::collection($items)
+                'data' => [
+                    'itemList' => ItemResource::collection($items)
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([

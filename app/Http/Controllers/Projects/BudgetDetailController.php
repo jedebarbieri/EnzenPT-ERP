@@ -42,7 +42,9 @@ class BudgetDetailController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Budget detail created successfully.',
-                'data' => BudgetDetailsResource::make($budgetDetail)
+                'data' => [
+                    'budgetDetail' => BudgetDetailsResource::make($budgetDetail)
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
