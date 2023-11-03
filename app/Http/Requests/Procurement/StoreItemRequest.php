@@ -23,8 +23,8 @@ class StoreItemRequest extends FormRequest
     {
         return [
             'name' => 'required|string',
-            'internal_cod' => 'string|min:5',
-            'unit_price' => 'required|numeric|gte:0',
+            'internal_cod' => 'string|min:5|nullable',
+            'unit_price' => 'required|numeric|gte:0|nullable',
             'item_category_id' => 'required|numeric|gte:0'
         ];
     }
