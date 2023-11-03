@@ -110,6 +110,21 @@ class InputEditable {
     };
 
     /**
+     * Define the default configuration for a mask of type Euros per Watts peak
+     */
+    static DEFAULT_PRICE_PER_WP_MASK_OPTIONS = {
+        alias: 'numeric',
+        groupSeparator: '',
+        radixPoint: '.',
+        autoGroup: true,
+        rightAlign: true,
+        digits: 4,
+        suffix: ' €/Wp',
+        prefix: '',
+        placeholder: '0.00',
+    };
+
+    /**
      * Indicates the value for type currency
      */
     static TYPE_CURRENCY = "currency";
