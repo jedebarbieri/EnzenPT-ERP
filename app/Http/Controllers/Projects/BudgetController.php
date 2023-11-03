@@ -10,74 +10,81 @@ use App\Http\Resources\Projects\BudgetResource;
 use App\Models\Procurement\Item;
 use App\Models\Projects\Budget;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class BudgetController extends Controller
 {
+    public function __construct()
+    {
+        //$this->middleware('auth');
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $columns = [
-            'id',
-            'name',
-            'status',
-            'updated_at'
-        ];
+        try {
+            $columns = [
+                'id',
+                'name',
+                'status',
+                'updated_at'
+            ];
 
-        $query = Budget::without('budgetDetails');
+            $query = Budget::without('budgetDetails');
 
-        // Applying sort
-        if ($request->has('order')) {
-            $order = intval($request->input('order.0.column'));
-            $dir = $request->input('order.0.dir');
-            $query->orderBy($columns[$order], $dir);
-        }
-
-        // Applying filter
-        if ($request->has('search.value')) {
-            $searchValue = $request->input('search.value');
-            foreach ($columns as $column) {
-                $query->orWhere($column, 'like', '%' . $searchValue . '%');
+            // Applying sort
+            if ($request->has('order')) {
+                $order = intval($request->input('order.0.column'));
+                $dir = $request->input('order.0.dir');
+                $query->orderBy($columns[$order], $dir);
             }
+
+            // Applying filter
+            if ($request->has('search.value')) {
+                $searchValue = $request->input('search.value');
+                foreach ($columns as $column) {
+                    $query->orWhere($column, 'like', '%' . $searchValue . '%');
+                }
+            }
+
+            // Pagination
+            $length = intval($request->input('length')) ?: Controller::PAGINATION_DEFAULT_PER_PAGE;
+            $start = intval($request->input('start', 1));
+            $budgets = $query->offset($start)->limit($length);
+
+            // Obtener la página actual desde la solicitud
+            $page = intval($start / $length) + 1;
+
+            // Paginar la consulta con el length y la página
+            $budgets = $query->paginate($length, ['*'], 'page', $page);
+
+            $budgets->each(function ($budget) {
+                $budget->setRelation('budgetDetails', []);
+            });
+
+            // Transformar la colección utilizando ItemResource
+            $budgetsResource = BudgetResource::collection($budgets);
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $budgetsResource,
+                'metadata' => [
+                    'recordsFiltered' => $budgets->total(),
+                    'recordsTotal' => $budgets->total(),
+                    'draw' => $request->input('draw') ?: 1,
+                ]
+            ]);
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error fetching budgets',
+                'metadata' => [
+                    'errorDetails' => $th->getMessage()
+                ],
+            ], 500);
         }
-
-        // Pagination
-        $length = intval($request->input('length')) ?: Controller::PAGINATION_DEFAULT_PER_PAGE;
-        $start = intval($request->input('start', 1));
-        $budgets = $query->offset($start)->limit($length);
-
-        // Obtener la página actual desde la solicitud
-        $page = intval($start / $length) + 1;
-
-        // Paginar la consulta con el length y la página
-        $budgets = $query->paginate($length, ['*'], 'page', $page);
-
-        $budgets->each(function ($budget) {
-            $budget->setRelation('budgetDetails', []);
-        });
-
-        // Transformar la colección utilizando ItemResource
-        $budgetsResource = BudgetResource::collection($budgets);
-
-        return response()->json([
-            'status' => 'success',
-            'data' => $budgetsResource,
-            'metadata' => [
-                'recordsFiltered' => $budgets->total(),
-                'recordsTotal' => $budgets->total(),
-                'draw' => $request->input('draw') ?: 1,
-            ]
-        ]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
     }
 
     /**
@@ -99,6 +106,9 @@ class BudgetController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Budget could not be created.',
+                'metadata' => [
+                    'errorDetails' => $e->getMessage(),
+                ],
             ], 500);
         }
     }
@@ -143,16 +153,11 @@ class BudgetController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => $e->getMessage(),
-            ]);
+                'metadata' => [
+                    'errorDetails' => $e->getMessage(),
+                ],
+            ], 500);
         }
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
     }
 
     /**
@@ -161,31 +166,42 @@ class BudgetController extends Controller
     public function update(UpdateBudgetRequest $request, Budget $budget)
     {
 
-        // Verificar si la solicitud es de tipo PATCH
-        $isPatchRequest = $request->isMethod('patch');
+        try {
 
-        // Obtener los datos validados del request
-        $validatedData = $request->validated();
+            // Verificar si la solicitud es de tipo PATCH
+            $isPatchRequest = $request->isMethod('patch');
 
-        // Actualizar según el tipo de solicitud
-        if ($isPatchRequest) {
-            // Si es una solicitud PATCH, actualizar solo los campos proporcionados
-            $budget->update($validatedData);
-        } else {
-            // Si es una solicitud PUT, actualizar todo el modelo
-            $budget->update(
-                collect($validatedData)
-                    ->except('id')
-                    ->toArray()
-            );
+            // Obtener los datos validados del request
+            $validatedData = $request->validated();
+
+            // Actualizar según el tipo de solicitud
+            if ($isPatchRequest) {
+                // Si es una solicitud PATCH, actualizar solo los campos proporcionados
+                $budget->update($validatedData);
+            } else {
+                // Si es una solicitud PUT, actualizar todo el modelo
+                $budget->update(
+                    collect($validatedData)
+                        ->except('id')
+                        ->toArray()
+                );
+            }
+            $budget->setRelation('budgetDetails', []);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Budget updated successfully.',
+                'data' => BudgetResource::make($budget)
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Budget could not be updated.' . $e->getMessage(),
+                'metadata' => [
+                    'errorDetails' => $e->getMessage(),
+                ],
+            ], 500);
         }
-        $budget->setRelation('budgetDetails', []);
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Budget updated successfully.',
-            'data' => BudgetResource::make($budget)
-        ]);
     }
 
     /**
@@ -203,7 +219,10 @@ class BudgetController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Budget could not be deleted.',
-            ]);
+                'metadata' => [
+                    'errorDetails' => $e->getMessage(),
+                ],
+            ], 500);
         }
     }
 
@@ -225,8 +244,11 @@ class BudgetController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Error while retrieving available items.'
-            ]);
+                'message' => 'Error while retrieving available items.',
+                'metadata' => [
+                    'errorDetails' => $e->getMessage(),
+                ],
+            ], 500);
         }
     }
 }

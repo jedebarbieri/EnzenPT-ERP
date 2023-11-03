@@ -12,13 +12,11 @@ use App\Models\Projects\BudgetDetail;
 
 class BudgetDetailController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function __construct()
     {
-        //
+        //$this->middleware('auth');
     }
+
 
     /**
      * Store a newly created resource in storage.
@@ -49,6 +47,9 @@ class BudgetDetailController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Budget detail could not be created.' . $e->getMessage(),
+                'metadata' => [
+                    'errorDetails' => $e->getMessage(),
+                ],
             ], 500);
         }
     }
@@ -69,7 +70,10 @@ class BudgetDetailController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => $e->getMessage(),
-            ], 404);
+                'metadata' => [
+                    'errorDetails' => $e->getMessage(),
+                ],
+            ], 500);
         }
     }
 
@@ -78,33 +82,43 @@ class BudgetDetailController extends Controller
      */
     public function update(UpdateBudgetDetailRequest $request, Budget $budget, BudgetDetail $budgetDetail)
     {
+        try {
 
-        // Verificar si la solicitud es de tipo PATCH
-        $isPatchRequest = $request->isMethod('patch');
+            // Verificar si la solicitud es de tipo PATCH
+            $isPatchRequest = $request->isMethod('patch');
 
-        // Obtener los datos validados del request
-        $validatedData = $request->validated();
+            // Obtener los datos validados del request
+            $validatedData = $request->validated();
 
-        // Actualizar según el tipo de solicitud
-        if ($isPatchRequest) {
-            // Si es una solicitud PATCH, actualizar solo los campos proporcionados
-            $budgetDetail->update($validatedData);
-        } else {
-            // Si es una solicitud PUT, actualizar todo el modelo
-            $budgetDetail->update(
-                collect($validatedData)
-                    ->except('id, item_id, budget_id') // Así puedo excluir algunos campos para la actualización?
-                    ->toArray()
-            );
+            // Actualizar según el tipo de solicitud
+            if ($isPatchRequest) {
+                // Si es una solicitud PATCH, actualizar solo los campos proporcionados
+                $budgetDetail->update($validatedData);
+            } else {
+                // Si es una solicitud PUT, actualizar todo el modelo
+                $budgetDetail->update(
+                    collect($validatedData)
+                        ->except('id, item_id, budget_id') // Así puedo excluir algunos campos para la actualización?
+                        ->toArray()
+                );
+            }
+            $budgetDetail->setRelation('budget', []);
+            $budgetDetail->setRelation('item.itemCategory', []);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Budget detail updated successfully.',
+                'data' => BudgetDetailsResource::make($budgetDetail)
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Budget detail could not be updated.',
+                'metadata' => [
+                    'errorDetails' => $e->getMessage(),
+                ],
+            ], 500);
         }
-        $budgetDetail->setRelation('budget', []);
-        $budgetDetail->setRelation('item.itemCategory', []);
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Budget detail updated successfully.',
-            'data' => BudgetDetailsResource::make($budgetDetail)
-        ]);
     }
 
     /**
@@ -122,6 +136,9 @@ class BudgetDetailController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Budget detail could not be deleted.',
+                'metadata' => [
+                    'errorDetails' => $e->getMessage(),
+                ],
             ], 500);
         }
     }
