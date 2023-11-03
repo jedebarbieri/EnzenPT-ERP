@@ -153,7 +153,6 @@ class InputEditable {
      * Constructor for the InputEditable class.
      * @param {Object} options - Configuration options for the component.
      * @param {HTMLElement} options.inputElement - Associated input element.
-     * @param {string} options.apiService - API service for updates.
      * @param {Function|null} options.onChangeCallback - Value change callback.
      * @param {Function|null} options.onBlurCallback - Blur callback.
      * @param {string} options.nodeType - Type of node for rendering.

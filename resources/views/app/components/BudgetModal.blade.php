@@ -103,8 +103,7 @@
 
                     </div>
                 </form>
-
-                <div class="card" id="{{ $modalId }}SuppliesListCard">
+                <div class="card d-none" id="{{ $modalId }}SuppliesListCard">
                     <div class="card-header">
                         <nav class="navbar p-0">
                             <h6 class="card-title text-bold">Supplies List</h6>
@@ -182,13 +181,20 @@
         var formModal = $('#{{ $modalId }}FormBudgetMainInfo');
         var title = $("#{{ $modalId }}Label");
         var messageBox = budgetModal.find('.alert');
-
+        var budgetTotals = {
+            totalTaxAmount: 0,
+            totalDiscount: 0,
+            totalWOTax: 0,
+            totalWTax: 0,
+        };
         /**
          * This is the final price per Watt-Peak of the budget.
          */
         var pricePerPW = 0.00;
 
-        // Reference to the datatable instance to store all the budget details
+        /**
+         *  Reference to the datatable instance to store all the budget details
+         */
         var budgetDetailsTable = null;
 
         messageBox.on('close.bs.alert', function() {
@@ -196,6 +202,9 @@
             $(this).hide();
         });
 
+        /**
+         * This is the validator for the Main Information form.
+         */
         var validator = formModal.validate({
             rules: {
                 name: {
@@ -235,19 +244,26 @@
             submitHandler: function(form) {
                 var formData = window.arrayToJsonObject($(form).serializeArray());
                 formData.gain_margin = parseFloat(formData.gain_margin) / 100;
+                // Verificar y manipular las cadenas vacías
+                for (var key in formData) {
+                    if (formData[key] === "") {
+                        formData[key] = null;
+                    }
+                }
                 let req;
                 if (formData.id) {
-                    req = axios.put(`/api/budgets/${formData.id}`, formData);
+                    req = axios.patch(`/api/budgets/${formData.id}`, formData);
                 } else {
                     formData.id = null;
                     req = axios.post("/api/budgets", formData);
                 }
                 req
                     .then(function(response) {
+                        budgetId = response.data.data.budget.id;
                         // Manejar la respuesta exitosa
                         document.dispatchEvent(new CustomEvent('budgetModal.loadData', {
                             detail: {
-                                data: response.data.data
+                                data: response.data.data.budget
                             }
                         }));
 
@@ -281,21 +297,28 @@
             }
         });
 
-        // Reset the form before showing the modal
+        /** 
+         * Reset the form before showing the modal
+         */
         budgetModal.on('hidden.bs.modal', function(event) {
             validator.resetForm();
             formModal[0].reset();
+            formModal.find("#hdId").val(budgetId = null);
             title.html("New Budget");
             formModal.find('.error').removeClass("error");
             formModal.find('.is-invalid').removeClass("is-invalid");
             formModal.find('.form-control-feedback').remove();
+            budgetId = null;
+            pricePerPW = 0.00;
             $("lblPricePerWP").text("-- €/Wp");
             $("lblFinalPrice").text("-- €");
             // Reset the table
             if (budgetDetailsTable) {
                 budgetDetailsTable.clear().draw();
             }
-            $("#{{ $modalId }}SuppliesListCard").hide();
+            $("#{{ $modalId }}SuppliesListCard").hide(function() {
+                $(this).addClass("d-none");
+            });
         });
 
         /**
@@ -306,7 +329,8 @@
         function calculateTotalRow(row) {
             let calCols = row.calculablesColums;
 
-            let totalWOTax = calCols.sellPriceInpEditable.value * calCols.quantityInpEditable.value - calCols.discountInpEditable.value;
+            let totalWOTax = calCols.sellPriceInpEditable.value * calCols.quantityInpEditable.value - calCols
+                .discountInpEditable.value;
             totalWOTax = Math.round(totalWOTax * 100) / 100;
 
             let totalWTax = totalWOTax / (1 - parseFloat(calCols.taxPercentageInpEditable.value));
@@ -333,7 +357,8 @@
 
                 totalDiscount += parseFloat(calCols.discountInpEditable.value);
 
-                let totalWOTaxRow = calCols.sellPriceInpEditable.value * calCols.quantityInpEditable.value - calCols.discountInpEditable.value;
+                let totalWOTaxRow = calCols.sellPriceInpEditable.value * calCols.quantityInpEditable.value - calCols
+                    .discountInpEditable.value;
                 totalWOTax += totalWOTaxRow;
 
                 let totalWTaxRow = totalWOTaxRow / (1 - parseFloat(calCols.taxPercentageInpEditable.value));
@@ -346,11 +371,11 @@
 
             let footer = $(budgetDetailsTable.table().node()).find("tfoot");
 
-            budgetDetailsTable.totals.totalTaxAmount = totalTaxAmount;
-            budgetDetailsTable.totals.totalDiscount = totalDiscount;
-            budgetDetailsTable.totals.totalWOTax = totalWOTax;
-            budgetDetailsTable.totals.totalWTax = totalWTax;
-            
+            budgetTotals.totalTaxAmount = totalTaxAmount;
+            budgetTotals.totalDiscount = totalDiscount;
+            budgetTotals.totalWOTax = totalWOTax;
+            budgetTotals.totalWTax = totalWTax;
+
             footer.find(".taxPercentage").text(mask.format(totalTaxAmount.toFixed(2)));
             footer.find(".discount").text(mask.format(totalDiscount.toFixed(2)));
             footer.find(".total-col").text(mask.format(totalWOTax.toFixed(2)));
@@ -365,7 +390,7 @@
          * We asume that the totals have been calculated.
          */
         function calculatePricePerWP() {
-            pricePerPW = budgetDetailsTable.totals.totalWTax / parseFloat($("#txtTotalPeakPower").val());
+            pricePerPW = budgetTotals.totalWTax / parseFloat($("#txtTotalPeakPower").val());
 
             let mask = new Inputmask(InputEditable.DEFAULT_PRICE_PER_WP_MASK_OPTIONS);
             $("#lblPricePerWP").text(mask.format(pricePerPW.toFixed(4)));
@@ -377,13 +402,12 @@
          */
         function calculateFinalPrice() {
             let mask = new Inputmask(InputEditable.DEFAULT_CURRENCY_MASK_OPTIONS);
-            $("#lblFinalPrice").text(mask.format(budgetDetailsTable.totals.totalWTax.toFixed(2)));
+            $("#lblFinalPrice").text(mask.format(budgetTotals.totalWTax.toFixed(2)));
         }
 
         // Evento para cargar este modal con la información proporcionada
         document.addEventListener('budgetModal.loadData', (event) => {
             let budgetData = event.detail.data;
-            budgetId = budgetData.id;
             const apiServiceBase = `/api/budgets/${budgetData.id}/budgetDetails/`;
             title.html("Edit Budget");
             formModal.find("#hdId").val(budgetId = budgetData.id);
@@ -394,7 +418,8 @@
             formModal.find("#txtProjectNumber").val(budgetData.projectNumber);
             formModal.find("#txtProjectLocation").val(budgetData.projectLocation);
 
-            $("#{{ $modalId }}SuppliesListCard").show();
+
+            $("#{{ $modalId }}SuppliesListCard").removeClass("d-none").show();
 
             budgetModal.modal('show');
 
@@ -545,7 +570,6 @@
                         // Input for the Sell Pricie
                         let sellPriceCell = $(row).find("td.sellPrice");
                         row.calculablesColums.sellPriceInpEditable = new InputEditable({
-                            apiService: `api/budgets/${budgetData.id}/budgetDetails/${data.id}`,
                             nodeAttributes: {
                                 value: sellPriceCell.text(),
                             },
@@ -571,7 +595,6 @@
                         // Input for Quantity
                         let quantityCell = $(row).find("td.quantity");
                         row.calculablesColums.quantityInpEditable = new InputEditable({
-                            apiService: `api/budgets/${budgetData.id}/budgetDetails/${data.id}`,
                             nodeAttributes: {
                                 value: quantityCell.text(),
                             },
@@ -597,7 +620,6 @@
                         // Input for the IVA
                         let taxPercentageCell = $(row).find("td.taxPercentage");
                         row.calculablesColums.taxPercentageInpEditable = new InputEditable({
-                            apiService: `api/budgets/${budgetData.id}/budgetDetails/${data.id}`,
                             valueType: "percentage",
                             nodeAttributes: {
                                 value: taxPercentageCell.text(),
@@ -624,7 +646,6 @@
                         // Input for the Discount
                         let discountCell = $(row).find("td.discount");
                         row.calculablesColums.discountInpEditable = new InputEditable({
-                            apiService: `api/budgets/${budgetData.id}/budgetDetails/${data.id}`,
                             nodeAttributes: {
                                 value: discountCell.text(),
                             },
@@ -684,17 +705,9 @@
                         calculateTotalTable();
                     }
                 });
-
             } else {
                 budgetDetailsTable.ajax.url(`/api/budgets/${budgetData.id}`).load();
             }
-
-            budgetDetailsTable.totals = {
-                totalTaxAmount: 0,
-                totalDiscount: 0,
-                totalWOTax: 0,
-                totalWTax: 0,
-            };
 
         });
 
@@ -775,13 +788,13 @@
 
             $(rowNode).find(".delete-btn").remove();
 
-            // Hacer una solicitud AJAX para obtener todos los datos
+            // Hacer una solicitud AJAX para obtener todos los items disponibles y cargar el select2
             $.ajax({
                 url: `/api/budgets/${budgetId}/availableItems`,
                 dataType: 'json',
                 success: function(data) {
                     // Transformar los datos de la respuesta en el formato que Select2 espera
-                    let select2Data = data.data.map(function(item) {
+                    let select2Data = data.data.itemList.map(function(item) {
                         return {
                             id: item.id,
                             text: item.internalCod + ' - ' + item.name
@@ -800,8 +813,7 @@
                             budget_id: budgetId
                         }, function() {
                             // Recargar la tabla
-                            document.dispatchEvent(new CustomEvent(
-                                'budgetDetailsTable.reloadTable'));
+                            document.dispatchEvent(new CustomEvent('budgetDetailsTable.reloadTable'));
                         });
                     });
                 }
