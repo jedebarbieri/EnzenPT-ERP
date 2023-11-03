@@ -269,9 +269,14 @@
          * @param {jQuery} row
          */
         function calculateTotalRow(row) {
-            let totalWOTax = row.calculablesColums.sellPriceInpEditable.value * row.calculablesColums.quantityInpEditable
-                .value - row.calculablesColums.discountInpEditable.value;
-            let totalWTax = totalWOTax + totalWOTax * row.calculablesColums.taxPercentageInpEditable.value;
+            let calCols = row.calculablesColums;
+
+            let totalWOTax = calCols.sellPriceInpEditable.value * calCols.quantityInpEditable.value - calCols.discountInpEditable.value;
+            totalWOTax = Math.round(totalWOTax * 100) / 100;
+            
+            let totalWTax = totalWOTax / (1 - parseFloat(calCols.taxPercentageInpEditable.value));
+            totalWTax = Math.round(totalWTax * 100) / 100;
+
             let mask = new Inputmask(InputEditable.DEFAULT_CURRENCY_MASK_OPTIONS);
             $(row).find(".total-col").text(mask.format(totalWOTax.toFixed(2)));
             $(row).find(".total-tax-col").text(mask.format(totalWTax.toFixed(2)));
