@@ -10,7 +10,8 @@
         "infyomlabs/laravel-ui-adminlte": "^5.2",
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.2",
-        "laravel/tinker": "^2.8"
+        "laravel/tinker": "^2.8",
+        "phpoffice/phpspreadsheet": "^1.29"
     },
     "require-dev": {
         "bennett-treptow/laravel-migration-generator": "^4.3",
