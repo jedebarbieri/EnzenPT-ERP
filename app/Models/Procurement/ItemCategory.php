@@ -2,6 +2,7 @@
 
 namespace App\Models\Procurement;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -11,10 +12,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $name
  * @property string $prefix 
  * @property ItemCategory $parent
- * @property ItemCategory[] $children
+ * @property Collection|ItemCategory[] $children
  * @property bool $isMain
  * @property string $prefixCode
- * @property Item[] $items
+ * @property Collection|Item[] $items
  */
 class ItemCategory extends Model
 {
