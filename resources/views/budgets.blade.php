@@ -66,6 +66,8 @@
             "info": true,
             "lengthMenu": [20, 100, 200],
 
+            "order": [[2, 'asc'], [3, 'desc']],
+
             "ajax": {
                 "url": "/api/budgets",
                 "type": "GET",

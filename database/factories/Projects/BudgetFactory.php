@@ -17,9 +17,9 @@ class BudgetFactory extends Factory
     
         $randomNumber = $this->faker->numberBetween(1, 100);
     
-        if ($randomNumber <= 5) {
+        if ($randomNumber <= 10) {
             $status = Budget::STATUS_REJECTED;
-        } elseif ($randomNumber <= 35) {
+        } elseif ($randomNumber <= 70) {
             $status = Budget::STATUS_APPROVED;
         } else {
             $status = Budget::STATUS_DRAFT;

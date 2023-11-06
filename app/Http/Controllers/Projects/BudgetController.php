@@ -38,6 +38,9 @@ class BudgetController extends Controller
                 $order = intval($request->input('order.0.column'));
                 $dir = $request->input('order.0.dir');
                 $query->orderBy($columns[$order], $dir);
+            } else {
+                $query->orderByRaw("FIELD(status, " . Budget::STATUS_DRAFT . ", " . Budget::STATUS_APPROVED . ", " . Budget::STATUS_REJECTED . ")")
+                    ->orderBy('updated_at', 'desc');
             }
 
             // Applying filter
@@ -77,7 +80,6 @@ class BudgetController extends Controller
                     'draw' => $request->input('draw') ?: 1,
                 ]
             ]);
-
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => 'error',
@@ -150,7 +152,7 @@ class BudgetController extends Controller
                         ->with('item.itemCategory');
                 }
             ])->find($budget->id);
-            
+
             // $queries = DB::getQueryLog();
 
             foreach ($budget->budgetDetails as $budgetDetail) {
@@ -258,7 +260,7 @@ class BudgetController extends Controller
                     ->from('budget_details')
                     ->where('budget_id', $budget->id);
             })->get();
-            
+
             return response()->json([
                 'status' => 'success',
                 'data' => [
