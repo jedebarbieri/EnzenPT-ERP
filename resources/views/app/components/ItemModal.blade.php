@@ -47,11 +47,11 @@
                         <label for="price" class="col-sm-2 col-form-label">Price</label>
                         <div class="col-sm-10">
                             <div class="input-group">
-                                <div class="input-group-prepend">
+                                <input type="text" autocomplete="false" class="form-control" name="unit_price"
+                                    value="0.00" id="txtPrice" aria-label="Actual price" />
+                                <div class="input-group-append">
                                     <span class="input-group-text">€</span>
                                 </div>
-                                <input type="number" autocomplete="false" class="form-control" name="unit_price"
-                                    value="0.00" id="txtPrice" aria-label="Actual price" />
                             </div>
                         </div>
                     </div>
@@ -192,6 +192,23 @@
         formModal.find("#txtInternalCod").val(itemData.internalCod);
         formModal.find("#txtPrice").val(itemData.unitPrice);        
         formModal.find("#{{ $selCategoryId }}").val(itemData.itemCategory.id).trigger('change');
+
+        if (!formModal.find("#txtPrice").data(MaskedInput.INSTANCE)) {
+            console.log("Initializing MaskedInput");
+            new MaskedInput({
+                inputElement: formModal.find("#txtPrice"),
+                valueType: MaskedInput.TYPE_CURRENCY,
+                inputmask: new Inputmask({
+                    ...MaskedInput.DEFAULT_CURRENCY_MASK_OPTIONS,
+                    ...{
+                        // Removing the suffix sinse the input already has it as a label
+                        suffix: '',
+                        rightAlign: false,
+                    },
+                }),
+            });
+        }
+
         itemModal.modal('show');
     });
 
