@@ -26,6 +26,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property float $total_without_tax_after_discount This is total without tax after discount. It does not apply rounding.
  * @property float $total_with_tax This is the final total considering discount and tax. In this step we apply the rounding.
  * @property float $tax_amount This is the tax percentage applied to the total. It does not apply rounding.
+ * @property float $price_per_wp This is the price per Watt Peak for this detail.
+ *                               It is calculated dividing the final total by the total peak power of the budget.
  */
 class BudgetDetail extends Model
 {
@@ -43,6 +45,12 @@ class BudgetDetail extends Model
         "discount",
         "sell_price"
     ];
+
+    private float $totalWithoutTax;
+    private float $totalWithoutTaxAfterDiscount;
+    private float $totalWithTax;
+    private float $taxAmount;
+    private float $pricePerWp;
 
     /**
      * Returns the relationship to the item that represents
@@ -151,7 +159,10 @@ class BudgetDetail extends Model
      */
     public function getTotalWithoutTaxAttribute()
     {
-        return $this->quantity * $this->sell_price;
+        if (is_null($this->totalWithoutTax)) {
+            $this->totalWithoutTax = $this->quantity * $this->sell_price;
+        }
+        return $this->totalWithoutTax;
     }
 
     /**
@@ -160,7 +171,10 @@ class BudgetDetail extends Model
      */
     public function getTotalWithoutTaxAfterDiscountAttribute()
     {
-        return $this->total_without_tax - $this->discount;
+        if (is_null($this->totalWithoutTaxAfterDiscount)) {
+            $this->totalWithoutTaxAfterDiscount = $this->total_without_tax - $this->discount;
+        }
+        return $this->totalWithoutTaxAfterDiscount;
     }
 
     /**
@@ -169,7 +183,10 @@ class BudgetDetail extends Model
      */
     public function getTotalWithTaxAttribute()
     {
-        return round(floatval($this->total_without_tax_after_discount / (1 - $this->tax_percentage)), 2);
+        if (is_null($this->totalWithTax)) {
+            $this->totalWithTax = round($this->total_without_tax_after_discount / (1 - floatval($this->tax_percentage)), 2);
+        }
+        return $this->totalWithTax;
     }
 
 
@@ -179,7 +196,36 @@ class BudgetDetail extends Model
      */
     public function getTaxAmountAttribute()
     {
-        return round(floatval($this->total_with_tax - $this->total_without_tax_after_discount), 2);
+        if (is_null($this->taxAmount)) {
+            $this->taxAmount = round(floatval($this->total_with_tax - $this->total_without_tax_after_discount), 2);
+        }
+        return $this->taxAmount;
+    }
+
+    /**
+     * Better use the attribute price_per_wp
+     *
+     * @return float
+     */
+    public function getPricePerWpAttribute()
+    {
+        if (is_null($this->pricePerWp)) {
+            $this->pricePerWp = round(floatval($this->total_with_tax / $this->budget->total_peak_power), 2);
+        }
+        return $this->pricePerWp;
+    }
+
+
+    /**
+     * This method is used to reset the totals. This is useful when the user changes the values of the budget details
+     */
+    public function resetTotals()
+    {
+        $this->totalWithoutTax = null;
+        $this->totalWithoutTaxAfterDiscount = null;
+        $this->totalWithTax = null;
+        $this->taxAmount = null;
+        $this->pricePerWp = null;
     }
 
 
