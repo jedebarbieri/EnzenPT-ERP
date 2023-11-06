@@ -193,10 +193,10 @@
         formModal.find("#txtPrice").val(itemData.unitPrice);        
         formModal.find("#{{ $selCategoryId }}").val(itemData.itemCategory.id).trigger('change');
 
-        if (!formModal.find("#txtPrice").data(MaskedInput.INSTANCE)) {
-            console.log("Initializing MaskedInput");
+        let txtPrice = formModal.find("#txtPrice");
+        if (!txtPrice.data(MaskedInput.INSTANCE)) {
             new MaskedInput({
-                inputElement: formModal.find("#txtPrice"),
+                inputElement: txtPrice,
                 valueType: MaskedInput.TYPE_CURRENCY,
                 inputmask: new Inputmask({
                     ...MaskedInput.DEFAULT_CURRENCY_MASK_OPTIONS,
@@ -207,6 +207,8 @@
                     },
                 }),
             });
+        } else {
+            txtPrice.data(MaskedInput.INSTANCE).setValue(itemData.unitPrice);
         }
 
         itemModal.modal('show');

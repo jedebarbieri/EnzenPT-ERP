@@ -422,29 +422,33 @@
             title.html("Edit Budget");
             formModal.find("#hdId").val(budgetId = budgetData.id);
             formModal.find("#txtBudgetName").val(budgetData.name);
-            formModal.find("#txtTotalPeakPower").val(budgetData.totalPeakPower);
-            formModal.find("#txtGainMargin").val(Math.round(budgetData.gainMargin * 10000) / 100);
             formModal.find("#txtProjectName").val(budgetData.projectName);
             formModal.find("#txtProjectNumber").val(budgetData.projectNumber);
             formModal.find("#txtProjectLocation").val(budgetData.projectLocation);
 
-            if (!formModal.find("#txtTotalPeakPower").data(MaskedInput.INSTANCE)) {
+            let txtTotalPeakPower = formModal.find("#txtTotalPeakPower");
+            if (!txtTotalPeakPower.data(MaskedInput.INSTANCE)) {
+                txtTotalPeakPower.val(budgetData.totalPeakPower);
                 new MaskedInput({
-                    inputElement: formModal.find("#txtTotalPeakPower"),
+                    inputElement: txtTotalPeakPower,
                     valueType: MaskedInput.TYPE_DECIMAL,
                     inputmask: new Inputmask({
-                        ...MaskedInput.DEFAULT_PRICE_PER_WP_MASK_OPTIONS,
+                        ...MaskedInput.DEFAULT_DECIMAL_MASK_OPTIONS,
                         ...{
                             // Removing the suffix sinse the input already has it as a label
                             suffix: ""
                         },
                     }),
                 });
+            } else {
+                txtTotalPeakPower.data(MaskedInput.INSTANCE).value = budgetData.totalPeakPower;
             }
 
-            if (!formModal.find("#txtGainMargin").data(MaskedInput.INSTANCE)) {
+            let txtGainMargin = formModal.find("#txtGainMargin");
+            if (!txtGainMargin.data(MaskedInput.INSTANCE)) {
+                txtGainMargin.val(budgetData.gainMargin);
                 new MaskedInput({
-                    inputElement: formModal.find("#txtGainMargin"),
+                    inputElement: txtGainMargin,
                     valueType: MaskedInput.TYPE_PERCENTAGE,
                     inputmask: new Inputmask({
                         ...MaskedInput.DEFAULT_PERCENTAGE_MASK_OPTIONS,
@@ -454,6 +458,8 @@
                         },
                     }),
                 });
+            } else {
+                txtGainMargin.data(MaskedInput.INSTANCE).value = budgetData.gainMargin;
             }
 
 
