@@ -78,6 +78,8 @@
 @push('page_scripts')
 
 <script type="module">
+    // Overriting the default validator for the MaskedInput
+    MaskedInput.overrideValidator();
 
     var itemModal = $("#{{$modalId}}");
     var formModal = $('#{{$modalId}}FormItemDetails');

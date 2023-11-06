@@ -177,14 +177,8 @@
     </template>
 
     <script type="module">
-        $.validator.prototype.elementValue = function(element) {
-            // Si el elemento tiene una instancia con un valor, usa ese valor
-            if ($(element).data(MaskedInput.INSTANCE) instanceof MaskedInput) {
-                return $(element).data(MaskedInput.INSTANCE).value;
-            }
-            // De lo contrario, usa el comportamiento predeterminado
-            return $(element).val();
-        };
+        // Overriting the default validator for the MaskedInput
+        MaskedInput.overrideValidator();
 
         var budgetModal = $("#{{ $modalId }}");
         var budgetId = null;

@@ -273,6 +273,20 @@ class MaskedInput {
         // Removes separators and decimal characters. 
         return this._rawValue;
     }
+
+    /**
+     * Overrides the default validator to use the value of the component instead of the value of the input
+     */
+    static overrideValidator() {   
+        $.validator.prototype.elementValue = function(element) {
+            // Si el elemento tiene una instancia con un valor, usa ese valor
+            if ($(element).data(MaskedInput.INSTANCE) instanceof MaskedInput) {
+                return $(element).data(MaskedInput.INSTANCE).value;
+            }
+            // De lo contrario, usa el comportamiento predeterminado
+            return $(element).val();
+        };
+    }
 }
 
 export default MaskedInput;
