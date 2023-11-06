@@ -1,13 +1,12 @@
 
 
 /**
- * This class will update one value using a PATCH service.
- * It will call the service on ENTER press, blurout, TAB press.
- * It will show a loading animation.
- * It will show an error message if necesssary
- *  
+ * This class is a input with more functionality.
+ * It uses the Inputmask library to show a mask on the input.
+ * Also, handles the events when change or blur.
+ * It is usefull when you need and input for some numerical values and also need to give them some format.
  **/
-class InputEditable {
+class MaskedInput {
     /**
      * Associated input element for the component.
      * @type {HTMLElement}
@@ -30,7 +29,8 @@ class InputEditable {
     onBlurCallback = null;
 
     /**
-     * Attributes of the node used to render the component.
+     * If an inputElement is not passed to the constructor, then, this property stores the attributes to
+     * render the input element.
      * @type {Object}
      * @public
      */
@@ -38,31 +38,32 @@ class InputEditable {
 
     /**
      * Value associated with the editable component.
-     * This is the abstract value (the real value). It is not the formatted string.
+     * This is the real value. It is not the formatted value.
+     * Notice that the value is always a string.
      * @type {string}
      * @private
      */
     _rawValue = null;
 
     /**
-     * This is the type of the real value. It can be "string", "integer", "decimal", "percentage", "currency"
+     * This is the type of the real value. It can be TYPE_CURRENCY, TYPE_PERCENTAGE, TYPE_DECIMAL, TYPE_INTEGER or TYPE_STRING
      * @type {string}
      * @public
      */
-    valueType = InputEditable.TYPE_STRING;
+    valueType = MaskedInput.TYPE_STRING;
 
     /**
-     * Determine if the input will show a mask or not.
+     * This is the instance of the Inputmask class that is used to mask the input
      * @type {Inputmask}
      * @public
      */
     inputmask = null;
 
     /**
-     * Define the options for the mask
+     * Define the options for the mask. By default is DEFAULT_DECIMAL_MASK_OPTIONS
      * @type {Object} 
      */
-    maskOptions = InputEditable.DEFAULT_DECIMAL_MASK_OPTIONS;
+    maskOptions = MaskedInput.DEFAULT_DECIMAL_MASK_OPTIONS;
 
     /**
      * Define the default configuration for a mask of type currency
@@ -71,9 +72,7 @@ class InputEditable {
         alias: 'currency',
         groupSeparator: ' ',
         radixPoint: '.',
-        autoGroup: true,
         rightAlign: true,
-        digits: 2,
         suffix: ' €',
         prefix: '',
         placeholder: '0.00',
@@ -83,10 +82,9 @@ class InputEditable {
      * Define the default configuration for a mask of type percentage
      */
     static DEFAULT_PERCENTAGE_MASK_OPTIONS = {
-        alias: 'numeric',
+        alias: 'percentage',
         groupSeparator: ' ',
         radixPoint: '.',
-        autoGroup: true,
         rightAlign: true,
         digits: 2,
         suffix: ' %',
@@ -98,15 +96,28 @@ class InputEditable {
      * Define the default configuration for a mask of type decimal
      */
     static DEFAULT_DECIMAL_MASK_OPTIONS = {
-        alias: 'numeric',
+        alias: 'decimal',
         groupSeparator: ' ',
         radixPoint: '.',
-        autoGroup: true,
         rightAlign: true,
         digits: 2,
         suffix: '',
         prefix: '',
         placeholder: '0.00',
+    };
+
+    /**
+     * Define the default configuration for a mask of type decimal
+     */
+    static DEFAULT_INTEGER_MASK_OPTIONS = {
+        alias: 'integer',
+        groupSeparator: ' ',
+        radixPoint: '.',
+        rightAlign: true,
+        digits: 0,
+        suffix: '',
+        prefix: '',
+        placeholder: '0',
     };
 
     /**
@@ -150,12 +161,11 @@ class InputEditable {
     static TYPE_STRING = "string";
 
     /**
-     * Constructor for the InputEditable class.
+     * Constructor for the MaskedInput class.
      * @param {Object} options - Configuration options for the component.
-     * @param {HTMLElement} options.inputElement - Associated input element.
+     * @param {HTMLElement} options.inputElement - Optional. Associated input element. If not passed, it will be created.
      * @param {Function|null} options.onChangeCallback - Value change callback.
      * @param {Function|null} options.onBlurCallback - Blur callback.
-     * @param {string} options.nodeType - Type of node for rendering.
      * @param {Object} options.nodeAttributes - Node attributes for rendering.
      * @param {Object} options.maskOptions - Options to create the Inputmask instance if it is necesary
      * @param {*} options.value - Initial value of the component.
@@ -167,29 +177,29 @@ class InputEditable {
             // We will construct the default element
 
             this.nodeAttributes = {
+                ...options.nodeAttributes,
                 ...{
                     "type": "text",
-                    "class": `content-editable ${this.additionalClasses ?? ''}`,
+                    "class": `masketd-input ${this.nodeAttributes?.class ?? ''}`,
                 },
-                ...options.nodeAttributes
             };
 
             this.inputElement = $(`<input/>`, this.nodeAttributes);
         }
 
         if (!this.inputmask) {
-            this.inputmask = new Inputmask(this.maskOptions ?? InputEditable.DEFAULT_DECIMAL_MASK_OPTIONS);
+            this.inputmask = new Inputmask(this.maskOptions ?? MaskedInput.DEFAULT_DECIMAL_MASK_OPTIONS);
             this.inputmask.$el = this.inputElement;
             this.inputmask.mask(this.inputElement);
         }
 
         // Doing a cross reference
-        this.inputElement.data("InputEditableInstance", this);
+        this.inputElement.data("MaskedInputInstance", this);
         this.value = this.nodeAttributes.value;
 
         this.inputElement.change((event) => {
             let inputVal = event.currentTarget.inputmask.unmaskedvalue();
-            if (this.valueType == InputEditable.TYPE_PERCENTAGE) {
+            if (this.valueType == MaskedInput.TYPE_PERCENTAGE) {
                 // We will divide by 100 to get the real value
                 inputVal /= 100;
             }
@@ -202,27 +212,6 @@ class InputEditable {
 
             event.data.newValue = this.value;
             this.onChangeCallback?.(event);
-        });
-
-        // set the listener to press enter and acts like a tab press
-        this.inputElement.keydown((event) => {
-            if (event.keyCode == 13 || event.keyCode == 9) {
-                event.preventDefault();
-                event.stopPropagation();
-                // We will simulate a tab press
-                this.inputElement.blur();
-
-                // Obtén todos los elementos de la clase
-                var allElements = this.inputElement.closest("table").find("input.content-editable");
-
-                // Obtén el índice del elemento actual
-                var currentIndex = allElements.index(this.inputElement);
-
-                // Obtén el índice del siguiente elemento
-                var nextIndex = currentIndex + (event.shiftKey && event.keyCode == 9 ? - 1 : 1);
-
-                allElements.eq(nextIndex).focus().select();
-            }
         });
 
 
@@ -243,7 +232,7 @@ class InputEditable {
         this._rawValue = val;
 
         let showVal = this._rawValue
-        if (this.valueType == "percentage") {
+        if (this.valueType == MaskedInput.TYPE_PERCENTAGE) {
             showVal = this._rawValue * 100;
         }
         this.inputElement.val(showVal);
@@ -262,4 +251,4 @@ class InputEditable {
     }
 }
 
-export default InputEditable;
+export default MaskedInput;

@@ -169,8 +169,9 @@
     <template id="buttonsOptionsPerBudgetDetailTemplate">
         <td class="text-right text-nowrap" style="width: 0%">
             <div class="button-container">
-                <button class="btn btn-outline-danger btn-sm delete-btn" data-id="__ID__" title="Delete"><i
-                        class="fas fa-trash"></i></button>
+                <button class="btn btn-outline-danger btn-sm delete-btn" data-id="__ID__" title="Delete" tabindex="-1">
+                    <i class="fas fa-trash"></i>
+                </button>
             </div>
         </td>
     </template>
@@ -336,7 +337,7 @@
             let totalWTax = totalWOTax / (1 - parseFloat(calCols.taxPercentageInpEditable.value));
             totalWTax = Math.round(totalWTax * 100) / 100;
 
-            let mask = new Inputmask(InputEditable.DEFAULT_CURRENCY_MASK_OPTIONS);
+            let mask = new Inputmask(MaskedInput.DEFAULT_CURRENCY_MASK_OPTIONS);
             $(row).find(".total-col").text(mask.format(totalWOTax.toFixed(2)));
             $(row).find(".total-tax-col").text(mask.format(totalWTax.toFixed(2)));
             calculateTotalTable();
@@ -367,7 +368,7 @@
                 totalTaxAmount += totalWTaxRow * parseFloat(calCols.taxPercentageInpEditable.value);
             });
 
-            let mask = new Inputmask(InputEditable.DEFAULT_CURRENCY_MASK_OPTIONS);
+            let mask = new Inputmask(MaskedInput.DEFAULT_CURRENCY_MASK_OPTIONS);
 
             let footer = $(budgetDetailsTable.table().node()).find("tfoot");
 
@@ -392,7 +393,7 @@
         function calculatePricePerWP() {
             pricePerPW = budgetTotals.totalWTax / parseFloat($("#txtTotalPeakPower").val());
 
-            let mask = new Inputmask(InputEditable.DEFAULT_PRICE_PER_WP_MASK_OPTIONS);
+            let mask = new Inputmask(MaskedInput.DEFAULT_PRICE_PER_WP_MASK_OPTIONS);
             $("#lblPricePerWP").text(mask.format(pricePerPW.toFixed(4)));
         }
 
@@ -401,7 +402,7 @@
          * We asume that the totals have been calculated.
          */
         function calculateFinalPrice() {
-            let mask = new Inputmask(InputEditable.DEFAULT_CURRENCY_MASK_OPTIONS);
+            let mask = new Inputmask(MaskedInput.DEFAULT_CURRENCY_MASK_OPTIONS);
             $("#lblFinalPrice").text(mask.format(budgetTotals.totalWTax.toFixed(2)));
         }
 
@@ -544,12 +545,12 @@
 
                         // Input for the Unit Price
                         let unitPriceCell = $(row).find("td.unit_price");
-                        row.calculablesColums.unitPriceInpEditable = new InputEditable({
+                        row.calculablesColums.unitPriceInpEditable = new MaskedInput({
                             nodeAttributes: {
                                 value: unitPriceCell.text(),
+                                class: "content-editable text-right",
                             },
-                            additionalClasses: "text-right",
-                            maskOptions: InputEditable.DEFAULT_CURRENCY_MASK_OPTIONS,
+                            maskOptions: MaskedInput.DEFAULT_CURRENCY_MASK_OPTIONS,
                             onChangeCallback: function(event) {
                                 axios.patch(apiService, {
                                         id: data.id,
@@ -569,12 +570,12 @@
 
                         // Input for the Sell Pricie
                         let sellPriceCell = $(row).find("td.sellPrice");
-                        row.calculablesColums.sellPriceInpEditable = new InputEditable({
+                        row.calculablesColums.sellPriceInpEditable = new MaskedInput({
                             nodeAttributes: {
                                 value: sellPriceCell.text(),
+                                class: "content-editable text-right",
                             },
-                            additionalClasses: "text-right",
-                            maskOptions: InputEditable.DEFAULT_CURRENCY_MASK_OPTIONS,
+                            maskOptions: MaskedInput.DEFAULT_CURRENCY_MASK_OPTIONS,
                             onChangeCallback: function(event) {
                                 axios.patch(apiService, {
                                         id: data.id,
@@ -594,12 +595,12 @@
 
                         // Input for Quantity
                         let quantityCell = $(row).find("td.quantity");
-                        row.calculablesColums.quantityInpEditable = new InputEditable({
+                        row.calculablesColums.quantityInpEditable = new MaskedInput({
                             nodeAttributes: {
                                 value: quantityCell.text(),
+                                class: "content-editable text-right",
                             },
-                            additionalClasses: "text-right",
-                            maskOptions: InputEditable.DEFAULT_DECIMAL_MASK_OPTIONS,
+                            maskOptions: MaskedInput.DEFAULT_DECIMAL_MASK_OPTIONS,
                             onChangeCallback: function(event) {
                                 axios.patch(apiService, {
                                         id: data.id,
@@ -619,13 +620,13 @@
 
                         // Input for the IVA
                         let taxPercentageCell = $(row).find("td.taxPercentage");
-                        row.calculablesColums.taxPercentageInpEditable = new InputEditable({
+                        row.calculablesColums.taxPercentageInpEditable = new MaskedInput({
                             valueType: "percentage",
                             nodeAttributes: {
                                 value: taxPercentageCell.text(),
+                                class: "content-editable text-right",
                             },
-                            additionalClasses: "text-right",
-                            maskOptions: InputEditable.DEFAULT_PERCENTAGE_MASK_OPTIONS,
+                            maskOptions: MaskedInput.DEFAULT_PERCENTAGE_MASK_OPTIONS,
                             onChangeCallback: function(event) {
                                 axios.patch(apiService, {
                                         id: data.id,
@@ -645,12 +646,12 @@
 
                         // Input for the Discount
                         let discountCell = $(row).find("td.discount");
-                        row.calculablesColums.discountInpEditable = new InputEditable({
+                        row.calculablesColums.discountInpEditable = new MaskedInput({
                             nodeAttributes: {
                                 value: discountCell.text(),
+                                class: "content-editable text-right",
                             },
-                            additionalClasses: "text-right",
-                            maskOptions: InputEditable.DEFAULT_CURRENCY_MASK_OPTIONS,
+                            maskOptions: MaskedInput.DEFAULT_CURRENCY_MASK_OPTIONS,
                             onChangeCallback: function(event) {
                                 axios.patch(apiService, {
                                         id: data.id,

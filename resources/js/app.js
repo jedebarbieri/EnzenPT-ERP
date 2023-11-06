@@ -24,6 +24,6 @@ import 'admin-lte';
 
 import './common';
 
-import InputEditable from "./InputEditable";
-window.InputEditable = InputEditable;
-new InputEditable({});
+import MaskedInput from "./MaskedInput";
+window.MaskedInput = MaskedInput;
+new MaskedInput({});
