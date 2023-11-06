@@ -95,10 +95,9 @@
                     "class": "text-nowrap",
                     "render": function(data, type, row) {
                         // Formatear el valor como moneda en euros
-                        return new Intl.NumberFormat('pt-PT', {
-                            style: 'currency',
-                            currency: 'EUR'
-                        }).format(data);
+                        let mask = new Inputmask(MaskedInput.DEFAULT_CURRENCY_MASK_OPTIONS);
+
+                        return mask.format(data);
                     }
                 },
             ],
