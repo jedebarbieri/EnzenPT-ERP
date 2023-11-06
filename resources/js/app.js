@@ -22,8 +22,8 @@ Inputmask();
 
 import 'admin-lte';
 
-import './common';
-
 import MaskedInput from "./MaskedInput";
 window.MaskedInput = MaskedInput;
 new MaskedInput({});
+
+import './common';

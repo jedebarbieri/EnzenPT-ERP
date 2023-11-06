@@ -50,7 +50,7 @@ class MaskedInput {
      * @type {string}
      * @public
      */
-    valueType = MaskedInput.TYPE_STRING;
+    valueType = MaskedInput.TYPE_DECIMAL;
 
     /**
      * This is the instance of the Inputmask class that is used to mask the input
@@ -125,7 +125,7 @@ class MaskedInput {
      */
     static DEFAULT_PRICE_PER_WP_MASK_OPTIONS = {
         alias: 'numeric',
-        groupSeparator: '',
+        groupSeparator: ' ',
         radixPoint: '.',
         autoGroup: true,
         rightAlign: true,
@@ -161,6 +161,16 @@ class MaskedInput {
     static TYPE_STRING = "string";
 
     /**
+     * This is the name of the data attribute that will be used to store the instance of the component.
+     */
+    static INSTANCE = "maskedInputInstance";
+
+    /**
+     * This is the name of the class that will be used to identify the input element.
+     */
+    static MASKED_INPUT_CLASS = "masked-input";
+
+    /**
      * Constructor for the MaskedInput class.
      * @param {Object} options - Configuration options for the component.
      * @param {HTMLElement} options.inputElement - Optional. Associated input element. If not passed, it will be created.
@@ -180,22 +190,29 @@ class MaskedInput {
                 ...options.nodeAttributes,
                 ...{
                     "type": "text",
-                    "class": `masketd-input ${this.nodeAttributes?.class ?? ''}`,
                 },
             };
 
             this.inputElement = $(`<input/>`, this.nodeAttributes);
         }
 
+        let originalInputVal = this.inputElement.val();
+
+        // We will add the class to the input to make it identificable
+        this.inputElement.addClass(MaskedInput.MASKED_INPUT_CLASS);
+
         if (!this.inputmask) {
             this.inputmask = new Inputmask(this.maskOptions ?? MaskedInput.DEFAULT_DECIMAL_MASK_OPTIONS);
-            this.inputmask.$el = this.inputElement;
-            this.inputmask.mask(this.inputElement);
         }
 
+        this.inputmask.$el = this.inputElement;
+        this.inputmask.mask(this.inputElement);
+
+        // Stores the raw value from the input.
+        this.value = originalInputVal;
+
         // Doing a cross reference
-        this.inputElement.data("MaskedInputInstance", this);
-        this.value = this.nodeAttributes.value;
+        this.inputElement.data(MaskedInput.INSTANCE, this);
 
         this.inputElement.change((event) => {
             let inputVal = event.currentTarget.inputmask.unmaskedvalue();
@@ -214,6 +231,13 @@ class MaskedInput {
             this.onChangeCallback?.(event);
         });
 
+        // set the listener to press enter and acts like a tab press
+        this.inputElement.keydown((event) => {
+            if (event.keyCode == 13 || event.keyCode == 9) {
+                // We will simulate a tab press
+                this.inputElement.blur();
+            }
+        });
 
         // Now we will add listeners to dispatch the patchEvent
         this.inputElement.blur((event) => {
