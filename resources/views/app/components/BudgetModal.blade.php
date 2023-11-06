@@ -57,7 +57,7 @@
                                             <input type="text" class="form-control text-right" id="txtTotalPeakPower"
                                                 name="total_peak_power" autocomplete="false" value="0.00" />
                                             <div class="input-group-append">
-                                                <span class="input-group-text">€/Wp</span>
+                                                <span class="input-group-text">Wp</span>
                                             </div>
                                         </div>
                                     </div>
@@ -848,7 +848,13 @@
                     // Inicializar Select2 con los datos obtenidos
                     $(rowNode).find('.select2').select2({
                         dropdownParent: budgetModal,
-                        data: select2Data
+                        data: [
+                            {
+                                id: 0,
+                                text: "Select one item...",
+                            },
+                            ...select2Data
+                        ],
                     }).on('select2:select', function(e) {
                         // Cuando se selecciona un elemento, realizar una llamada al servidor para agregar una nueva fila a la base de datos
                         let itemId = e.params.data.id;
