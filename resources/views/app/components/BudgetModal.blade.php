@@ -177,6 +177,15 @@
     </template>
 
     <script type="module">
+        $.validator.prototype.elementValue = function(element) {
+            // Si el elemento tiene una instancia con un valor, usa ese valor
+            if ($(element).data(MaskedInput.INSTANCE) instanceof MaskedInput) {
+                return $(element).data(MaskedInput.INSTANCE).value;
+            }
+            // De lo contrario, usa el comportamiento predeterminado
+            return $(element).val();
+        };
+
         var budgetModal = $("#{{ $modalId }}");
         var budgetId = null;
         var formModal = $('#{{ $modalId }}FormBudgetMainInfo');
@@ -212,11 +221,11 @@
                     required: true,
                 },
                 total_peak_power: {
-                    min: 0.00
+                    min: 0
                 },
                 gain_margin: {
-                    min: 0.00,
-                    max: 100.00
+                    min: 0,
+                    max: 1
                 },
             },
             messages: {
@@ -224,11 +233,11 @@
                     required: "Please, enter a name for this Budget.",
                 },
                 total_peak_power: {
-                    min: "Enter a valid value."
+                    min: "Minimum value is 0.",
                 },
                 gain_margin: {
-                    min: "Enter a valid value.",
-                    max: "Enter a valid value."
+                    min: "Minimum value is 0.",
+                    max: "maximum value is 100.",
                 },
             },
             errorElement: 'span',
@@ -237,6 +246,7 @@
                 element.closest('.form-group').append(error);
             },
             highlight: function(element, errorClass, validClass) {
+                //console.log("Valor obtenido que da error: ", $(element).data(MaskedInput.INSTANCE).value);
                 $(element).addClass('is-invalid');
             },
             unhighlight: function(element, errorClass, validClass) {
@@ -244,7 +254,12 @@
             },
             submitHandler: function(form) {
                 var formData = window.arrayToJsonObject($(form).serializeArray());
-                formData.gain_margin = parseFloat(formData.gain_margin) / 100;
+
+                formData.gain_margin = formModal.find("#txtGainMargin").data(MaskedInput.INSTANCE).value;
+                formData.total_peak_power = formModal.find("#txtTotalPeakPower").data(MaskedInput.INSTANCE)
+                    .value;
+
+
                 // Verificar y manipular las cadenas vacías
                 for (var key in formData) {
                     if (formData[key] === "") {
@@ -418,6 +433,34 @@
             formModal.find("#txtProjectName").val(budgetData.projectName);
             formModal.find("#txtProjectNumber").val(budgetData.projectNumber);
             formModal.find("#txtProjectLocation").val(budgetData.projectLocation);
+
+            if (!formModal.find("#txtTotalPeakPower").data(MaskedInput.INSTANCE)) {
+                new MaskedInput({
+                    inputElement: formModal.find("#txtTotalPeakPower"),
+                    valueType: MaskedInput.TYPE_DECIMAL,
+                    inputmask: new Inputmask({
+                        ...MaskedInput.DEFAULT_PRICE_PER_WP_MASK_OPTIONS,
+                        ...{
+                            // Removing the suffix sinse the input already has it as a label
+                            suffix: ""
+                        },
+                    }),
+                });
+            }
+
+            if (!formModal.find("#txtGainMargin").data(MaskedInput.INSTANCE)) {
+                new MaskedInput({
+                    inputElement: formModal.find("#txtGainMargin"),
+                    valueType: MaskedInput.TYPE_PERCENTAGE,
+                    inputmask: new Inputmask({
+                        ...MaskedInput.DEFAULT_PERCENTAGE_MASK_OPTIONS,
+                        ...{
+                            // Removing the suffix sinse the input already has it as a label
+                            suffix: ""
+                        },
+                    }),
+                });
+            }
 
 
             $("#{{ $modalId }}SuppliesListCard").removeClass("d-none").show();
