@@ -127,10 +127,10 @@ class BudgetDetail extends Model
     protected function taxPercentage(): Attribute
     {
         return Attribute::make(
-            get: fn($value) => round(floatval($value), 2),
+            get: fn($value) => round(floatval($value), 4),
             set: function($value) {
                 // We ensure that the value is between 0 and 1
-                $val = round(floatval($value), 2);
+                $val = round(floatval($value), 4);
                 if ($val < 0) {
                     $val = 0;
                 } elseif ($val > 1) {
