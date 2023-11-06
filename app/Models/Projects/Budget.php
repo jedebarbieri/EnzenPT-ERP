@@ -2,6 +2,7 @@
 
 namespace App\Models\Projects;
 
+use App\Models\Procurement\ItemCategory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -22,6 +23,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $project_location The location of the project which this budget belongs. * This will be moved to the project entity.
  * @property float $total_peak_power This is the total of the maximum power that this project can provide.
  *                                 This data is used to calculate the cost of each item or category per Watt Peak ( 0.00 € / Wp)
+ * @property Collection|ItemCategory[] $item_categories This is the list of the item categories that belongs to this budget
  */
 class Budget extends Model
 {
@@ -66,6 +68,11 @@ class Budget extends Model
      * Stores the result of the final total calculation of all the budget details
      */
     private $totalWithTax;
+
+    /**
+     * Stores the result of the total peak power calculation of all the budget details
+     */
+    private $itemCategories;
 
     /**
      * Relationship with the lines of this detail represented by BudgetDetails
@@ -168,5 +175,23 @@ class Budget extends Model
             $this->taxAmount = $this->budgetDetails->sum("tax_amount");
         }
         return $this->taxAmount;
+    }
+
+    /**
+     * **Better use the attribute item_categories**
+     * This method returns the total of the budget details that belongs to a specific ItemCategory
+     * It performs a join between budget_details and items to get the item_category_id
+     * @return Collection|ItemCategory[]
+     */
+    public function getItemCategoriesAttribute() {
+        if (is_null($this->itemCategories)) {
+            $this->itemCategories = ItemCategory::join("items", "items.item_category_id", "=", "item_categories.id")
+                ->join("budget_details", "budget_details.item_id", "=", "items.id")
+                ->where("budget_details.budget_id", "=", $this->id)
+                ->select("item_categories.*")
+                ->distinct()
+                ->get();
+        }
+        return $this->itemCategories;
     }
 }
