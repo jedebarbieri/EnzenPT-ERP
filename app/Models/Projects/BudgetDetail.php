@@ -22,6 +22,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property float $sell_price This amount indicates the final selling price for this item.
  *                             The difference between this value and the $unit_price of this entity will define the gain value.
  *                             **This value doesn't include IVA.**
+ * @property float $total_without_tax This is the total without tax before discount. It does not apply rounding.
+ * @property float $total_without_tax_after_discount This is total without tax after discount. It does not apply rounding.
+ * @property float $total_with_tax This is the final total considering discount and tax. In this step we apply the rounding.
+ * @property float $tax_amount This is the tax percentage applied to the total. It does not apply rounding.
  */
 class BudgetDetail extends Model
 {
@@ -140,5 +144,44 @@ class BudgetDetail extends Model
             },
         );
     }
+
+    /**
+     * Better use the attribute total_without_tax
+     * @return float
+     */
+    public function getTotalWithoutTaxAttribute()
+    {
+        return $this->quantity * $this->sell_price;
+    }
+
+    /**
+     * Better use the attribute total_without_tax_after_discount
+     * @return float
+     */
+    public function getTotalWithoutTaxAfterDiscountAttribute()
+    {
+        return $this->total_without_tax - $this->discount;
+    }
+
+    /**
+     * Better use the attribute total_with_tax
+     * @return float
+     */
+    public function getTotalWithTaxAttribute()
+    {
+        return round(floatval($this->total_without_tax_after_discount / (1 - $this->tax_percentage)), 2);
+    }
+
+
+    /**
+     * Better use the attribute tax_amount
+     * @return float
+     */
+    public function getTaxAmountAttribute()
+    {
+        return round(floatval($this->total_with_tax - $this->total_without_tax_after_discount), 2);
+    }
+
+
 
 }
