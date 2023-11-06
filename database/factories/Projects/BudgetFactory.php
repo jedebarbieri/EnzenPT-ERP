@@ -12,14 +12,29 @@ class BudgetFactory extends Factory
 
     public function definition()
     {
+        $createdAt = $this->faker->dateTimeBetween('-3 years', 'now -2 months');
+        $updatedAt = $this->faker->dateTimeBetween($createdAt->modify('+2 months'), 'now');
+    
+        $randomNumber = $this->faker->numberBetween(1, 100);
+    
+        if ($randomNumber <= 5) {
+            $status = Budget::STATUS_REJECTED;
+        } elseif ($randomNumber <= 35) {
+            $status = Budget::STATUS_APPROVED;
+        } else {
+            $status = Budget::STATUS_DRAFT;
+        }
+
         return [
-            'status' => $this->faker->randomElement([Budget::STATUS_DRAFT, Budget::STATUS_APPROVED, Budget::STATUS_REJECTED]),
+            'status' => $status,
             'name' => ucwords($this->faker->word),
             'gain_margin' => $this->faker->randomFloat(4, 0.05, 0.3),
             'project_name' => ucwords($this->faker->words(3, true)),
             'project_number' => $this->faker->regexify('[A-Z0-9]{5}'),
             'project_location' => fake('pt_PT')->city,
             'total_peak_power' => $this->faker->randomFloat(2, 100, 1000),
+            'created_at' => $createdAt,
+            'updated_at' => $updatedAt,
         ];
     }
 
