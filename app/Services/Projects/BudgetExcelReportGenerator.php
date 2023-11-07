@@ -24,8 +24,10 @@ class BudgetExcelReportGenerator
     public Spreadsheet $spreadsheet;
 
     public Worksheet $worksheet;
-    
-    public $row;
+
+    public $row = 1;
+
+    public $column = 'A';
 
     public function __construct(Budget $budget)
     {
@@ -40,13 +42,14 @@ class BudgetExcelReportGenerator
         $this->worksheet = $this->spreadsheet->getActiveSheet();
 
         // Imprimimos la cabecera de la tabla
-        $this->worksheet->setCellValue('A' . $this->row, 'Category');
-        $this->worksheet->setCellValue('B' . $this->row, 'Taxes Amount');
-        $this->worksheet->setCellValue('C' . $this->row, 'Total wo tax');
-        $this->worksheet->setCellValue('D' . $this->row, 'Total');
-        $this->worksheet->setCellValue('D' . $this->row, '€/Wp');
+        $this->worksheet->setCellValue($this->column++ . $this->row, 'Category');
+        $this->worksheet->setCellValue($this->column++ . $this->row, 'Taxes Amount');
+        $this->worksheet->setCellValue($this->column++ . $this->row, 'Total wo tax');
+        $this->worksheet->setCellValue($this->column++ . $this->row, 'Total');
+        $this->worksheet->setCellValue($this->column++ . $this->row, '€/Wp');
 
         $this->row++;
+        $this->column = 'A';
 
         $this->budget->item_categories->each(function (ItemCategory $itemCategory) {
             $newBudgetCategoryDetailsManager = new BudgetCategoryDetailsManager($this->budget, $itemCategory);
@@ -54,13 +57,23 @@ class BudgetExcelReportGenerator
         });
 
         $this->budgetDetailsManagers->each(function (BudgetCategoryDetailsManager $budgetCategoryDetailsManager) {
+            $this->column = 'A';
             $this->printCategoryDetails($budgetCategoryDetailsManager);
+            $this->row++;
         });
 
 
         $writer = new Xlsx($this->spreadsheet);
 
-        $filePath = '/path/to/your/report.xlsx';
+        $folderPath = '/path/to/your/';
+
+        // Comprueba si el directorio existe, si no, lo crea
+        if (!file_exists($folderPath)) {
+            mkdir($folderPath, 0777, true);
+        }
+
+        $filePath = $folderPath . 'report.xlsx';
+
         $writer->save($filePath);
 
         return $filePath;
@@ -69,10 +82,10 @@ class BudgetExcelReportGenerator
 
     public function printCategoryDetails(BudgetCategoryDetailsManager $budgetCategoryDetailsManager)
     {
-        $this->worksheet->setCellValue('A' . $this->row, $budgetCategoryDetailsManager->itemCategory->name);
-        $this->worksheet->setCellValue('B' . $this->row, $budgetCategoryDetailsManager->tax_amount);
-        $this->worksheet->setCellValue('C' . $this->row, $budgetCategoryDetailsManager->total_without_tax);
-        $this->worksheet->setCellValue('D' . $this->row, $budgetCategoryDetailsManager->total_with_tax);
-        $this->worksheet->setCellValue('D' . $this->row, $budgetCategoryDetailsManager->price_per_wp);
+        $this->worksheet->setCellValue($this->column++ . $this->row, $budgetCategoryDetailsManager->itemCategory->name);
+        $this->worksheet->setCellValue($this->column++ . $this->row, $budgetCategoryDetailsManager->tax_amount);
+        $this->worksheet->setCellValue($this->column++ . $this->row, $budgetCategoryDetailsManager->total_without_tax);
+        $this->worksheet->setCellValue($this->column++ . $this->row, $budgetCategoryDetailsManager->total_with_tax);
+        $this->worksheet->setCellValue($this->column++ . $this->row, $budgetCategoryDetailsManager->price_per_wp);
     }
 }

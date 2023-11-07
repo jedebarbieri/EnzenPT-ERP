@@ -9,6 +9,7 @@ use App\Http\Resources\Procurement\ItemResource;
 use App\Http\Resources\Projects\BudgetResource;
 use App\Models\Procurement\Item;
 use App\Models\Projects\Budget;
+use App\Services\Projects\BudgetExcelReportGenerator;
 use Illuminate\Http\Request;
 
 class BudgetController extends Controller
@@ -276,5 +277,12 @@ class BudgetController extends Controller
                 ],
             ], 500);
         }
+    }
+
+    public function createReport(Budget $budget)
+    {
+        $report = new BudgetExcelReportGenerator($budget);
+        $filePath = $report->generateReport();
+        return response()->download($filePath);
     }
 }
