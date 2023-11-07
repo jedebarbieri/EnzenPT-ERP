@@ -23,6 +23,19 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $project_location The location of the project which this budget belongs. * This will be moved to the project entity.
  * @property float $total_peak_power This is the total of the maximum power that this project can provide.
  *                                 This data is used to calculate the cost of each item or category per Watt Peak ( 0.00 € / Wp)
+ * 
+ * @property float $total_without_tax This is the total of the budget details without tax
+ * @property float $tax_prorated This is the prorated total of the budget details tax amount
+ * @property float $tax_amount This is the total of the budget details tax amount
+ * @property float $total_discount This is the total of the budget details discount
+ * @property float $total_without_tax_after_discount This is the total of the budget details without tax after discount
+ * @property float $total_with_tax This is the total of the budget details with tax
+ * @property float $total_price_per_watt_peak This is the total of the budget details with tax
+ * @property float $cost_amount This is the total of the budget details costs
+ * @property float $cost_per_wp This is the total of the budget details costs per Watt Peak
+ * @property float $prorated_gain_margin This is the prorated total of the budget details gain margin
+ * @property float $gain_amount This is the total of the budget details gain amount
+ * 
  * @property Collection|ItemCategory[] $item_categories This is the list of the item categories that belongs to this budget
  * @property Collection|ItemCategory[] $main_item_categories This is the list of the main item categories that belongs to this budget
  */
@@ -56,9 +69,19 @@ class Budget extends Model
     private ?float $taxAmount = null;
 
     /**
+     * Stores the result of the tax prorated calculation of all the budget details
+     */
+    private ?float $taxProrated = null;
+
+    /**
      * Stores the result of discount sum calculation of all the budget details
      */
     private ?float $totalDiscount = null;
+
+    /**
+     * Stores the result of the total without tax after discount calculation of all the budget details
+     */
+    private ?float $totalWithoutTaxAfterDiscount = null;
 
     /**
      * Stores the result of the totals without tax calculation of all the budget details
@@ -69,6 +92,31 @@ class Budget extends Model
      * Stores the result of the final total calculation of all the budget details
      */
     private ?float $totalWithTax = null;
+
+    /**
+     * Stores the result of the cost amount calculation of all the budget details
+     */
+    private ?float $totalPricePerWP = null;
+
+    /**
+     * Stores the result of the cost amount calculation of all the budget details
+     */
+    private ?float $costAmount = null;
+
+    /**
+     * Stores the result of the cost per Watt Peak calculation of all the budget details
+     */
+    private ?float $costPerWP = null;
+
+    /**
+     * Stores the result of the gain margin calculation of all the budget details
+     */
+    private ?float $proratedGainMargin = null;
+
+    /**
+     * Stores the result of the gain amount calculation of all the budget details
+     */
+    private ?float $gainAmount = null;
 
     /**
      * Stores the list of the item categories that are present in this budget
@@ -95,7 +143,7 @@ class Budget extends Model
      * 
      * @return Attribute
      */
-    protected function gainMargin(): Attribute
+    protected function taxPercentage(): Attribute
     {
         return Attribute::make(
             get: fn($value) => round(floatval($value), 4),
@@ -132,7 +180,6 @@ class Budget extends Model
         );
     }
 
-
     /**
      * Better use the attribute total_without_tax
      *
@@ -141,9 +188,20 @@ class Budget extends Model
     public function getTotalWithoutTaxAttribute()
     {
         if (is_null($this->totalWithoutTax)) {
-            $this->totalWithoutTax = $this->budgetDetails->sum("total_without_tax_after_discount");
+            $this->totalWithoutTax = $this->budgetDetails->sum("total_without_tax");
         }
         return $this->totalWithoutTax;
+    }
+
+    /**
+     * Better use the attribute tax_prorated
+     */
+    public function getTaxProratedAttribute()
+    {
+        if (is_null($this->taxProrated)) {
+            $this->taxProrated = $this->budgetDetails->sum("tax_prorated");
+        }
+        return $this->taxProrated;
     }
 
     /**
@@ -160,6 +218,17 @@ class Budget extends Model
     }
 
     /**
+     * Better use the attribute total_without_tax_after_discount
+     */
+    public function getTotalWithoutTaxAfterDiscountAttribute()
+    {
+        if (is_null($this->totalWithoutTaxAfterDiscount)) {
+            $this->totalWithoutTaxAfterDiscount = $this->budgetDetails->sum("total_without_tax_after_discount");
+        }
+        return $this->totalWithoutTaxAfterDiscount;
+    }
+
+    /**
      * Better use the attribute total_with_tax
      * @return float
      */
@@ -172,16 +241,78 @@ class Budget extends Model
     }
 
     /**
-     * Better use the attribute total_tax_amount
+     * Better use the attribute tax_amount
      * @return float
      */
-    public function getTotalTaxAmountAttribute()
+    public function getTaxAmountAttribute()
     {
         if (is_null($this->taxAmount)) {
             $this->taxAmount = $this->budgetDetails->sum("tax_amount");
         }
         return $this->taxAmount;
     }
+
+    /**
+     * Better use the attribute total_price_per_wp
+     * @return float
+     */
+    public function getTotalPricePerWPAttribute()
+    {
+        if (is_null($this->totalPricePerWP)) {
+            $this->totalPricePerWP = $this->budgetDetails->sum("price_per_wp");
+        }
+        return $this->totalPricePerWP;
+    }
+
+    /**
+     * Better use the attribute cost_amount
+     * @return float
+     */
+    public function getCostAmountAttribute()
+    {
+        if (is_null($this->costAmount)) {
+            $this->costAmount = $this->budgetDetails->sum("cost_amount");
+        }
+        return $this->costAmount;
+    }
+
+    /**
+     * Better use the attribute cost_per_wp
+     * @return float
+     */
+    public function getCostPerWPAttribute()
+    {
+        if (is_null($this->costPerWP)) {
+            $this->costPerWP = $this->budgetDetails->sum("cost_per_wp");
+        }
+        return $this->costPerWP;
+    }
+
+    /**
+     * Better use the attribute prorated_gain_margin
+     * @return float
+     */
+    public function getProratedGainMarginAttribute()
+    {
+        if (is_null($this->proratedGainMargin)) {
+            $this->proratedGainMargin = $this->budgetDetails->sum("gain_margin");
+        }
+        return $this->proratedGainMargin;
+    }
+
+    /**
+     * Better use the attribute gain_amount
+     * @return float
+     */
+    public function getGainAmountAttribute()
+    {
+        if (is_null($this->gainAmount)) {
+            $this->gainAmount = $this->budgetDetails->sum("gain_amount");
+        }
+        return $this->gainAmount;
+    }
+
+
 
     /**
      * **Better use the attribute item_categories**

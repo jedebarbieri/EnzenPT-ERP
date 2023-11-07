@@ -78,6 +78,9 @@ class BudgetExcelReportGenerator
             });
         });
 
+        // Printing the grand totals for the final sale budget
+        $this->printSellingBudgetGrandTotals();
+
         // Iteration for the costs budget
 
         $this->row += 4;
@@ -104,6 +107,9 @@ class BudgetExcelReportGenerator
                 });
             });
         });
+
+        // Printing the grand totals for the costs budget
+        $this->printCostBudgetGrandTotals();
         
         foreach (range('A', $this->worksheet->getHighestDataColumn()) as $col) {
             $this->worksheet->getColumnDimension($col)->setAutoSize(true);
@@ -320,5 +326,77 @@ class BudgetExcelReportGenerator
         $this->worksheet->getStyle($sellPriceCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
 
         $this->row++;
+    }
+
+    public function printSellingBudgetGrandTotals()
+    {
+        // Primero establecemos el valor de las celdas
+        $startColumn = $this->column = 'C';
+        $this->row += 2;
+
+        $this->worksheet->setCellValue(
+            $totalWithoutTaxCell = $this->column++ . $this->row,
+            $this->budget->total_without_tax
+        );
+        $this->worksheet->setCellValue(
+            $taxPercentageCell = $this->column++ . $this->row,
+            $this->budget->tax_prorated
+        );
+        $this->worksheet->setCellValue(
+            $taxAmountCell = $this->column++ . $this->row,
+            $this->budget->tax_amount
+        );
+        $this->worksheet->setCellValue(
+            $totalWithTaxCell = $this->column++ . $this->row,
+            $this->budget->total_with_tax
+        );
+        $this->worksheet->setCellValue(
+            $pricePerWpCell = $this->column++ . $this->row,
+            $this->budget->price_per_wp
+        );
+
+        $this->worksheet->getStyle($totalWithoutTaxCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
+        $this->worksheet->getStyle($taxPercentageCell)->getNumberFormat()->setFormatCode('0.00%');
+        $this->worksheet->getStyle($taxAmountCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
+        $this->worksheet->getStyle($totalWithTaxCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
+        $this->worksheet->getStyle($pricePerWpCell)->getNumberFormat()->setFormatCode('#,##0.00 "€/Wp"');
+
+        $this->worksheet->getStyle($startColumn . $this->row . ':' . $this->column . $this->row)->getFont()->setBold(true);
+    }
+
+    public function printCostBudgetGrandTotals()
+    {
+        // Primero establecemos el valor de las celdas
+        $startColumn = $this->column = 'C';
+        $this->row += 2;
+
+        $this->worksheet->setCellValue(
+            $costAmountCell = $this->column++ . $this->row,
+            $this->budget->cost_amount
+        );
+        $this->worksheet->setCellValue(
+            $costPerWpCell = $this->column++ . $this->row,
+            $this->budget->cost_per_wp
+        );
+        $this->worksheet->setCellValue(
+            $gainMarginCell = $this->column++ . $this->row,
+            $this->budget->prorated_gain_margin
+        );
+        $this->worksheet->setCellValue(
+            $gainAmountCell = $this->column++ . $this->row,
+            $this->budget->gain_amount
+        );
+        $this->worksheet->setCellValue(
+            $sellPriceCell = $this->column++ . $this->row,
+            $this->budget->total_without_tax
+        );
+
+        $this->worksheet->getStyle($costAmountCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
+        $this->worksheet->getStyle($costPerWpCell)->getNumberFormat()->setFormatCode('#,##0.00 "€/Wp"');
+        $this->worksheet->getStyle($gainMarginCell)->getNumberFormat()->setFormatCode('0.00%');
+        $this->worksheet->getStyle($gainAmountCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
+        $this->worksheet->getStyle($sellPriceCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
+
+        $this->worksheet->getStyle($startColumn . $this->row . ':' . $this->column . $this->row)->getFont()->setBold(true);
     }
 }
