@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Projects\BudgetController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -27,5 +28,7 @@ Route::get('/procurement', function() {
 Route::get('/budgets', function() {
     return view('budgets');
 })->name('budgetsHome');
+
+Route::get('/budgetReport/{budget}', [BudgetController::class, 'createReport'])->name('budgetReport');
 
 Auth::routes();

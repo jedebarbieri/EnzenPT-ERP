@@ -4,11 +4,17 @@
     aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable modal-xxl">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="{{ $modalId }}Label">New Budget</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+            <div class="modal-header row">
+                <h5 class="col-8 modal-title" id="{{ $modalId }}Label">New Budget</h5>
+                <div class="col-4 d-flex justify-content-end">
+                    <a class="btn btn-primary view-btn text-white" data-id="__ID__" title="Download Excel Report" role="button" data-url-base="{{ route('budgetReport', '') }}" href="" id="btnDownloadReport" target="_blank">
+                        <i class="fas fa-file-excel"></i> 
+                        Download Excel Report
+                    </a>
+                    <button type="button" class="close mx-0" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
             </div>
             <div class="modal-body">
 
@@ -425,6 +431,8 @@
             formModal.find("#txtProjectName").val(budgetData.projectName);
             formModal.find("#txtProjectNumber").val(budgetData.projectNumber);
             formModal.find("#txtProjectLocation").val(budgetData.projectLocation);
+
+            $("#btnDownloadReport").attr("href", $("#btnDownloadReport").data("url-base") + '/' + budgetData.id);
 
             let txtTotalPeakPower = formModal.find("#txtTotalPeakPower");
             if (!txtTotalPeakPower.data(MaskedInput.INSTANCE)) {
