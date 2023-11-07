@@ -46,19 +46,7 @@ class BudgetExcelReportGenerator
     {
         $this->spreadsheet = new Spreadsheet();
         $this->worksheet = $this->spreadsheet->getActiveSheet();
-
-        // Imprimimos la cabecera de la tabla
-        $this->worksheet->setCellValue($this->column++ . $this->row, 'Cod');
-        $this->worksheet->setCellValue($this->column++ . $this->row, 'Category');
-        $this->worksheet->setCellValue($this->column++ . $this->row, 'Taxes Amount');
-        $this->worksheet->setCellValue($this->column++ . $this->row, 'Taxes %');
-        $this->worksheet->setCellValue($this->column++ . $this->row, 'Total wo tax');
-        $this->worksheet->setCellValue($this->column++ . $this->row, 'Total');
-        $this->worksheet->setCellValue($this->column++ . $this->row, '€/Wp');
-
-        $this->row++;
-        $this->column = 'A';
-
+        
         // Building the main structure of the budget
 
         $this->budget->main_item_categories->each(function (ItemCategory $itemCategory) {
@@ -66,6 +54,17 @@ class BudgetExcelReportGenerator
             $this->mainBudgetDetailsManagers->push($newBudgetCategoryDetailsManager);
         });
 
+        // Imprimimos la cabecera de la tabla de precios finales
+        $this->worksheet->setCellValue($this->column++ . $this->row, 'Cod');
+        $this->worksheet->setCellValue($this->column++ . $this->row, 'Category');
+        $this->worksheet->setCellValue($this->column++ . $this->row, 'Total wo tax');
+        $this->worksheet->setCellValue($this->column++ . $this->row, 'Taxes %');
+        $this->worksheet->setCellValue($this->column++ . $this->row, 'Taxes Amount');
+        $this->worksheet->setCellValue($this->column++ . $this->row, 'Total');
+        $this->worksheet->setCellValue($this->column++ . $this->row, '€/Wp');
+
+        $this->row++;
+        $this->column = 'A';
 
         // Iteration for the final sale budget. Final price for the client
 
@@ -82,6 +81,19 @@ class BudgetExcelReportGenerator
         // Iteration for the costs budget
 
         $this->row += 4;
+        $this->column = 'A';
+
+        // Imprimimos la cabecera de la tabla de precios finales
+        $this->worksheet->setCellValue($this->column++ . $this->row, 'Cod');
+        $this->worksheet->setCellValue($this->column++ . $this->row, 'Category');
+        $this->worksheet->setCellValue($this->column++ . $this->row, 'Cost Amount');
+        $this->worksheet->setCellValue($this->column++ . $this->row, '€/Wp');
+        $this->worksheet->setCellValue($this->column++ . $this->row, 'Gain %');
+        $this->worksheet->setCellValue($this->column++ . $this->row, 'Gain');
+        $this->worksheet->setCellValue($this->column++ . $this->row, 'Sell Price');
+
+        $this->row++;
+        $this->column = 'A';
 
         $this->mainBudgetDetailsManagers->each(function (BudgetCategoryDetailsManager $budgetCategoryDetailsManager) {
             $this->printCostCategoryDetails($budgetCategoryDetailsManager, true);
@@ -128,16 +140,16 @@ class BudgetExcelReportGenerator
             $budgetCategoryDetailsManager->itemCategory->name
         );
         $this->worksheet->setCellValue(
-            $taxAmountCell = $this->column++ . $this->row,
-            $budgetCategoryDetailsManager->tax_amount
+            $totalWithoutTaxCell = $this->column++ . $this->row,
+            $budgetCategoryDetailsManager->total_without_tax
         );
         $this->worksheet->setCellValue(
             $taxPercentageCell = $this->column++ . $this->row,
             $budgetCategoryDetailsManager->tax_prorated_percentage
         );
         $this->worksheet->setCellValue(
-            $totalWithoutTaxCell = $this->column++ . $this->row,
-            $budgetCategoryDetailsManager->total_without_tax
+            $taxAmountCell = $this->column++ . $this->row,
+            $budgetCategoryDetailsManager->tax_amount
         );
         $this->worksheet->setCellValue(
             $totalWithTaxCell = $this->column++ . $this->row,
@@ -153,9 +165,9 @@ class BudgetExcelReportGenerator
             $this->worksheet->getStyle($nameCell)->getAlignment()->setIndent(1);
         }
 
-        $this->worksheet->getStyle($taxAmountCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
-        $this->worksheet->getStyle($taxPercentageCell)->getNumberFormat()->setFormatCode('0.00%');
         $this->worksheet->getStyle($totalWithoutTaxCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
+        $this->worksheet->getStyle($taxPercentageCell)->getNumberFormat()->setFormatCode('0.00%');
+        $this->worksheet->getStyle($taxAmountCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
         $this->worksheet->getStyle($totalWithTaxCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
         $this->worksheet->getStyle($pricePerWpCell)->getNumberFormat()->setFormatCode('#,##0.00 "€/Wp"');
 
@@ -181,24 +193,24 @@ class BudgetExcelReportGenerator
             $budgetCategoryDetailsManager->itemCategory->name
         );
         $this->worksheet->setCellValue(
-            $costTaxAmountCell = $this->column++ . $this->row,
-            $budgetCategoryDetailsManager->cost_tax_amount
-        );
-        $this->worksheet->setCellValue(
-            $taxPercentageCell = $this->column++ . $this->row,
-            $budgetCategoryDetailsManager->tax_prorated_percentage
-        );
-        $this->worksheet->setCellValue(
             $costWithoutTaxCell = $this->column++ . $this->row,
             $budgetCategoryDetailsManager->cost_without_tax
         );
         $this->worksheet->setCellValue(
-            $costWithTaxCell = $this->column++ . $this->row,
-            $budgetCategoryDetailsManager->cost_with_tax
-        );
-        $this->worksheet->setCellValue(
             $costPerWpCell = $this->column++ . $this->row,
             $budgetCategoryDetailsManager->cost_per_wp
+        );
+        $this->worksheet->setCellValue(
+            $gainMarginCell = $this->column++ . $this->row,
+            $budgetCategoryDetailsManager->gain_margin
+        );
+        $this->worksheet->setCellValue(
+            $gainAmountCell = $this->column++ . $this->row,
+            $budgetCategoryDetailsManager->gain_amount
+        );
+        $this->worksheet->setCellValue(
+            $sellPriceCell = $this->column++ . $this->row,
+            $budgetCategoryDetailsManager->total_without_tax
         );
 
         if (!$isMain) {
@@ -206,11 +218,11 @@ class BudgetExcelReportGenerator
             $this->worksheet->getStyle($nameCell)->getAlignment()->setIndent(1);
         }
 
-        $this->worksheet->getStyle($costTaxAmountCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
-        $this->worksheet->getStyle($taxPercentageCell)->getNumberFormat()->setFormatCode('0.00%');
         $this->worksheet->getStyle($costWithoutTaxCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
-        $this->worksheet->getStyle($costWithTaxCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
         $this->worksheet->getStyle($costPerWpCell)->getNumberFormat()->setFormatCode('#,##0.00 "€/Wp"');
+        $this->worksheet->getStyle($gainMarginCell)->getNumberFormat()->setFormatCode('0.00%');
+        $this->worksheet->getStyle($gainAmountCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
+        $this->worksheet->getStyle($sellPriceCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
 
         // Luego obtenemos el estilo del rango de celdas y establecemos la fuente en negrita
         if ($isMain) {
@@ -233,16 +245,16 @@ class BudgetExcelReportGenerator
             $budgetDetail->item->name
         );
         $this->worksheet->setCellValue(
-            $taxAmountCell = $this->column++ . $this->row,
-            $budgetDetail->tax_amount
+            $totalWithoutTaxCell = $this->column++ . $this->row,
+            $budgetDetail->total_without_tax
         );
         $this->worksheet->setCellValue(
             $taxPercentageCell = $this->column++ . $this->row,
             $budgetDetail->tax_percentage
         );
         $this->worksheet->setCellValue(
-            $totalWithoutTaxCell = $this->column++ . $this->row,
-            $budgetDetail->total_without_tax
+            $taxAmountCell = $this->column++ . $this->row,
+            $budgetDetail->tax_amount
         );
         $this->worksheet->setCellValue(
             $totalWithTaxCell = $this->column++ . $this->row,
@@ -256,9 +268,9 @@ class BudgetExcelReportGenerator
         $this->worksheet->getStyle($codeCell)->getAlignment()->setIndent(2);
         $this->worksheet->getStyle($nameCell)->getAlignment()->setIndent(2);
 
-        $this->worksheet->getStyle($taxAmountCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
-        $this->worksheet->getStyle($taxPercentageCell)->getNumberFormat()->setFormatCode('0.00%');
         $this->worksheet->getStyle($totalWithoutTaxCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
+        $this->worksheet->getStyle($taxPercentageCell)->getNumberFormat()->setFormatCode('0.00%');
+        $this->worksheet->getStyle($taxAmountCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
         $this->worksheet->getStyle($totalWithTaxCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
         $this->worksheet->getStyle($pricePerWpCell)->getNumberFormat()->setFormatCode('#,##0.00 "€/Wp"');
 
@@ -278,34 +290,34 @@ class BudgetExcelReportGenerator
             $budgetDetail->item->name
         );
         $this->worksheet->setCellValue(
-            $costTaxAmountCell = $this->column++ . $this->row,
-            $budgetDetail->cost_tax_amount
-        );
-        $this->worksheet->setCellValue(
-            $taxPercentageCell = $this->column++ . $this->row,
-            $budgetDetail->tax_percentage
-        );
-        $this->worksheet->setCellValue(
             $costWithoutTaxCell = $this->column++ . $this->row,
             $budgetDetail->cost_without_tax
-        );
-        $this->worksheet->setCellValue(
-            $costWithTaxCell = $this->column++ . $this->row,
-            $budgetDetail->cost_with_tax
         );
         $this->worksheet->setCellValue(
             $costPerWpCell = $this->column++ . $this->row,
             $budgetDetail->cost_per_wp
         );
+        $this->worksheet->setCellValue(
+            $gainMarginCell = $this->column++ . $this->row,
+            $budgetDetail->gain_margin
+        );
+        $this->worksheet->setCellValue(
+            $gainAmountCell = $this->column++ . $this->row,
+            $budgetDetail->gain_amount
+        );
+        $this->worksheet->setCellValue(
+            $sellPriceCell = $this->column++ . $this->row,
+            $budgetDetail->total_without_tax
+        );
 
         $this->worksheet->getStyle($codeCell)->getAlignment()->setIndent(2);
         $this->worksheet->getStyle($nameCell)->getAlignment()->setIndent(2);
 
-        $this->worksheet->getStyle($costTaxAmountCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
-        $this->worksheet->getStyle($taxPercentageCell)->getNumberFormat()->setFormatCode('0.00%');
         $this->worksheet->getStyle($costWithoutTaxCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
-        $this->worksheet->getStyle($costWithTaxCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
         $this->worksheet->getStyle($costPerWpCell)->getNumberFormat()->setFormatCode('#,##0.00 "€/Wp"');
+        $this->worksheet->getStyle($gainMarginCell)->getNumberFormat()->setFormatCode('0.00%');
+        $this->worksheet->getStyle($gainAmountCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
+        $this->worksheet->getStyle($sellPriceCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
 
         $this->row++;
     }

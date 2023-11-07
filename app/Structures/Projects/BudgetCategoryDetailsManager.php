@@ -29,6 +29,8 @@ use Illuminate\Database\Eloquent\Collection;
  * @property float $tax_prorated_percentage This is the tax prorated percentage for the budgetDetails of the category group
  * @property float $price_per_wp This is the price per wp for the budgetDetails of the category group
  * @property float $cost_per_wp This is the cost price per wp for the budgetDetails of the category group
+ * @property float $gain_margin This is the gain margin in percentage for the budgetDetails of the category group
+ * @property float $gain_amount This is the gain amount for the budgetDetails of the category group
  * 
  */
 class BudgetCategoryDetailsManager {
@@ -50,7 +52,9 @@ class BudgetCategoryDetailsManager {
     private ?float $costWithTax = null;
     private ?float $taxProratedPercentage = null;
     private ?float $pricePerWp = null;
-    private ?float $costPerWp = null;    
+    private ?float $costPerWp = null;
+    private ?float $gainMargin = null;
+    private ?float $gainAmount = null;
 
     public function __construct(?Budget $budget, ?ItemCategory $itemCategory) {
         $this->budget = $budget;
@@ -112,12 +116,19 @@ class BudgetCategoryDetailsManager {
      * Performs all the calculations for the budgetDetails of the category group
      */
     public function performCalculations() {
+        $this->resetCalculations();
         $this->calculateTotalWithoutTax();
+        $this->calculateCostWithoutTax();
         $this->calculateTotalWithoutTaxAfterDiscount();
         $this->calculateTaxAmount();
+        $this->calculateCostTaxAmount();
         $this->calculateTotalWithTax();
+        $this->calculateCostWithTax();
         $this->calculateTaxProratedPercentage();
         $this->calculatePricePerWp();
+        $this->calculateCostPerWp();
+        $this->calculateGainAmount();
+        $this->calculateGainMargin();
     }
 
     /**
@@ -125,11 +136,17 @@ class BudgetCategoryDetailsManager {
      */
     public function resetCalculations() {
         $this->totalWithoutTax = null;
+        $this->costWithoutTax = null;
         $this->totalWithoutTaxAfterDiscount = null;
         $this->taxAmount = null;
+        $this->costTaxAmount = null;
         $this->totalWithTax = null;
+        $this->costWithTax = null;
         $this->taxProratedPercentage = null;
         $this->pricePerWp = null;
+        $this->costPerWp = null;
+        $this->gainMargin = null;
+        $this->gainAmount = null;
     }
 
     /**
@@ -318,6 +335,40 @@ class BudgetCategoryDetailsManager {
             $this->calculateCostPerWp();
         }
         return $this->costPerWp;
+    }
+
+    /**
+     * Calculates the gain margin in percentage for the budgetDetails of the category group
+     */
+    public function calculateGainAmount() {
+        $this->gainAmount = $this->totalWithoutTaxAfterDiscount - $this->costWithoutTax;
+    }
+
+    /**
+     * Better use the attribute gain_amount
+     */
+    public function getGainAmountAttribute() {
+        if (is_null($this->gainAmount)) {
+            $this->calculateGainAmount();
+        }
+        return $this->gainAmount;
+    }
+
+    /**
+     * Calculates the gain margin in percentage for the budgetDetails of the category group
+     */
+    public function calculateGainMargin() {
+        $this->gainMargin = round($this->gainAmount / $this->totalWithoutTaxAfterDiscount, 4);
+    }
+
+    /**
+     * Better use the attribute gain_margin
+     */
+    public function getGainMarginAttribute() {
+        if (is_null($this->gainMargin)) {
+            $this->calculateGainMargin();
+        }
+        return $this->gainMargin;
     }
 
 }

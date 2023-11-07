@@ -30,10 +30,12 @@ use Illuminate\Database\Eloquent\Model;
  * @property float $total_with_tax This is the final total considering discount and tax. In this step we apply the rounding.
  * @property float $cost_with_tax This is the final cost considering discount and tax. In this step we apply the rounding.
  * @property float $tax_amount This is the tax percentage applied to the total. It does not apply rounding.
- * @property float $cost_tax_amount This is the tax percentage applied to the cost. It does not apply rounding.
  * @property float $price_per_wp This is the price per Watt Peak for this detail.
  *                               It is calculated dividing the final total by the total peak power of the budget.
  * @property float $cost_per_wp This is the cost per Watt Peak for this detail.
+ * @property float $gain_amount This is the gain amount for this detail. It is calculated as the difference between the total and the cost.
+ * @property float $gain_margin This is the gain margin for this detail. It is calculated as the difference between the total and the cost divided by the total.
+ * 
  */
 class BudgetDetail extends Model
 {
@@ -58,9 +60,10 @@ class BudgetDetail extends Model
     private ?float $totalWithTax = null;
     private ?float $costWithTax = null;
     private ?float $taxAmount = null;
-    private ?float $costTaxAmount = null;
     private ?float $pricePerWp = null;
     private ?float $costPerWp = null;
+    private ?float $gainAmount = null;
+    private ?float $gainMargin = null;
 
     /**
      * Returns the relationship to the item that represents
@@ -236,18 +239,6 @@ class BudgetDetail extends Model
     }
 
     /**
-     * Better use the attribute cost_tax_amount
-     * @return float
-     */
-    public function getCostTaxAmountAttribute()
-    {
-        if (is_null($this->costTaxAmount)) {
-            $this->costTaxAmount = round(floatval($this->cost_with_tax - $this->cost_without_tax_after_discount), 2);
-        }
-        return $this->costTaxAmount;
-    }
-
-    /**
      * Better use the attribute price_per_wp
      *
      * @return float
@@ -268,9 +259,31 @@ class BudgetDetail extends Model
     public function getCostPerWpAttribute()
     {
         if (is_null($this->costPerWp)) {
-            $this->costPerWp = round(floatval($this->cost_with_tax / $this->budget->total_peak_power), 2);
+            $this->costPerWp = round(floatval($this->cost_without_tax / $this->budget->total_peak_power), 2);
         }
         return $this->costPerWp;
+    }
+
+    /**
+     * Better use the attribute gain_amount
+     */
+    public function getGainAmountAttribute()
+    {
+        if (is_null($this->gainAmount)) {
+            $this->gainAmount = $this->total_without_tax_after_discount - $this->cost_without_tax;
+        }
+        return $this->gainAmount;
+    }
+
+    /**
+     * Better use the attribute gain_margin
+     */
+    public function getGainMarginAttribute()
+    {
+        if (is_null($this->gainMargin)) {
+            $this->gainMargin = $this->gain_amount / $this->total_without_tax_after_discount;
+        }
+        return $this->gainMargin;
     }
 
     /**
@@ -284,9 +297,10 @@ class BudgetDetail extends Model
         $this->totalWithTax = null;
         $this->costWithTax = null;
         $this->taxAmount = null;
-        $this->costTaxAmount = null;
         $this->pricePerWp = null;
         $this->costPerWp = null;
+        $this->gainAmount = null;
+        $this->gainMargin = null;
     }
 
 
