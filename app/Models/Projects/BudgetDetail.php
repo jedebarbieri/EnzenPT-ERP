@@ -46,11 +46,11 @@ class BudgetDetail extends Model
         "sell_price"
     ];
 
-    private float $totalWithoutTax;
-    private float $totalWithoutTaxAfterDiscount;
-    private float $totalWithTax;
-    private float $taxAmount;
-    private float $pricePerWp;
+    private ?float $totalWithoutTax = null;
+    private ?float $totalWithoutTaxAfterDiscount = null;
+    private ?float $totalWithTax = null;
+    private ?float $taxAmount = null;
+    private ?float $pricePerWp = null;
 
     /**
      * Returns the relationship to the item that represents

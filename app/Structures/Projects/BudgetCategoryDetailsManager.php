@@ -12,8 +12,8 @@ use Illuminate\Database\Eloquent\Collection;
  * some specific calculations withing the category group.
  * 
  * @property Budget $budget This is the budget to be used to generate the report
- * @property ItemCategory $itemCategory This is the category group
- * @property Collection|BudgetDetail[] $budgetDetails This is the list of the budgetDetails related to this budget.
+ * @property ItemCategory $item_category This is the category group
+ * @property Collection|BudgetDetail[] $budget_details This is the list of the budgetDetails related to this budget.
  *                                                    Each one has a relationship with the item
  * @property float $total_without_tax This is the total without tax for the budgetDetails of the category group
  * @property float $total_without_tax_after_discount This is the total without tax after discount for the budgetDetails of the category group
@@ -31,13 +31,13 @@ class BudgetCategoryDetailsManager {
     private ItemCategory $itemCategory;
     private Collection $budgetDetails;
 
-    private float $totalWithoutTax;
-    private float $totalWithoutTaxAfterDiscount;
-    private float $totalWithTax;
-    private float $taxAmount;
-    private float $taxProratedPercentage;
+    private ?float $totalWithoutTax = null;
+    private ?float $totalWithoutTaxAfterDiscount = null;
+    private ?float $taxAmount = null;
+    private ?float $totalWithTax = null;
+    private ?float $taxProratedPercentage = null;
 
-    private float $pricePerWp;
+    private ?float $pricePerWp = null;
 
     public function __construct(?Budget $budget, ?ItemCategory $itemCategory) {
         $this->budget = $budget;
@@ -94,7 +94,7 @@ class BudgetCategoryDetailsManager {
     /**
      * Better use the attribute total_without_tax
      */
-    public function getTotalWithoutTax() {
+    public function getTotalWithoutTaxAttribute() {
         if (is_null($this->totalWithoutTax)) {
             $this->calculateTotalWithoutTax();
         }
@@ -113,7 +113,7 @@ class BudgetCategoryDetailsManager {
     /**
      * Better use the attribute total_without_tax_after_discount
      */
-    public function getTotalWithoutTaxAfterDiscount() {
+    public function getTotalWithoutTaxAfterDiscountAttribute() {
         if (is_null($this->totalWithoutTaxAfterDiscount)) {
             $this->calculateTotalWithoutTaxAfterDiscount();
         }
@@ -132,7 +132,7 @@ class BudgetCategoryDetailsManager {
     /**
      * Better use the attribute tax_amount
      */
-    public function getTotalTaxAmount() {
+    public function getTotalTaxAmountAttribute() {
         if (is_null($this->taxAmount)) {
             $this->calculateTaxAmount();
         }
@@ -151,7 +151,7 @@ class BudgetCategoryDetailsManager {
     /**
      * Better use the attribute total_with_tax
      */
-    public function getTotalWithTax() {
+    public function getTotalWithTaxAttribute() {
         if (is_null($this->totalWithTax)) {
             $this->calculateTotalWithTax();
         }
@@ -170,7 +170,7 @@ class BudgetCategoryDetailsManager {
     /**
      * Better use the attribute tax_prorated_percentage
      */
-    public function getTaxProratedPercentage() {
+    public function getTaxProratedPercentageAttribute() {
         if (is_null($this->taxProratedPercentage)) {
             $this->calculateTaxProratedPercentage();
         }
@@ -189,7 +189,7 @@ class BudgetCategoryDetailsManager {
     /**
      * Better use the attribute price_per_wp
      */
-    public function getPricePerWp() {
+    public function getPricePerWpAttribute() {
         if (is_null($this->pricePerWp)) {
             $this->calculatePricePerWp();
         }

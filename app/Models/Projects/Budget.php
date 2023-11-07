@@ -52,27 +52,27 @@ class Budget extends Model
     /**
      * Stores the result of the tax amount calculation of all the budget details
      */
-    private $taxAmount;
+    private ?float $taxAmount = null;
 
     /**
      * Stores the result of discount sum calculation of all the budget details
      */
-    private $totalDiscount;
+    private ?float $totalDiscount = null;
 
     /**
      * Stores the result of the totals without tax calculation of all the budget details
      */
-    private $totalWithoutTax;
+    private ?float $totalWithoutTax = null;
 
     /**
      * Stores the result of the final total calculation of all the budget details
      */
-    private $totalWithTax;
+    private ?float $totalWithTax = null;
 
     /**
      * Stores the result of the total peak power calculation of all the budget details
      */
-    private $itemCategories;
+    private ?Collection $itemCategories = null;
 
     /**
      * Relationship with the lines of this detail represented by BudgetDetails
