@@ -4,6 +4,7 @@ namespace App\Structures\Projects;
 
 use App\Models\Procurement\ItemCategory;
 use App\Models\Projects\Budget;
+use App\Models\Projects\BudgetDetail;
 use App\Structures\GetterSetter;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -15,12 +16,19 @@ use Illuminate\Database\Eloquent\Collection;
  * @property ItemCategory $item_category This is the category group
  * @property Collection|BudgetDetail[] $budget_details This is the list of the budgetDetails related to this budget.
  *                                                    Each one has a relationship with the item
+ * @property Collection|BudgetCategoryDetailsManager[] $sub_budget_category_details_managers This is the list of the sub category managers
+ * 
+ * 
  * @property float $total_without_tax This is the total without tax for the budgetDetails of the category group
+ * @property float $cost_without_tax This is the cost without tax for the budgetDetails of the category group
  * @property float $total_without_tax_after_discount This is the total without tax after discount for the budgetDetails of the category group
  * @property float $tax_amount This is the tax amount for the budgetDetails of the category group
+ * @property float $cost_tax_amount This is the cost tax amount for the budgetDetails of the category group
  * @property float $total_with_tax This is the total with tax for the budgetDetails of the category group
+ * @property float $cost_with_tax This is the cost with tax for the budgetDetails of the category group
  * @property float $tax_prorated_percentage This is the tax prorated percentage for the budgetDetails of the category group
  * @property float $price_per_wp This is the price per wp for the budgetDetails of the category group
+ * @property float $cost_per_wp This is the cost price per wp for the budgetDetails of the category group
  * 
  */
 class BudgetCategoryDetailsManager {
@@ -31,31 +39,73 @@ class BudgetCategoryDetailsManager {
     private ItemCategory $itemCategory;
     private Collection $budgetDetails;
 
+    private ?Collection $subBudgetCategoryDetailsManagers = null;
+
     private ?float $totalWithoutTax = null;
+    private ?float $costWithoutTax = null;
     private ?float $totalWithoutTaxAfterDiscount = null;
     private ?float $taxAmount = null;
+    private ?float $costTaxAmount = null;
     private ?float $totalWithTax = null;
+    private ?float $costWithTax = null;
     private ?float $taxProratedPercentage = null;
-
     private ?float $pricePerWp = null;
+    private ?float $costPerWp = null;    
 
     public function __construct(?Budget $budget, ?ItemCategory $itemCategory) {
         $this->budget = $budget;
         $this->itemCategory = $itemCategory;
+        $this->subBudgetCategoryDetailsManagers = new Collection();
+
         if ($budget && $itemCategory) {
             $this->loadBudgetDetails();
+            $this->loadSubBudgetCategoryDetailsManagers();
         }
     }
 
     /**
-     * Filters the list of budgetDetails to get only the ones that belongs to the category group
+     * Loads the sub budget category details managers
+     */
+    public function loadSubBudgetCategoryDetailsManagers() {
+        $this->itemCategory->children->each(function (ItemCategory $subItemCategory) {
+            $subBudgetCategoryDetailsManager = new BudgetCategoryDetailsManager($this->budget, $subItemCategory);
+            // In case these category doesn't have any item in this budget
+            if ($subBudgetCategoryDetailsManager->budget_details->count() == 0) {
+                return;
+            }
+            $this->subBudgetCategoryDetailsManagers->push($subBudgetCategoryDetailsManager);
+        });
+    }
+
+    /**
+     * Filters the list of budgetDetails to get only the ones that belongs to the category group.
+     * If this category group has children, then the budgetDetails of the children will be included too.
+     * 
      * @return Collection|BudgetDetail[]
      */
     public function loadBudgetDetails() {
+
         $this->budgetDetails = $this->budget->budgetDetails->filter(function ($budgetDetail) {
-            return $budgetDetail->item->itemCategory->id == $this->itemCategory->id;
+            $idItemCat = $budgetDetail->item->itemCategory->id;
+
+            // If the category has children, then we need to check if the budget detail belongs to some of its children
+            if ($this->itemCategory->children()->count() > 0) {
+                return $this
+                    ->itemCategory
+                    ->children
+                    ->filter(
+                        function ($itemCategory) use ($idItemCat) {
+                            return $itemCategory->id == $idItemCat;
+                        }
+                    )->count() > 0;
+            }
+            // Else, we just need to check if the budget detail belongs to the category
+            return $idItemCat == $this->itemCategory->id;
         });
-        $this->performCalculations();
+
+        if ($this->budgetDetails->count() > 0) {
+            $this->performCalculations();
+        }
     }
 
     /**
@@ -102,6 +152,25 @@ class BudgetCategoryDetailsManager {
     }
 
     /**
+     * Calculates the cost without tax for the budgetDetails of the category group
+     */
+    public function calculateCostWithoutTax() {
+        $this->costWithoutTax = $this->budgetDetails->sum(function ($budgetDetail) {
+            return $budgetDetail->cost_without_tax;
+        });
+    }
+
+    /**
+     * Better use the attribute cost_without_tax
+     */
+    public function getCostWithoutTaxAttribute() {
+        if (is_null($this->costWithoutTax)) {
+            $this->calculateCostWithoutTax();
+        }
+        return $this->costWithoutTax;
+    }
+
+    /**
      * Calculates the total without tax after discount for the budgetDetails of the category group
      */
     public function calculateTotalWithoutTaxAfterDiscount() {
@@ -140,6 +209,25 @@ class BudgetCategoryDetailsManager {
     }
 
     /**
+     * Calculates the cost tax amount for the budgetDetails of the category group
+     */
+    public function calculateCostTaxAmount() {
+        $this->costTaxAmount = $this->budgetDetails->sum(function (BudgetDetail $budgetDetail) {
+            return $budgetDetail->cost_tax_amount;
+        });
+    }
+
+    /**
+     * Better use the attribute cost_tax_amount
+     */
+    public function getCostTaxAmountAttribute() {
+        if (is_null($this->costTaxAmount)) {
+            $this->calculateCostTaxAmount();
+        }
+        return $this->costTaxAmount;
+    }
+
+    /**
      * Calculates the total with tax for the budgetDetails of the category group
      */
     public function calculateTotalWithTax() {
@@ -159,12 +247,29 @@ class BudgetCategoryDetailsManager {
     }
 
     /**
+     * Calculates the cost with tax for the budgetDetails of the category group
+     */
+    public function calculateCostWithTax() {
+        $this->costWithTax = $this->budgetDetails->sum(function (BudgetDetail $budgetDetail) {
+            return $budgetDetail->cost_with_tax;
+        });
+    }
+
+    /**
+     * Better use the attribute cost_with_tax
+     */
+    public function getCostWithTaxAttribute() {
+        if (is_null($this->costWithTax)) {
+            $this->calculateCostWithTax();
+        }
+        return $this->costWithTax;
+    }
+
+    /**
      * Calculates the tax prorated percentage for the budgetDetails of the category group
      */
     public function calculateTaxProratedPercentage() {
-        $this->taxProratedPercentage = $this->budgetDetails->sum(function ($budgetDetail) {
-            return $budgetDetail->tax_amount / $budgetDetail->total_with_tax;
-        });
+        $this->taxProratedPercentage = round($this->taxAmount / $this->totalWithTax, 4);
     }
 
     /**
@@ -194,6 +299,25 @@ class BudgetCategoryDetailsManager {
             $this->calculatePricePerWp();
         }
         return $this->pricePerWp;
+    }
+
+    /**
+     * Calculates the cost per wp for the budgetDetails of the category group
+     */
+    public function calculateCostPerWp() {
+        $this->costPerWp = $this->budgetDetails->sum(function (BudgetDetail $budgetDetail) {
+            return $budgetDetail->cost_per_wp;
+        });
+    }
+
+    /**
+     * Better use the attribute cost_price_per_wp
+     */
+    public function getCostPerWpAttribute() {
+        if (is_null($this->costPerWp)) {
+            $this->calculateCostPerWp();
+        }
+        return $this->costPerWp;
     }
 
 }
