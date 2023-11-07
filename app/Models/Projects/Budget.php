@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property float $total_peak_power This is the total of the maximum power that this project can provide.
  *                                 This data is used to calculate the cost of each item or category per Watt Peak ( 0.00 € / Wp)
  * @property Collection|ItemCategory[] $item_categories This is the list of the item categories that belongs to this budget
+ * @property Collection|ItemCategory[] $main_item_categories This is the list of the main item categories that belongs to this budget
  */
 class Budget extends Model
 {
@@ -70,9 +71,14 @@ class Budget extends Model
     private ?float $totalWithTax = null;
 
     /**
-     * Stores the result of the total peak power calculation of all the budget details
+     * Stores the list of the item categories that are present in this budget
      */
     private ?Collection $itemCategories = null;
+
+    /**
+     * Stores the list of the main item categories that are present in this budget
+     */
+    private ?Collection $mainItemCategories = null;
 
     /**
      * Relationship with the lines of this detail represented by BudgetDetails
@@ -190,8 +196,30 @@ class Budget extends Model
                 ->where("budget_details.budget_id", "=", $this->id)
                 ->select("item_categories.*")
                 ->distinct()
+                ->orderBy("item_categories.prefix")
                 ->get();
         }
         return $this->itemCategories;
+    }
+
+    /**
+     * **Better use the attribute item_categories**
+     * This method returns the total of the budget details that belongs to a specific ItemCategory
+     * It performs a join between budget_details and items to get the item_category_id
+     * @return Collection|ItemCategory[]
+     */
+    public function getMainItemCategoriesAttribute() {
+        if (is_null($this->mainItemCategories)) {
+            $this->mainItemCategories = ItemCategory::join("item_categories as ic2", "ic2.id", "=", "item_categories.parent_id")
+                ->join("items", "items.item_category_id", "=", "item_categories.id")
+                ->join("budget_details", "budget_details.item_id", "=", "items.id")
+                ->where("budget_details.budget_id", "=", $this->id)
+                ->select("ic2.*")
+                ->distinct()
+                ->with("children")
+                ->orderBy("ic2.prefix")
+                ->get();
+        }
+        return $this->mainItemCategories;
     }
 }
