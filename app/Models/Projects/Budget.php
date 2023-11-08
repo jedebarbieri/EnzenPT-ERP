@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $project_number The number of the project which this budget belong. * This will be moved to the project entity.
  * @property string $project_location The location of the project which this budget belongs. * This will be moved to the project entity.
  * @property float $total_peak_power This is the total of the maximum power that this project can provide.
- *                                 This data is used to calculate the cost of each item or category per Watt Peak ( 0.00 € / Wp)
+ *                                 This data is used to calculate the price of each item or category per Watt Peak ( 0.00 € / Wp)
  * 
  * @property float $total_without_tax This is the total of the budget details without tax
  * @property float $tax_prorated This is the prorated total of the budget details tax amount
@@ -30,8 +30,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property float $total_discount This is the total of the budget details discount
  * @property float $total_without_tax_after_discount This is the total of the budget details without tax after discount
  * @property float $total_with_tax This is the total of the budget details with tax
- * @property float $total_price_per_watt_peak This is the total of the budget details with tax
- * @property float $cost_amount This is the total of the budget details costs
+ * @property float $total_price_per_wp This is the total of the budget details with tax
+ * @property float $cost_amount This is the total costs of the budget details costs
  * @property float $cost_per_wp This is the total of the budget details costs per Watt Peak
  * @property float $prorated_gain_margin This is the prorated total of the budget details gain margin
  * @property float $gain_amount This is the total of the budget details gain amount
@@ -94,7 +94,7 @@ class Budget extends Model
     private ?float $totalWithTax = null;
 
     /**
-     * Stores the result of the cost amount calculation of all the budget details
+     * Stores the result of the price amount calculation of all the budget details
      */
     private ?float $totalPricePerWP = null;
 
@@ -199,7 +199,7 @@ class Budget extends Model
     public function getTaxProratedAttribute()
     {
         if (is_null($this->taxProrated)) {
-            $this->taxProrated = $this->budgetDetails->sum("tax_prorated");
+            $this->taxProrated = $this->tax_amount / $this->total_with_tax;
         }
         return $this->taxProrated;
     }
@@ -295,7 +295,7 @@ class Budget extends Model
     public function getProratedGainMarginAttribute()
     {
         if (is_null($this->proratedGainMargin)) {
-            $this->proratedGainMargin = $this->budgetDetails->sum("gain_margin");
+            $this->proratedGainMargin = $this->gain_amount / $this->total_without_tax_after_discount;
         }
         return $this->proratedGainMargin;
     }
@@ -311,7 +311,6 @@ class Budget extends Model
         }
         return $this->gainAmount;
     }
-
 
 
     /**

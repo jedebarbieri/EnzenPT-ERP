@@ -25,10 +25,9 @@ use Illuminate\Database\Eloquent\Model;
  * 
  * 
  * @property float $total_without_tax This is the total without tax before discount. It does not apply rounding.
- * @property float $cost_without_tax This is the cost without tax before discount. It does not apply rounding.
- * @property float $total_without_tax_after_discount This is total cost without tax after discount. It does not apply rounding.
+ * @property float $cost_amount This is the cost (quantity * unit_price). It does not apply rounding.
+ * @property float $total_without_tax_after_discount This is total price without tax after discount. It does not apply rounding.
  * @property float $total_with_tax This is the final total considering discount and tax. In this step we apply the rounding.
- * @property float $cost_with_tax This is the final cost considering discount and tax. In this step we apply the rounding.
  * @property float $tax_amount This is the tax percentage applied to the total. It does not apply rounding.
  * @property float $price_per_wp This is the price per Watt Peak for this detail.
  *                               It is calculated dividing the final total by the total peak power of the budget.
@@ -55,10 +54,9 @@ class BudgetDetail extends Model
     ];
 
     private ?float $totalWithoutTax = null;
-    private ?float $costWithoutTax = null;
+    private ?float $costAmount = null;
     private ?float $totalWithoutTaxAfterDiscount = null;
     private ?float $totalWithTax = null;
-    private ?float $costWithTax = null;
     private ?float $taxAmount = null;
     private ?float $pricePerWp = null;
     private ?float $costPerWp = null;
@@ -179,15 +177,15 @@ class BudgetDetail extends Model
     }
 
     /**
-     * Better use the attribute cost_without_tax
+     * Better use the attribute cost_amount
      * @return float
      */
-    public function getCostWithoutTaxAttribute()
+    public function getCostAmountAttribute()
     {
-        if (is_null($this->costWithoutTax)) {
-            $this->costWithoutTax = $this->quantity * $this->unit_price;
+        if (is_null($this->costAmount)) {
+            $this->costAmount = $this->quantity * $this->unit_price;
         }
-        return $this->costWithoutTax;
+        return $this->costAmount;
     }
 
     /**
@@ -215,18 +213,6 @@ class BudgetDetail extends Model
     }
 
     /**
-     * Better use the attribute cost_with_tax
-     * @return float
-     */
-    public function getCostWithTaxAttribute()
-    {
-        if (is_null($this->costWithTax)) {
-            $this->costWithTax = round($this->cost_without_tax / (1 - floatval($this->tax_percentage)), 2);
-        }
-    }
-
-
-    /**
      * Better use the attribute tax_amount
      * @return float
      */
@@ -246,7 +232,7 @@ class BudgetDetail extends Model
     public function getPricePerWpAttribute()
     {
         if (is_null($this->pricePerWp)) {
-            $this->pricePerWp = round(floatval($this->total_with_tax / $this->budget->total_peak_power), 2);
+            $this->pricePerWp = $this->total_with_tax / $this->budget->total_peak_power;
         }
         return $this->pricePerWp;
     }
@@ -259,7 +245,7 @@ class BudgetDetail extends Model
     public function getCostPerWpAttribute()
     {
         if (is_null($this->costPerWp)) {
-            $this->costPerWp = round(floatval($this->cost_without_tax / $this->budget->total_peak_power), 2);
+            $this->costPerWp = $this->cost_amount / $this->budget->total_peak_power;
         }
         return $this->costPerWp;
     }
@@ -270,7 +256,7 @@ class BudgetDetail extends Model
     public function getGainAmountAttribute()
     {
         if (is_null($this->gainAmount)) {
-            $this->gainAmount = $this->total_without_tax_after_discount - $this->cost_without_tax;
+            $this->gainAmount = $this->total_without_tax_after_discount - $this->cost_amount;
         }
         return $this->gainAmount;
     }
@@ -292,10 +278,9 @@ class BudgetDetail extends Model
     public function resetTotals()
     {
         $this->totalWithoutTax = null;
-        $this->costWithoutTax = null;
+        $this->costAmount = null;
         $this->totalWithoutTaxAfterDiscount = null;
         $this->totalWithTax = null;
-        $this->costWithTax = null;
         $this->taxAmount = null;
         $this->pricePerWp = null;
         $this->costPerWp = null;
