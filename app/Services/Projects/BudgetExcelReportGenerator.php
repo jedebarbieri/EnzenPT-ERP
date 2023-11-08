@@ -190,10 +190,27 @@ class BudgetExcelReportGenerator
 
         $this->mainBudgetDetailsManagers->each(function (BudgetCategoryDetailsManager $budgetCategoryDetailsManager) {
             $this->printSellingCategoryDetails($budgetCategoryDetailsManager, true);
+            
+
             $budgetCategoryDetailsManager->sub_budget_category_details_managers->each(function (BudgetCategoryDetailsManager $subBudgetCategoryDetailsManager) {
                 $this->printSellingCategoryDetails($subBudgetCategoryDetailsManager);
+        
+                // Return to the previous row to set the outline level for the grouping
+                $this->row--;
+                $this->worksheet->getRowDimension($this->row)->setOutlineLevel(1);
+                $this->worksheet->getRowDimension($this->row)->setVisible(false);
+                $this->worksheet->getRowDimension($this->row)->setCollapsed(true);
+                $this->row++;
+
                 $subBudgetCategoryDetailsManager->budgetDetails->each(function (BudgetDetail $budgetDetail) {
                     $this->printSellingBudgetDetails($budgetDetail);
+        
+                    // Return to the previous row to set the outline level for the grouping
+                    $this->row--;
+                    $this->worksheet->getRowDimension($this->row)->setOutlineLevel(2);
+                    $this->worksheet->getRowDimension($this->row)->setVisible(false);
+                    $this->worksheet->getRowDimension($this->row)->setCollapsed(true);
+                    $this->row++;
                 });
             });
         });
@@ -218,8 +235,23 @@ class BudgetExcelReportGenerator
             $this->printCostCategoryDetails($budgetCategoryDetailsManager, true);
             $budgetCategoryDetailsManager->sub_budget_category_details_managers->each(function (BudgetCategoryDetailsManager $subBudgetCategoryDetailsManager) {
                 $this->printCostCategoryDetails($subBudgetCategoryDetailsManager);
+        
+                // Return to the previous row to set the outline level for the grouping
+                $this->row--;
+                $this->worksheet->getRowDimension($this->row)->setOutlineLevel(1);
+                $this->worksheet->getRowDimension($this->row)->setVisible(false);
+                $this->worksheet->getRowDimension($this->row)->setCollapsed(true);
+                $this->row++;
+
                 $subBudgetCategoryDetailsManager->budgetDetails->each(function (BudgetDetail $budgetDetail) {
                     $this->printCostBudgetDetails($budgetDetail);
+        
+                    // Return to the previous row to set the outline level for the grouping
+                    $this->row--;
+                    $this->worksheet->getRowDimension($this->row)->setOutlineLevel(2);
+                    $this->worksheet->getRowDimension($this->row)->setVisible(false);
+                    $this->worksheet->getRowDimension($this->row)->setCollapsed(true);
+                    $this->row++;
                 });
             });
         });
