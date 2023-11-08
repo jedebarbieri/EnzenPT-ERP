@@ -421,6 +421,33 @@
             $("#lblFinalPrice").text(mask.format(budgetTotals.totalWTax.toFixed(2)));
         }
 
+        /**
+         * Creates a new row for the category
+         * 
+         * @param {jQuery} titleRow 
+         * @param {Object} category 
+         * @param {String} className 
+         */
+        function createCategoryRow(titleRow, category, className = "") {
+            let mainCatRow = $('<tr/>', {
+                class: className
+            }).append('<td colspan="10" class="text-bold">' + category.code + " - " + category.name + '</td>');
+            $(titleRow).before(mainCatRow);
+        }
+
+        /**
+         * This variable is used to store the current subcategory.
+         * It is used to know when a new subcategory is being processed.
+         */
+        var currentSubCat = null;
+
+        /**
+         * This variable is used to store the titles of the categories.
+         * Those categories will be processed right after the table has been drawn.
+         * @type {Array}
+         */
+        var categoryTitles = [];
+
         // Evento para cargar este modal con la información proporcionada
         document.addEventListener('budgetModal.loadData', (event) => {
             let budgetData = event.detail.data;
@@ -570,6 +597,26 @@
                         }
                     },
                     createdRow: function(row, data, index) {
+                        if (data.id != 0) {
+                            if (currentSubCat == null) {
+                                // This will execute only in the first iteration, when the currentSubCat is null
+                                currentSubCat = data.item.itemCategory;
+                                categoryTitles.push({titleRow: row, category: data.item.itemCategory.parent, className: "main-category-row"});
+                                categoryTitles.push({titleRow: row, category: data.item.itemCategory, className: "sub-category-row"});
+                            }
+                            if (currentSubCat.id != data.item.itemCategory.id) {
+                                currentSubCat = data.item.itemCategory;
+                                // New subcategory
+                                // Let's see if has diferent main category
+                                if (currentSubCat.parent.id != data.item.itemCategory.parent.id) {
+                                    // This is a complete new main category
+                                    // Adding the main category row
+                                    categoryTitles.push({titleRow: row, category: data.item.itemCategory.parent, className: "main-category-row"});
+                                }
+                                // Adding a subcategory row
+                                categoryTitles.push({titleRow: row, category: data.item.itemCategory, className: "sub-category-row"});
+                            }
+                        }
                         // Cloning the options col
                         let clonedContent = $("#buttonsOptionsPerBudgetDetailTemplate").contents()
                             .clone();
@@ -755,6 +802,16 @@
                             }));
                         }
                         calculateTotalTable();
+                    },
+                    drawCallback: function( settings ) {
+                        // Después de que DataTables ha dibujado la tabla, agregamos las filas
+                        for (let i = 0; i < categoryTitles.length; i++) {
+                            let rowToAdd = categoryTitles[i];
+                            createCategoryRow(rowToAdd.titleRow, rowToAdd.category, rowToAdd.className);
+                        }
+
+                        // Limpiamos la matriz para el próximo dibujo
+                        categoryTitles = [];
                     }
                 });
             } else {
