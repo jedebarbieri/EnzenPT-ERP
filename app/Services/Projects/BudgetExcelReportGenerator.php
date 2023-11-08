@@ -7,7 +7,11 @@ use App\Models\Projects\Budget;
 use App\Models\Projects\BudgetDetail;
 use App\Structures\Projects\BudgetCategoryDetailsManager;
 use Illuminate\Support\Collection;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
@@ -23,6 +27,119 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 class BudgetExcelReportGenerator
 {
 
+    const STARTING_COLUMN = 1;
+
+    const STARTING_ROW = 1;
+
+    const CURRENCY_FORMAT = '#,##0.00 €';
+
+    const PERCENTAGE_FORMAT = '0.00 %';
+
+    const PRICE_PER_WP_FORMAT = '#,####0.0000 "€/Wp"';
+
+    const INIT_INDENT = 0;
+
+    const STYLE_MAIN_HEADER = [
+        'font' => [
+            'bold' => true,
+            'color' => ['argb' => 'FFFFFFFF'],
+            'size' => 14,
+        ],
+        'alignment' => [
+            'vertical' => Alignment::VERTICAL_CENTER,
+        ],
+        'fill' => [
+            'fillType' => Fill::FILL_SOLID,
+            'startColor' => ['argb' => 'FF808080'], // gray 35%
+        ],
+        'borders' => [
+            'outline' => [
+                'borderStyle' => Border::BORDER_THIN,
+                'color' => ['argb' => 'FF000000'], // black
+            ],
+        ],
+    ];
+
+    const STYLE_MAIN_FOOTER = [
+        'font' => [
+            'bold' => true,
+            'size' => 14,
+        ],
+        'alignment' => [
+            'vertical' => Alignment::VERTICAL_CENTER,
+        ],
+        'borders' => [
+            'top' => [
+                'borderStyle' => Border::BORDER_MEDIUM,
+                'color' => ['argb' => 'FF000000'], // black
+            ],
+        ],
+    ];
+
+    const STYLE_MAIN_CATEGORY = [
+        'font' => [
+            'bold' => true,
+            'color' => ['argb' => '00000000'],
+            'size' => 12,
+        ],
+        'alignment' => [
+            'vertical' => Alignment::VERTICAL_CENTER,
+        ],
+        'fill' => [
+            'fillType' => Fill::FILL_SOLID,
+            'startColor' => ['argb' => 'FFD9D9D9'], // gray 15%
+        ],
+        'borders' => [
+            'outline' => [
+                'borderStyle' => Border::BORDER_THIN,
+                'color' => ['argb' => 'FF000000'], // black
+            ],
+        ],
+    ];
+
+    const STYLE_SUB_CATEGORY = [
+        'font' => [
+            'bold' => true,
+            'color' => ['argb' => '00000000'],
+            'size' => 11,
+        ],
+        'alignment' => [
+            'vertical' => Alignment::VERTICAL_CENTER,
+        ],
+        'fill' => [
+            'fillType' => Fill::FILL_SOLID,
+            'startColor' => ['argb' => 'FFF2F2F2'], // gray 5%
+        ],
+        'borders' => [
+            'outline' => [
+                'borderStyle' => Border::BORDER_THIN,
+                'color' => ['argb' => 'FF000000'], // black
+            ],
+        ],
+    ];
+
+    const STYLE_BUDGET_DETAIL = [
+        'font' => [
+            'bold' => false,
+            'color' => ['argb' => '00000000'],
+            'size' => 11,
+        ],
+        'alignment' => [
+            'vertical' => Alignment::VERTICAL_CENTER,
+        ],
+        'borders' => [
+            'left' => [
+                'borderStyle' => Border::BORDER_THIN,
+                'color' => ['argb' => 'FF000000'], // black
+            ],
+            'right' => [
+                'borderStyle' => Border::BORDER_THIN,
+                'color' => ['argb' => 'FF000000'], // black
+            ],
+        ],
+    ];
+
+
     public Budget $budget;
 
     public Collection $mainBudgetDetailsManagers;
@@ -31,15 +148,26 @@ class BudgetExcelReportGenerator
 
     public Worksheet $worksheet;
 
-    public $row = 1;
+    public $row = self::STARTING_ROW;
 
-    public $column = 'A';
+    public $column = self::STARTING_COLUMN;
 
     public function __construct(Budget $budget)
     {
         $this->budget = $budget;
         $this->row = 1;
         $this->mainBudgetDetailsManagers = new Collection();
+    }
+
+    /**
+     * Returns the string reference to the current cell.
+     * Optionally you can pass or the $row or the $col, otherwise will use the current values.
+     * This won't change the current values of the row or column.
+     * @return string
+     */
+    public function cell(?string $row = null, ?string $col = null)
+    {
+        return Coordinate::stringFromColumnIndex($col ?? $this->column) . ($row ?? $this->row);
     }
 
     public function generateReport()
@@ -54,17 +182,9 @@ class BudgetExcelReportGenerator
             $this->mainBudgetDetailsManagers->push($newBudgetCategoryDetailsManager);
         });
 
-        // Imprimimos la cabecera de la tabla de precios finales
-        $this->worksheet->setCellValue($this->column++ . $this->row, 'Cod');
-        $this->worksheet->setCellValue($this->column++ . $this->row, 'Category');
-        $this->worksheet->setCellValue($this->column++ . $this->row, 'Total wo tax');
-        $this->worksheet->setCellValue($this->column++ . $this->row, 'Taxes %');
-        $this->worksheet->setCellValue($this->column++ . $this->row, 'Taxes Amount');
-        $this->worksheet->setCellValue($this->column++ . $this->row, 'Total');
-        $this->worksheet->setCellValue($this->column++ . $this->row, '€/Wp');
+        $this->row = self::STARTING_ROW;
 
-        $this->row++;
-        $this->column = 'A';
+        $this->printSellingBudgetHeader();
 
         // Iteration for the final sale budget. Final price for the client
 
@@ -78,25 +198,21 @@ class BudgetExcelReportGenerator
             });
         });
 
+        // Painting the last border of the last row
+        $this->worksheet->getStyle(
+            $this->cell(
+                col: self::STARTING_COLUMN
+            ) . ':' . $this->cell()
+        )->getBorders()->getTop()->setBorderStyle(Border::BORDER_THIN);
+
         // Printing the grand totals for the final sale budget
         $this->printSellingBudgetGrandTotals();
 
         // Iteration for the costs budget
 
         $this->row += 4;
-        $this->column = 'A';
 
-        // Imprimimos la cabecera de la tabla de precios finales
-        $this->worksheet->setCellValue($this->column++ . $this->row, 'Cod');
-        $this->worksheet->setCellValue($this->column++ . $this->row, 'Category');
-        $this->worksheet->setCellValue($this->column++ . $this->row, 'Cost Amount');
-        $this->worksheet->setCellValue($this->column++ . $this->row, '€/Wp');
-        $this->worksheet->setCellValue($this->column++ . $this->row, 'Gain %');
-        $this->worksheet->setCellValue($this->column++ . $this->row, 'Gain');
-        $this->worksheet->setCellValue($this->column++ . $this->row, 'Sell Price');
-
-        $this->row++;
-        $this->column = 'A';
+        $this->printCostBudgetHeader();
 
         $this->mainBudgetDetailsManagers->each(function (BudgetCategoryDetailsManager $budgetCategoryDetailsManager) {
             $this->printCostCategoryDetails($budgetCategoryDetailsManager, true);
@@ -107,13 +223,22 @@ class BudgetExcelReportGenerator
                 });
             });
         });
+        
+        // Painting the last border of the last row
+        $this->worksheet->getStyle(
+            $this->cell(
+                col: self::STARTING_COLUMN
+            ) . ':' . $this->cell()
+        )->getBorders()->getTop()->setBorderStyle(Border::BORDER_THIN);
 
         // Printing the grand totals for the costs budget
         $this->printCostBudgetGrandTotals();
         
-        foreach (range('A', $this->worksheet->getHighestDataColumn()) as $col) {
+        foreach (range(Coordinate::stringFromColumnIndex(self::STARTING_COLUMN), $this->worksheet->getHighestDataColumn()) as $col) {
             $this->worksheet->getColumnDimension($col)->setAutoSize(true);
         }
+
+        $this->worksheet->setShowGridlines(false);
 
         $writer = new Xlsx($this->spreadsheet);
 
@@ -131,56 +256,168 @@ class BudgetExcelReportGenerator
         return $filePath;
     }
 
+    public function printSellingBudgetHeader()
+    {
+        $this->column = self::STARTING_COLUMN;
+        
+        $headers = [
+            'Cod',
+            'Category',
+            'Total wo tax',
+            'Taxes %',
+            'Taxes Amount',
+            'Total',
+            '€/Wp',
+        ];
+
+        $lastColumn = $this->column + count($headers) - 1;
+
+        foreach ($headers as $header) {
+            $this->worksheet->setCellValue($this->cell(), $header);
+            $this->column++;
+        }
+
+        $this->worksheet
+            ->getStyle($this->cell(
+                    col: self::STARTING_COLUMN,
+                ) . ':' . $this->cell(
+                    col: $lastColumn
+                )
+            )
+            ->applyFromArray(self::STYLE_MAIN_HEADER);
+
+        $this->worksheet
+            ->getStyle($this->cell(
+                    col: self::STARTING_COLUMN + 2,
+                ) . ':' . $this->cell(
+                    col: $lastColumn
+                )
+            )
+            ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        
+        // Establecer altura de fila
+        $this->worksheet->getRowDimension($this->row)->setRowHeight(30);
+
+        $this->row++;
+    }
+
+    public function printCostBudgetHeader()
+    {
+        $this->column = self::STARTING_COLUMN;
+        
+        $headers = [
+            'Cod',
+            'Category',
+            'Cost Amount',
+            '€/Wp',
+            'Gain %',
+            'Gain',
+            'Sell Price',
+        ];
+
+        $lastColumn = $this->column + count($headers) - 1;
+
+        foreach ($headers as $header) {
+            $this->worksheet->setCellValue($this->cell(), $header);
+            $this->column++;
+        }
+
+        $this->worksheet
+            ->getStyle($this->cell(
+                    col: self::STARTING_COLUMN,
+                    row: $this->row
+                ) . ':' . $this->cell(
+                    col: $lastColumn
+                )
+            )
+            ->applyFromArray(self::STYLE_MAIN_HEADER);
+
+        $this->worksheet
+            ->getStyle($this->cell(
+                    col: self::STARTING_COLUMN + 2,
+                ) . ':' . $this->cell(
+                    col: $lastColumn
+                )
+            )
+            ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        
+        // Establecer altura de fila
+        $this->worksheet->getRowDimension($this->row)->setRowHeight(30);
+
+        $this->row++;
+    }
 
     public function printSellingCategoryDetails(BudgetCategoryDetailsManager $budgetCategoryDetailsManager, bool $isMain = false)
     {
         // Primero establecemos el valor de las celdas
-        $startColumn = $this->column = 'A';
+        $startColumn = $this->column = self::STARTING_COLUMN;
 
         $this->worksheet->setCellValue(
-            $codeCell = $this->column++ . $this->row,
+            $codeCell = $this->cell(),
             $budgetCategoryDetailsManager->itemCategory->prefix_code
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $nameCell = $this->column++ . $this->row,
+            $nameCell = $this->cell(),
             $budgetCategoryDetailsManager->itemCategory->name
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $totalWithoutTaxCell = $this->column++ . $this->row,
-            $budgetCategoryDetailsManager->total_without_tax
+            $totalWithoutTaxCell = $this->cell(),
+            $budgetCategoryDetailsManager->total_without_tax_after_discount
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $taxPercentageCell = $this->column++ . $this->row,
+            $taxPercentageCell = $this->cell(),
             $budgetCategoryDetailsManager->tax_prorated_percentage
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $taxAmountCell = $this->column++ . $this->row,
+            $taxAmountCell = $this->cell(),
             $budgetCategoryDetailsManager->tax_amount
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $totalWithTaxCell = $this->column++ . $this->row,
+            $totalWithTaxCell = $this->cell(),
             $budgetCategoryDetailsManager->total_with_tax
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $pricePerWpCell = $this->column++ . $this->row,
+            $pricePerWpCell = $this->cell(),
             $budgetCategoryDetailsManager->price_per_wp
         );
 
-        if (!$isMain) {
-            $this->worksheet->getStyle($codeCell)->getAlignment()->setIndent(1);
-            $this->worksheet->getStyle($nameCell)->getAlignment()->setIndent(1);
-        }
-
-        $this->worksheet->getStyle($totalWithoutTaxCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
-        $this->worksheet->getStyle($taxPercentageCell)->getNumberFormat()->setFormatCode('0.00%');
-        $this->worksheet->getStyle($taxAmountCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
-        $this->worksheet->getStyle($totalWithTaxCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
-        $this->worksheet->getStyle($pricePerWpCell)->getNumberFormat()->setFormatCode('#,##0.00 "€/Wp"');
+        $this->worksheet->getStyle($totalWithoutTaxCell)->getNumberFormat()->setFormatCode(self::CURRENCY_FORMAT);
+        $this->worksheet->getStyle($taxPercentageCell)->getNumberFormat()->setFormatCode(self::PERCENTAGE_FORMAT);
+        $this->worksheet->getStyle($taxAmountCell)->getNumberFormat()->setFormatCode(self::CURRENCY_FORMAT);
+        $this->worksheet->getStyle($totalWithTaxCell)->getNumberFormat()->setFormatCode(self::CURRENCY_FORMAT);
+        $this->worksheet->getStyle($pricePerWpCell)->getNumberFormat()->setFormatCode(self::PRICE_PER_WP_FORMAT);
 
         // Luego obtenemos el estilo del rango de celdas y establecemos la fuente en negrita
+        $rangeStyle = $this->worksheet->getStyle(
+            $this->cell(
+                col: $startColumn
+            ) . ':' . $this->cell()
+        );
+
+        $indent = self::INIT_INDENT + 1;
+
         if ($isMain) {
-            $this->worksheet->getStyle($startColumn . $this->row . ':' . $this->column . $this->row)->getFont()->setBold(true);
+            $rangeStyle->applyFromArray(self::STYLE_MAIN_CATEGORY);
+            $this->worksheet->getRowDimension($this->row)->setRowHeight(17);
+        } else {
+            $rangeStyle->applyFromArray(self::STYLE_SUB_CATEGORY);
+            $indent = self::INIT_INDENT + 2;
         }
+
+        $this->worksheet->getStyle($codeCell)->getAlignment()->setIndent($indent);
+        $this->worksheet->getStyle($nameCell)->getAlignment()->setIndent($indent);
 
         $this->row++;
     }
@@ -188,142 +425,204 @@ class BudgetExcelReportGenerator
     public function printCostCategoryDetails(BudgetCategoryDetailsManager $budgetCategoryDetailsManager, bool $isMain = false)
     {
         // Primero establecemos el valor de las celdas
-        $startColumn = $this->column = 'A';
+        $startColumn = $this->column = self::STARTING_COLUMN;
 
         $this->worksheet->setCellValue(
-            $codeCell = $this->column++ . $this->row,
+            $codeCell = $this->cell(),
             $budgetCategoryDetailsManager->itemCategory->prefix_code
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $nameCell = $this->column++ . $this->row,
+            $nameCell = $this->cell(),
             $budgetCategoryDetailsManager->itemCategory->name
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $costWithoutTaxCell = $this->column++ . $this->row,
-            $budgetCategoryDetailsManager->cost_without_tax
+            $totalCost = $this->cell(),
+            $budgetCategoryDetailsManager->cost_amount
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $costPerWpCell = $this->column++ . $this->row,
+            $costPerWpCell = $this->cell(),
             $budgetCategoryDetailsManager->cost_per_wp
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $gainMarginCell = $this->column++ . $this->row,
+            $gainMarginCell = $this->cell(),
             $budgetCategoryDetailsManager->gain_margin
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $gainAmountCell = $this->column++ . $this->row,
+            $gainAmountCell = $this->cell(),
             $budgetCategoryDetailsManager->gain_amount
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $sellPriceCell = $this->column++ . $this->row,
+            $sellPriceCell = $this->cell(),
             $budgetCategoryDetailsManager->total_without_tax
         );
 
-        if (!$isMain) {
-            $this->worksheet->getStyle($codeCell)->getAlignment()->setIndent(1);
-            $this->worksheet->getStyle($nameCell)->getAlignment()->setIndent(1);
-        }
-
-        $this->worksheet->getStyle($costWithoutTaxCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
-        $this->worksheet->getStyle($costPerWpCell)->getNumberFormat()->setFormatCode('#,##0.00 "€/Wp"');
-        $this->worksheet->getStyle($gainMarginCell)->getNumberFormat()->setFormatCode('0.00%');
-        $this->worksheet->getStyle($gainAmountCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
-        $this->worksheet->getStyle($sellPriceCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
+        $this->worksheet->getStyle($totalCost)->getNumberFormat()->setFormatCode(self::CURRENCY_FORMAT);
+        $this->worksheet->getStyle($costPerWpCell)->getNumberFormat()->setFormatCode(self::PRICE_PER_WP_FORMAT);
+        $this->worksheet->getStyle($gainMarginCell)->getNumberFormat()->setFormatCode(self::PERCENTAGE_FORMAT);
+        $this->worksheet->getStyle($gainAmountCell)->getNumberFormat()->setFormatCode(self::CURRENCY_FORMAT);
+        $this->worksheet->getStyle($sellPriceCell)->getNumberFormat()->setFormatCode(self::CURRENCY_FORMAT);
 
         // Luego obtenemos el estilo del rango de celdas y establecemos la fuente en negrita
+        $rangeStyle = $this->worksheet->getStyle(
+            $this->cell(
+                col: $startColumn
+            ) . ':' . $this->cell()
+        );
+
+        $indent = self::INIT_INDENT + 1;
+
         if ($isMain) {
-            $this->worksheet->getStyle($startColumn . $this->row . ':' . $this->column . $this->row)->getFont()->setBold(true);
+            $rangeStyle->applyFromArray(self::STYLE_MAIN_CATEGORY);
+            $this->worksheet->getRowDimension($this->row)->setRowHeight(17);
+        } else {
+            $rangeStyle->applyFromArray(self::STYLE_SUB_CATEGORY);
+            $indent = self::INIT_INDENT + 2;
         }
+
+        $this->worksheet->getStyle($codeCell)->getAlignment()->setIndent($indent);
+        $this->worksheet->getStyle($nameCell)->getAlignment()->setIndent($indent);
 
         $this->row++;
     }
 
     public function printSellingBudgetDetails(BudgetDetail $budgetDetail)
     {
-        $this->column = 'A';
+        $this->column = self::STARTING_COLUMN;
 
         $this->worksheet->setCellValue(
-            $codeCell = $this->column++ . $this->row,
+            $codeCell = $this->cell(),
             $budgetDetail->item->internal_cod
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $nameCell = $this->column++ . $this->row,
+            $nameCell = $this->cell(),
             $budgetDetail->item->name
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $totalWithoutTaxCell = $this->column++ . $this->row,
-            $budgetDetail->total_without_tax
+            $totalWithoutTaxCell = $this->cell(),
+            $budgetDetail->total_without_tax_after_discount
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $taxPercentageCell = $this->column++ . $this->row,
+            $taxPercentageCell = $this->cell(),
             $budgetDetail->tax_percentage
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $taxAmountCell = $this->column++ . $this->row,
+            $taxAmountCell = $this->cell(),
             $budgetDetail->tax_amount
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $totalWithTaxCell = $this->column++ . $this->row,
+            $totalWithTaxCell = $this->cell(),
             $budgetDetail->total_with_tax
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $pricePerWpCell = $this->column++ . $this->row,
+            $pricePerWpCell = $this->cell(),
             $budgetDetail->price_per_wp
         );
 
-        $this->worksheet->getStyle($codeCell)->getAlignment()->setIndent(2);
-        $this->worksheet->getStyle($nameCell)->getAlignment()->setIndent(2);
+        $this->worksheet->getStyle($totalWithoutTaxCell)->getNumberFormat()->setFormatCode(self::CURRENCY_FORMAT);
+        $this->worksheet->getStyle($taxPercentageCell)->getNumberFormat()->setFormatCode(self::PERCENTAGE_FORMAT);
+        $this->worksheet->getStyle($taxAmountCell)->getNumberFormat()->setFormatCode(self::CURRENCY_FORMAT);
+        $this->worksheet->getStyle($totalWithTaxCell)->getNumberFormat()->setFormatCode(self::CURRENCY_FORMAT);
+        $this->worksheet->getStyle($pricePerWpCell)->getNumberFormat()->setFormatCode(self::PRICE_PER_WP_FORMAT);
 
-        $this->worksheet->getStyle($totalWithoutTaxCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
-        $this->worksheet->getStyle($taxPercentageCell)->getNumberFormat()->setFormatCode('0.00%');
-        $this->worksheet->getStyle($taxAmountCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
-        $this->worksheet->getStyle($totalWithTaxCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
-        $this->worksheet->getStyle($pricePerWpCell)->getNumberFormat()->setFormatCode('#,##0.00 "€/Wp"');
+        $rangeStyle = $this->worksheet->getStyle(
+            $this->cell(
+                col: self::STARTING_COLUMN
+            ) . ':' . $this->cell()
+        );
+        
+        $rangeStyle->applyFromArray(self::STYLE_BUDGET_DETAIL);
+
+        $this->worksheet->getStyle($codeCell)->getAlignment()->setIndent(self::INIT_INDENT + 3);
+        $this->worksheet->getStyle($nameCell)->getAlignment()->setIndent(self::INIT_INDENT + 3);
 
         $this->row++;
     }
 
     public function printCostBudgetDetails(BudgetDetail $budgetDetail)
     {
-        $this->column = 'A';
+        $this->column = self::STARTING_COLUMN;
 
         $this->worksheet->setCellValue(
-            $codeCell = $this->column++ . $this->row,
+            $codeCell = $this->cell(),
             $budgetDetail->item->internal_cod
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $nameCell = $this->column++ . $this->row,
+            $nameCell = $this->cell(),
             $budgetDetail->item->name
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $costWithoutTaxCell = $this->column++ . $this->row,
-            $budgetDetail->cost_without_tax
+            $totalCost = $this->cell(),
+            $budgetDetail->cost_amount
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $costPerWpCell = $this->column++ . $this->row,
+            $costPerWpCell = $this->cell(),
             $budgetDetail->cost_per_wp
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $gainMarginCell = $this->column++ . $this->row,
+            $gainMarginCell = $this->cell(),
             $budgetDetail->gain_margin
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $gainAmountCell = $this->column++ . $this->row,
+            $gainAmountCell = $this->cell(),
             $budgetDetail->gain_amount
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $sellPriceCell = $this->column++ . $this->row,
+            $sellPriceCell = $this->cell(),
             $budgetDetail->total_without_tax
         );
 
-        $this->worksheet->getStyle($codeCell)->getAlignment()->setIndent(2);
-        $this->worksheet->getStyle($nameCell)->getAlignment()->setIndent(2);
+        $this->worksheet->getStyle($totalCost)->getNumberFormat()->setFormatCode(self::CURRENCY_FORMAT);
+        $this->worksheet->getStyle($costPerWpCell)->getNumberFormat()->setFormatCode(self::PRICE_PER_WP_FORMAT);
+        $this->worksheet->getStyle($gainMarginCell)->getNumberFormat()->setFormatCode(self::PERCENTAGE_FORMAT);
+        $this->worksheet->getStyle($gainAmountCell)->getNumberFormat()->setFormatCode(self::CURRENCY_FORMAT);
+        $this->worksheet->getStyle($sellPriceCell)->getNumberFormat()->setFormatCode(self::CURRENCY_FORMAT);
 
-        $this->worksheet->getStyle($costWithoutTaxCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
-        $this->worksheet->getStyle($costPerWpCell)->getNumberFormat()->setFormatCode('#,##0.00 "€/Wp"');
-        $this->worksheet->getStyle($gainMarginCell)->getNumberFormat()->setFormatCode('0.00%');
-        $this->worksheet->getStyle($gainAmountCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
-        $this->worksheet->getStyle($sellPriceCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
+        $rangeStyle = $this->worksheet->getStyle(
+            $this->cell(
+                col: self::STARTING_COLUMN
+            ) . ':' . $this->cell()
+        );
+        
+        $rangeStyle->applyFromArray(self::STYLE_BUDGET_DETAIL);
+
+        $this->worksheet->getStyle($codeCell)->getAlignment()->setIndent(self::INIT_INDENT + 3);
+        $this->worksheet->getStyle($nameCell)->getAlignment()->setIndent(self::INIT_INDENT + 3);
 
         $this->row++;
     }
@@ -331,72 +630,110 @@ class BudgetExcelReportGenerator
     public function printSellingBudgetGrandTotals()
     {
         // Primero establecemos el valor de las celdas
-        $startColumn = $this->column = 'C';
-        $this->row += 2;
+        $startColumn = $this->column = self::STARTING_COLUMN + 2;
+        $this->row += 1;
 
         $this->worksheet->setCellValue(
-            $totalWithoutTaxCell = $this->column++ . $this->row,
-            $this->budget->total_without_tax
+            $totalWithoutTaxCell = $this->cell(),
+            $this->budget->total_without_tax_after_discount
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $taxPercentageCell = $this->column++ . $this->row,
+            $taxPercentageCell = $this->cell(),
             $this->budget->tax_prorated
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $taxAmountCell = $this->column++ . $this->row,
+            $taxAmountCell = $this->cell(),
             $this->budget->tax_amount
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $totalWithTaxCell = $this->column++ . $this->row,
+            $totalWithTaxCell = $this->cell(),
             $this->budget->total_with_tax
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $pricePerWpCell = $this->column++ . $this->row,
-            $this->budget->price_per_wp
-        );
+            $pricePerWpCell = $this->cell(),
+            $this->budget->total_price_per_wp
+        );     
 
-        $this->worksheet->getStyle($totalWithoutTaxCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
-        $this->worksheet->getStyle($taxPercentageCell)->getNumberFormat()->setFormatCode('0.00%');
-        $this->worksheet->getStyle($taxAmountCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
-        $this->worksheet->getStyle($totalWithTaxCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
-        $this->worksheet->getStyle($pricePerWpCell)->getNumberFormat()->setFormatCode('#,##0.00 "€/Wp"');
+        $this->worksheet->getStyle($totalWithoutTaxCell)->getNumberFormat()->setFormatCode(self::CURRENCY_FORMAT);
+        $this->worksheet->getStyle($taxPercentageCell)->getNumberFormat()->setFormatCode(self::PERCENTAGE_FORMAT);
+        $this->worksheet->getStyle($taxAmountCell)->getNumberFormat()->setFormatCode(self::CURRENCY_FORMAT);
+        $this->worksheet->getStyle($totalWithTaxCell)->getNumberFormat()->setFormatCode(self::CURRENCY_FORMAT);
+        $this->worksheet->getStyle($pricePerWpCell)->getNumberFormat()->setFormatCode(self::PRICE_PER_WP_FORMAT);
 
-        $this->worksheet->getStyle($startColumn . $this->row . ':' . $this->column . $this->row)->getFont()->setBold(true);
+        $this->worksheet
+            ->getStyle($this->cell(
+                    col: self::STARTING_COLUMN,
+                    row: $this->row
+                ) . ':' . $this->cell(
+                    col: 7
+                )
+            )
+            ->applyFromArray(self::STYLE_MAIN_FOOTER);
+        
+        // Establecer altura de fila
+        $this->worksheet->getRowDimension($this->row)->setRowHeight(30);
     }
 
     public function printCostBudgetGrandTotals()
     {
         // Primero establecemos el valor de las celdas
-        $startColumn = $this->column = 'C';
-        $this->row += 2;
+        $startColumn = $this->column = self::STARTING_COLUMN + 2;
+        $this->row += 1;
 
         $this->worksheet->setCellValue(
-            $costAmountCell = $this->column++ . $this->row,
+            $costAmountCell = $this->cell(),
             $this->budget->cost_amount
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $costPerWpCell = $this->column++ . $this->row,
+            $costPerWpCell = $this->cell(),
             $this->budget->cost_per_wp
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $gainMarginCell = $this->column++ . $this->row,
+            $gainMarginCell = $this->cell(),
             $this->budget->prorated_gain_margin
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $gainAmountCell = $this->column++ . $this->row,
+            $gainAmountCell = $this->cell(),
             $this->budget->gain_amount
         );
+        $this->column++;
+
         $this->worksheet->setCellValue(
-            $sellPriceCell = $this->column++ . $this->row,
-            $this->budget->total_without_tax
+            $sellPriceCell = $this->cell(),
+            $this->budget->total_without_tax_after_discount
         );
 
-        $this->worksheet->getStyle($costAmountCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
-        $this->worksheet->getStyle($costPerWpCell)->getNumberFormat()->setFormatCode('#,##0.00 "€/Wp"');
-        $this->worksheet->getStyle($gainMarginCell)->getNumberFormat()->setFormatCode('0.00%');
-        $this->worksheet->getStyle($gainAmountCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
-        $this->worksheet->getStyle($sellPriceCell)->getNumberFormat()->setFormatCode('#,##0.00 €');
+        $this->worksheet->getStyle($costAmountCell)->getNumberFormat()->setFormatCode(self::CURRENCY_FORMAT);
+        $this->worksheet->getStyle($costPerWpCell)->getNumberFormat()->setFormatCode(self::PRICE_PER_WP_FORMAT);
+        $this->worksheet->getStyle($gainMarginCell)->getNumberFormat()->setFormatCode(self::PERCENTAGE_FORMAT);
+        $this->worksheet->getStyle($gainAmountCell)->getNumberFormat()->setFormatCode(self::CURRENCY_FORMAT);
+        $this->worksheet->getStyle($sellPriceCell)->getNumberFormat()->setFormatCode(self::CURRENCY_FORMAT);
 
-        $this->worksheet->getStyle($startColumn . $this->row . ':' . $this->column . $this->row)->getFont()->setBold(true);
+        $this->worksheet
+            ->getStyle($this->cell(
+                    col: self::STARTING_COLUMN,
+                    row: $this->row
+                ) . ':' . $this->cell(
+                    col: 7
+                )
+            )
+            ->applyFromArray(self::STYLE_MAIN_FOOTER);
+        
+        // Establecer altura de fila
+        $this->worksheet->getRowDimension($this->row)->setRowHeight(30);
     }
 }
