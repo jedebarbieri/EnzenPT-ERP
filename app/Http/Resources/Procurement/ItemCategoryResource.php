@@ -7,6 +7,13 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class ItemCategoryResource extends JsonResource
 {
+
+    /**
+     * Static property to indicate if the resource should include the parents (all of them)
+     * or the children, if it is false
+     */
+    public static $with_parents = false;
+
     /**
      * Transform the resource collection into an array.
      *
@@ -14,11 +21,20 @@ class ItemCategoryResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return [
+        $result = [
             'id' => $this->id,
             'name' => $this->name,
             'code' => $this->getPrefixCodeAttribute(),
-            'children' => ItemCategoryResource::collection($this->children)
         ];
+        if (self::$with_parents) {
+            if ($this->parent_id) {
+                $parent = new ItemCategoryResource($this->parent);
+                $parent->load('parent');
+                $result['parent'] = $parent;
+            }
+        } else {
+            $result['children'] = ItemCategoryResource::collection($this->children);
+        }
+        return $result;
     }
 }

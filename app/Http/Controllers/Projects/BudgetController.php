@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Projects;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Projects\UpdateBudgetRequest;
 use App\Http\Requests\Projects\StoreBudgetRequest;
+use App\Http\Resources\Procurement\ItemCategoryResource;
 use App\Http\Resources\Procurement\ItemResource;
 use App\Http\Resources\Projects\BudgetResource;
 use App\Models\Procurement\Item;
@@ -160,6 +161,9 @@ class BudgetController extends Controller
                 $budgetDetail->id = $budgetDetail->budget_detail_id;
                 $budgetDetail->unit_price = $budgetDetail->overwriten_unit_price;
             }
+
+            // Setting the resource to include the parent information.
+            ItemCategoryResource::$with_parents = true;
 
             return response()->json([
                 'status' => 'success',
