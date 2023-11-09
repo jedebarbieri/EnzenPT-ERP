@@ -7,8 +7,10 @@
             <div class="modal-header row">
                 <h5 class="col-8 modal-title" id="{{ $modalId }}Label">New Budget</h5>
                 <div class="col-4 d-flex justify-content-end">
-                    <a class="btn btn-primary view-btn text-white" data-id="__ID__" title="Download Excel Report" role="button" data-url-base="{{ route('budgetReport', '') }}" href="" id="btnDownloadReport" target="_blank">
-                        <i class="fas fa-file-excel"></i> 
+                    <a class="btn btn-primary view-btn text-white" data-id="__ID__" title="Download Excel Report"
+                        role="button" data-url-base="{{ route('budgetReport', '') }}" href=""
+                        id="btnDownloadReport" target="_blank">
+                        <i class="fas fa-file-excel"></i>
                         Download Excel Report
                     </a>
                     <button type="button" class="close mx-0" data-dismiss="modal" aria-label="Close">
@@ -422,31 +424,96 @@
         }
 
         /**
-         * Creates a new row for the category
+         * This function is used to toggle the collapse of the category rows.
+         * It will look up into the childRows property of the row to find the rows to collapse / expand.
+         * 
+         * @param {Event} event 
+         */
+        function toggleCollapse(event) {
+            let icon = $(event.target);
+            let row = icon.closest('tr');
+            let childRows = row.data("childRows");
+            if (row.hasClass("collapsed")) {
+                // Expand
+                row.removeClass("collapsed");
+                for (let i = 0; i < childRows.length; i++) {
+                    $(childRows[i]).removeClass("d-none");
+                }
+            } else {
+                // Collapse
+                row.addClass("collapsed");
+                for (let i = 0; i < childRows.length; i++) {
+                    $(childRows[i]).addClass("d-none");
+                }
+            }
+        
+        }
+
+        /**
+         * It stores the last main category <tr/> row reference in the draw event iteration that calls createCategoryRow().
+         * It is used to know which was the last main category, so when a subcategory is processed, it can be attached to the childRows
+         * property of it corresponding main category.
+         */
+        var lastMainCatRowReference = null;
+
+        /**
+         * Creates a new row for the categories that has been registered on the categoryTitles array.
          * 
          * @param {jQuery} titleRow 
          * @param {Object} category 
          * @param {String} className 
          */
-        function createCategoryRow(titleRow, category, className = "") {
+        function createCategoryRow(rowToAdd) {
             let mainCatRow = $('<tr/>', {
-                class: className
-            }).append('<td colspan="10" class="text-bold">' + category.code + " - " + category.name + '</td>');
-            $(titleRow).before(mainCatRow);
+                class: rowToAdd.className,
+            }).append(
+                $('<td/>', {
+                    class: "text-bold",
+                    colspan: 10,
+                    html: rowToAdd.category.code + " - " + rowToAdd.category.name
+                })
+                .prepend(
+                    '<i class="fas fa-angle-down mr-2 collapsable"></i>'
+                )
+            );
+
+            // If this is a main category, we store the reference
+            if (lastMainCatRowReference == null || rowToAdd.className == "main-category-row") {
+                lastMainCatRowReference = mainCatRow;
+            } else {
+                // Else, we add this row to the childRows property of the last main category 
+                // so we can collapse / expand it when the main category is clicked
+                lastMainCatRowReference.data("childRows").push(mainCatRow);
+            }
+
+            mainCatRow.data("childRows", rowToAdd.childRows);
+            mainCatRow.find("i.collapsable").on("click", toggleCollapse);
+            $(rowToAdd.titleRow).before(mainCatRow);
         }
 
         /**
          * This variable is used to store the current subcategory.
          * It is used to know when a new subcategory is being processed.
+         * This is a reference to the JSON object response of the list of budgetdetails.
          */
         var currentSubCat = null;
 
         /**
-         * This variable is used to store the titles of the categories.
+         * This variable is used to store the information to build the category rows.
          * Those categories will be processed right after the table has been drawn.
          * @type {Array}
          */
         var categoryTitles = [];
+
+        /**
+         * Stores the last main category reference in the categoryTitles array.
+         */
+        var lastMainCatReference = null;
+
+        /**
+         * Stores the last sub category reference in the categoryTitles array. 
+         */
+        var lastSubCatReference = null;
 
         // Evento para cargar este modal con la información proporcionada
         document.addEventListener('budgetModal.loadData', (event) => {
@@ -602,8 +669,18 @@
                             if (currentSubCat == null) {
                                 // This will execute only in the first iteration, when the currentSubCat is null
                                 currentSubCat = data.item.itemCategory;
-                                categoryTitles.push({titleRow: row, category: data.item.itemCategory.parent, className: "main-category-row"});
-                                categoryTitles.push({titleRow: row, category: data.item.itemCategory, className: "sub-category-row"});
+                                categoryTitles.push(lastMainCatReference = {
+                                    titleRow: row,
+                                    category: data.item.itemCategory.parent,
+                                    className: "main-category-row",
+                                    childRows: [],
+                                });
+                                categoryTitles.push(lastSubCatReference = {
+                                    titleRow: row,
+                                    category: data.item.itemCategory,
+                                    className: "sub-category-row",
+                                    childRows: [],
+                                });
                             }
                             if (currentSubCat.id != data.item.itemCategory.id) {
                                 // New subcategory
@@ -611,10 +688,20 @@
                                 if (currentSubCat.parent.id != data.item.itemCategory.parent.id) {
                                     // This is a complete new main category
                                     // Adding the main category row
-                                    categoryTitles.push({titleRow: row, category: data.item.itemCategory.parent, className: "main-category-row"});
+                                    categoryTitles.push(lastMainCatReference = {
+                                        titleRow: row,
+                                        category: data.item.itemCategory.parent,
+                                        className: "main-category-row",
+                                        childRows: [],
+                                    });
                                 }
                                 // Adding a subcategory row
-                                categoryTitles.push({titleRow: row, category: data.item.itemCategory, className: "sub-category-row"});
+                                categoryTitles.push(lastSubCatReference = {
+                                    titleRow: row,
+                                    category: data.item.itemCategory,
+                                    className: "sub-category-row",
+                                    childRows: [],
+                                });
                                 currentSubCat = data.item.itemCategory;
                             }
                         }
@@ -781,6 +868,10 @@
                             );
 
                         calculateTotalRow(row);
+
+                        // Adding the references of the <tr/> rows that should be hidden when collapse
+                        lastMainCatReference.childRows.push(row);
+                        lastSubCatReference.childRows.push(row);
                     },
                     footerCallback: function(tfoot, data, start, end, display) {
                         if ($(tfoot).find("th.opt-col").length === 0) {
@@ -804,11 +895,11 @@
                         }
                         calculateTotalTable();
                     },
-                    drawCallback: function( settings ) {
+                    drawCallback: function(settings) {
                         // Después de que DataTables ha dibujado la tabla, agregamos las filas
                         for (let i = 0; i < categoryTitles.length; i++) {
                             let rowToAdd = categoryTitles[i];
-                            createCategoryRow(rowToAdd.titleRow, rowToAdd.category, rowToAdd.className);
+                            createCategoryRow(rowToAdd);
                         }
 
                         // Limpiamos la matriz para el próximo dibujo
@@ -914,8 +1005,7 @@
                     // Inicializar Select2 con los datos obtenidos
                     $(rowNode).find('.select2').select2({
                         dropdownParent: budgetModal,
-                        data: [
-                            {
+                        data: [{
                                 id: 0,
                                 text: "Select one item...",
                             },
@@ -929,7 +1019,8 @@
                             budget_id: budgetId
                         }, function() {
                             // Recargar la tabla
-                            document.dispatchEvent(new CustomEvent('budgetDetailsTable.reloadTable'));
+                            document.dispatchEvent(new CustomEvent(
+                                'budgetDetailsTable.reloadTable'));
                         });
                     });
                 }
