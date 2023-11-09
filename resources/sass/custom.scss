@@ -6,9 +6,22 @@
     /* Fade Effect */
 }
 
+
+$table-hover-bg: rgba($black, 0.0);
+.table-hover {
+    tbody tr {
+        @include hover() {
+            color: $table-hover-color;
+            background-color: rgba(0, 0, 0, 0.035);
+        }
+    }
+}
+table.dataTable.table-hover > tbody > tr:hover > * {
+    box-shadow: none;
+}
+
 tr:hover .button-container {
     opacity: 1;
-    /* Shows when hover */
 }
 
 
@@ -19,8 +32,9 @@ tr:hover .button-container {
     background: none;
     border-color: transparent;
     min-width: 100px;
+
     &:hover {
-        background: $white; 
+        background: $white;
         border-color: $gray-400
     }
 }
