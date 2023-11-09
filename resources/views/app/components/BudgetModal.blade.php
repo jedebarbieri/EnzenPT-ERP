@@ -125,10 +125,10 @@
                         </nav>
 
                     </div>
-                    <div class="card-body">
+                    <div class="card-body p-0">
 
                         <table id="{{ $modalId }}budgetDetailsTable"
-                            class="table table-hover table-valign-middle">
+                            class="table table-hover table-valign-middle budget-details-table">
                             <thead>
                                 <th></th>
                                 <th></th>
@@ -522,18 +522,18 @@
                     },
                     "columns": [{
                             "data": "id",
-                            "title": "Id",
+                            "title": "",
                             "visible": false // Oculta la columna "Id"
                         },
                         {
                             "data": "item.internalCod",
-                            "title": "Cod.",
+                            "title": "",
                             "class": "text-nowrap",
                             "width": "0%",
                         },
                         {
                             "data": "item.name",
-                            "title": "Name"
+                            "title": ""
                         },
                         {
                             "data": "unitPrice",

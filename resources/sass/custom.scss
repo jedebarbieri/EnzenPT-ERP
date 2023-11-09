@@ -6,7 +6,7 @@
     /* Fade Effect */
 }
 
-
+// Custom clases for datatables
 $table-hover-bg: rgba($black, 0.0);
 .table-hover {
     tbody tr {
@@ -19,10 +19,43 @@ $table-hover-bg: rgba($black, 0.0);
 table.dataTable.table-hover > tbody > tr:hover > * {
     box-shadow: none;
 }
-
 tr:hover .button-container {
+    // Shows the options cells
     opacity: 1;
 }
+table.table.dataTable.budget-details-table {
+    margin-top: 0px !important;
+    thead {
+        tr {
+            background-color: $gray-500;
+            color: $white;
+            th {
+                border-bottom: 0;
+                text-transform: uppercase;
+                font-weight: normal;
+                line-height: 1em;
+                padding-top: 1.3em;
+                padding-bottom: 1.3em;
+            }
+        }
+    }
+    tbody {
+        // Tables for budget details
+        tr.main-category-row {
+            background-color: $gray-400;
+            font-weight: bold;
+            font-size: calc(1em + 1px);
+        }
+        tr.sub-category-row {
+            background-color: $gray-200;
+            font-weight: bold;
+            td {
+                padding-left: 2em;
+            }
+        }
+    }
+}
+
 
 
 // Classes for elements "contenteditable"
