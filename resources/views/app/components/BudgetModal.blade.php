@@ -598,6 +598,7 @@
                     },
                     createdRow: function(row, data, index) {
                         if (data.id != 0) {
+                            // It is not a created row because the action of "Add Item" button
                             if (currentSubCat == null) {
                                 // This will execute only in the first iteration, when the currentSubCat is null
                                 currentSubCat = data.item.itemCategory;
@@ -605,7 +606,6 @@
                                 categoryTitles.push({titleRow: row, category: data.item.itemCategory, className: "sub-category-row"});
                             }
                             if (currentSubCat.id != data.item.itemCategory.id) {
-                                currentSubCat = data.item.itemCategory;
                                 // New subcategory
                                 // Let's see if has diferent main category
                                 if (currentSubCat.parent.id != data.item.itemCategory.parent.id) {
@@ -615,6 +615,7 @@
                                 }
                                 // Adding a subcategory row
                                 categoryTitles.push({titleRow: row, category: data.item.itemCategory, className: "sub-category-row"});
+                                currentSubCat = data.item.itemCategory;
                             }
                         }
                         // Cloning the options col
