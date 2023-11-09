@@ -446,7 +446,21 @@
                     $(childRows[i]).addClass("d-none");
                 }
             }
-        
+        }
+
+        /**
+         * This function is used to collapse all the categories.
+         */
+        function collapseAllCategories() {
+            let rows = $("#{{ $modalId }}budgetDetailsTable tbody tr");
+            for (let i = 0; i < rows.length; i++) {
+                let row = $(rows[i]);
+                if (row.hasClass("main-category-row")) {
+                    toggleCollapse({
+                        target: row.find("i.collapsable")
+                    });
+                }
+            }
         }
 
         /**
@@ -904,6 +918,7 @@
 
                         // Limpiamos la matriz para el próximo dibujo
                         categoryTitles = [];
+                        collapseAllCategories();
                     }
                 });
             } else {
