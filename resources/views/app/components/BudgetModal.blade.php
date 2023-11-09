@@ -437,7 +437,7 @@
                 // Expand
                 row.removeClass("collapsed");
                 for (let i = 0; i < childRows.length; i++) {
-                    $(childRows[i]).removeClass("d-none");
+                    $(childRows[i]).removeClass("d-none collapsed");
                 }
             } else {
                 // Collapse
