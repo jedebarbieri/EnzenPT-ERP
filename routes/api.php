@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Procurement\ItemCategoryController;
 use App\Http\Controllers\Procurement\ItemController;
 use App\Http\Controllers\Projects\BudgetController;
@@ -22,11 +23,13 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::apiResources([
-    'items' => ItemController::class,
-    'itemCategories' => ItemCategoryController::class,
-    'budgets' => BudgetController::class,
-    'budgets.budgetDetails' => BudgetDetailController::class,
-]);
+Route::post('/login', [LoginController::class, 'login']);
 
-Route::get('budgets/{budget}/availableItems', [BudgetController::class, 'availableItems']);
+Route::group(['middleware' => ['auth:sanctum']],function () {
+    Route::apiResource('itemCategories', ItemCategoryController::class);
+    Route::apiResource('items', ItemController::class);
+    Route::apiResource('budgets', BudgetController::class);
+    Route::apiResource('budgets.budgetDetails', BudgetDetailController::class);
+    
+    Route::get('budgets/{budget}/availableItems', [BudgetController::class, 'availableItems']);
+});

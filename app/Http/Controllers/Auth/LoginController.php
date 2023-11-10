@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Http\Controllers\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
+use Exception;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
@@ -19,7 +23,9 @@ class LoginController extends Controller
     |
     */
 
-    use AuthenticatesUsers;
+    use AuthenticatesUsers {
+        login as parentLogin;
+    }
 
     /**
      * Where to redirect users after login.
@@ -36,5 +42,38 @@ class LoginController extends Controller
     public function __construct()
     {
         $this->middleware('guest')->except('logout');
+    }
+
+    public function login(Request $request)
+    {
+        if ($request->is('api/*')) {
+            // Lógica de autenticación para la API
+            $credentials = $request->only('email', 'password');
+    
+            if (!Auth::attempt($credentials)) {
+                $response = ApiResponse::error(
+                    message: 'Invalid credentials',
+                    code: ApiResponse::HTTP_UNAUTHORIZED
+                );
+                return $response->send();
+            }
+
+            $response = ApiResponse::success(
+                data: [
+                    'user' => Auth::user(),
+                    'token' => Auth::user()->createToken('My-Token')->plainTextToken,
+                ],
+                message: 'Login successful'
+            );
+
+            return $response->send();
+        } else {
+            // Lógica de autenticación para la web
+            try {
+                return $this->parentLogin($request);
+            } catch (Exception $e) {
+                return redirect()->intended($this->redirectPath());
+            }
+        }
     }
 }
