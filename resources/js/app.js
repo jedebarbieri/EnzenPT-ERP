@@ -1,6 +1,12 @@
 import jQuery from 'jquery'
 window.$ = jQuery;
 
+$.ajaxSetup({
+    beforeSend: function(xhr) {
+        xhr.setRequestHeader('Authorization', 'Bearer ' + window.Laravel.apiToken);
+    }
+});
+
 import './bootstrap';
 
 // Validation Library

@@ -1,6 +1,16 @@
+@php
+//dd(session()->all());
+$token = session()->get('apiToken');
+@endphp
 <x-laravel-ui-adminlte::adminlte-layout>
 
     <body class="hold-transition sidebar-mini layout-fixed">
+        <script>
+            window.Laravel = {!! json_encode([
+                'apiToken' => $token,
+            ]) !!};
+            sessionLaravel = {!! json_encode(session()) !!};
+        </script>
         <div class="wrapper">
             <!-- Main Header -->
             <nav class="main-header navbar navbar-expand navbar-white navbar-light">

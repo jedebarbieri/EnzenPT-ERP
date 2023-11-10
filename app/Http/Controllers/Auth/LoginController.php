@@ -49,7 +49,7 @@ class LoginController extends Controller
         if ($request->is('api/*')) {
             // Lógica de autenticación para la API
             $credentials = $request->only('email', 'password');
-    
+
             if (!Auth::attempt($credentials)) {
                 $response = ApiResponse::error(
                     message: 'Invalid credentials',
@@ -70,7 +70,38 @@ class LoginController extends Controller
         } else {
             // Lógica de autenticación para la web
             try {
-                return $this->parentLogin($request);
+
+                $this->validateLogin($request);
+
+                // If the class is using the ThrottlesLogins trait, we can automatically throttle
+                // the login attempts for this application. We'll key this by the username and
+                // the IP address of the client making these requests into this application.
+                if (method_exists($this, 'hasTooManyLoginAttempts') &&
+                    $this->hasTooManyLoginAttempts($request)) {
+                    $this->fireLockoutEvent($request);
+        
+                    return $this->sendLockoutResponse($request);
+                }
+        
+                if ($this->attemptLogin($request)) {
+                    if ($request->hasSession()) {
+                        $request->session()->put('auth.password_confirmed_at', time());
+                    }
+
+                    $request->session()->regenerate();
+            
+                    $this->clearLoginAttempts($request);
+            
+                    if ($response = $this->authenticated($request, $this->guard()->user())) {
+                        return $response;
+                    }
+
+                    $token = Auth::user()->createToken('My-Token')->plainTextToken;
+                    $request->session()->put('apiToken', $token);
+                    $request->session()->save();
+
+                    return redirect()->intended('home');
+                }
             } catch (Exception $e) {
                 return redirect()->intended($this->redirectPath());
             }
