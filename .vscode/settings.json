@@ -1,0 +1,7 @@
+{
+    "git.inputValidation": "off",
+    "git.inputValidationLength": 500,
+    "editor.wordWrap": "on",
+    "editor.indentSize": 4,
+    "editor.tabSize": 4
+}
