@@ -196,7 +196,7 @@ class MaskedInput {
             this.inputElement = $(`<input/>`, this.nodeAttributes);
         }
 
-        let originalInputVal = this.inputElement.val();
+        let originalInputVal = this.inputElement[0].value;
 
         // We will add the class to the input to make it identificable
         this.inputElement.addClass(MaskedInput.MASKED_INPUT_CLASS);
@@ -259,7 +259,7 @@ class MaskedInput {
         if (this.valueType == MaskedInput.TYPE_PERCENTAGE) {
             showVal = this._rawValue * 100;
         }
-        this.inputElement.val(showVal);
+        this.inputElement[0].value = showVal;
 
         this.inputmask.mask(this.inputElement);
     }
@@ -285,6 +285,30 @@ class MaskedInput {
             }
             // De lo contrario, usa el comportamiento predeterminado
             return $(element).val();
+        };
+    }
+
+    static overrrideVal() {
+        // Guarda el método original val() de jQuery
+        var originalVal = $.fn.val;
+
+        $.fn.val = function(value) {
+            var maskedInputInstance = this.data(MaskedInput.INSTANCE);
+
+            // Si el elemento tiene una instancia de MaskedInput
+            if (maskedInputInstance) {
+                if (typeof value !== 'undefined') {
+                    // Setter
+                    maskedInputInstance.value = value;
+                    return this;
+                } else {
+                    // Getter
+                    return maskedInputInstance.value.toString();
+                }
+            } else {
+                // Si el elemento no tiene una instancia de MaskedInput, utiliza el método original val()
+                return originalVal.apply(this, arguments);
+            }
         };
     }
 }

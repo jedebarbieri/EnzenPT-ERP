@@ -188,7 +188,11 @@
         // Overriting the default validator for the MaskedInput
         MaskedInput.overrideValidator();
 
+        // Overriting the default val() method of jQuery
+        MaskedInput.overrrideVal();
+
         var budgetModal = $("#{{ $modalId }}");
+        var modalInitialized = false;
         var budgetId = null;
         var formModal = $('#{{ $modalId }}FormBudgetMainInfo');
         var title = $("#{{ $modalId }}Label");
@@ -248,7 +252,6 @@
                 element.closest('.form-group').append(error);
             },
             highlight: function(element, errorClass, validClass) {
-                //console.log("Valor obtenido que da error: ", $(element).data(MaskedInput.INSTANCE).value);
                 $(element).addClass('is-invalid');
             },
             unhighlight: function(element, errorClass, validClass) {
@@ -257,10 +260,8 @@
             submitHandler: function(form) {
                 var formData = window.arrayToJsonObject($(form).serializeArray());
 
-                formData.gain_margin = formModal.find("#txtGainMargin").data(MaskedInput.INSTANCE).value;
-                formData.total_peak_power = formModal.find("#txtTotalPeakPower").data(MaskedInput.INSTANCE)
-                    .value;
-
+                formData.gain_margin = formModal.find("#txtGainMargin").val();
+                formData.total_peak_power = formModal.find("#txtTotalPeakPower").val();
 
                 // Verificar y manipular las cadenas vacías
                 for (var key in formData) {
@@ -315,6 +316,13 @@
             }
         });
 
+        budgetModal.on('show.bs.modal', function(event) {
+            if (!modalInitialized) {
+                initModal();
+            }
+        });
+
+
         /** 
          * Reset the form before showing the modal
          */
@@ -328,6 +336,10 @@
             formModal.find('.form-control-feedback').remove();
             budgetId = null;
             pricePerPW = 0.00;
+            
+            formModal.find("#txtGainMargin").val(0);
+            formModal.find("#txtTotalPeakPower").val(0);
+            
             $("lblPricePerWP").text("-- €/Wp");
             $("lblFinalPrice").text("-- €");
             // Reset the table
@@ -529,22 +541,16 @@
          */
         var lastSubCatReference = null;
 
-        // Evento para cargar este modal con la información proporcionada
-        document.addEventListener('budgetModal.loadData', (event) => {
-            let budgetData = event.detail.data;
-            const apiServiceBase = `/api/budgets/${budgetData.id}/budgetDetails/`;
-            title.html("Edit Budget");
-            formModal.find("#hdId").val(budgetId = budgetData.id);
-            formModal.find("#txtBudgetName").val(budgetData.name);
-            formModal.find("#txtProjectName").val(budgetData.projectName);
-            formModal.find("#txtProjectNumber").val(budgetData.projectNumber);
-            formModal.find("#txtProjectLocation").val(budgetData.projectLocation);
 
-            $("#btnDownloadReport").attr("href", $("#btnDownloadReport").data("url-base") + '/' + budgetData.id);
+        function initModal()
+        {
+            if (modalInitialized) {
+                return;
+            }
 
             let txtTotalPeakPower = formModal.find("#txtTotalPeakPower");
             if (!txtTotalPeakPower.data(MaskedInput.INSTANCE)) {
-                txtTotalPeakPower.val(budgetData.totalPeakPower);
+                txtTotalPeakPower.val(null);
                 new MaskedInput({
                     inputElement: txtTotalPeakPower,
                     valueType: MaskedInput.TYPE_DECIMAL,
@@ -556,13 +562,11 @@
                         },
                     }),
                 });
-            } else {
-                txtTotalPeakPower.data(MaskedInput.INSTANCE).value = budgetData.totalPeakPower;
             }
 
             let txtGainMargin = formModal.find("#txtGainMargin");
             if (!txtGainMargin.data(MaskedInput.INSTANCE)) {
-                txtGainMargin.val(budgetData.gainMargin);
+                txtGainMargin.val(null);
                 new MaskedInput({
                     inputElement: txtGainMargin,
                     valueType: MaskedInput.TYPE_PERCENTAGE,
@@ -574,9 +578,31 @@
                         },
                     }),
                 });
-            } else {
-                txtGainMargin.data(MaskedInput.INSTANCE).value = budgetData.gainMargin;
             }
+
+            modalInitialized = true;
+
+        }
+
+        // Evento para cargar este modal con la información proporcionada
+        document.addEventListener('budgetModal.loadData', (event) => {
+            if (!modalInitialized) {
+                initModal();
+            }
+
+            let budgetData = event.detail.data;
+            const apiServiceBase = `/api/budgets/${budgetData.id}/budgetDetails/`;
+            title.html("Edit Budget");
+            formModal.find("#hdId").val(budgetId = budgetData.id);
+            formModal.find("#txtBudgetName").val(budgetData.name);
+            formModal.find("#txtProjectName").val(budgetData.projectName);
+            formModal.find("#txtProjectNumber").val(budgetData.projectNumber);
+            formModal.find("#txtProjectLocation").val(budgetData.projectLocation);
+
+            $("#btnDownloadReport").attr("href", $("#btnDownloadReport").data("url-base") + '/' + budgetData.id);
+            
+            formModal.find("#txtTotalPeakPower").val(budgetData.totalPeakPower);
+            formModal.find("#txtGainMargin").val(budgetData.gainMargin);
 
 
             $("#{{ $modalId }}SuppliesListCard").removeClass("d-none").show();
@@ -883,9 +909,12 @@
 
                         calculateTotalRow(row);
 
-                        // Adding the references of the <tr/> rows that should be hidden when collapse
-                        lastMainCatReference.childRows.push(row);
-                        lastSubCatReference.childRows.push(row);
+                        if (data.id != 0) {
+                            // It is not a created row because the action of "Add Item" button
+                            // Adding the references of the <tr/> rows that should be hidden when collapse
+                            lastMainCatReference.childRows.push(row);
+                            lastSubCatReference.childRows.push(row);
+                        }
                     },
                     footerCallback: function(tfoot, data, start, end, display) {
                         if ($(tfoot).find("th.opt-col").length === 0) {
