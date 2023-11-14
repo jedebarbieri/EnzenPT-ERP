@@ -18,7 +18,7 @@ define('LARAVEL_START', microtime(true));
 |
 */
 
-if (file_exists($maintenance = $_ENV['PRIVATE_PATH'].'/storage/framework/maintenance.php')) {
+if (file_exists($maintenance = ABSOLUTE_APP_PATH . 'storage/framework/maintenance.php')) {
     require $maintenance;
 }
 
@@ -33,7 +33,7 @@ if (file_exists($maintenance = $_ENV['PRIVATE_PATH'].'/storage/framework/mainten
 |
 */
 
-require $_ENV['PRIVATE_PATH'].'/vendor/autoload.php';
+require ABSOLUTE_APP_PATH.'vendor/autoload.php';
 
 /*
 |--------------------------------------------------------------------------
@@ -46,7 +46,7 @@ require $_ENV['PRIVATE_PATH'].'/vendor/autoload.php';
 |
 */
 
-$app = require_once $_ENV['PRIVATE_PATH'].'/bootstrap/app.php';
+$app = require_once ABSOLUTE_APP_PATH.'bootstrap/app.php';
 
 $kernel = $app->make(Kernel::class);
 
