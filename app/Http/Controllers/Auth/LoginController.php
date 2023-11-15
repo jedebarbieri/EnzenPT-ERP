@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\ApiResponse;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Auth\UserResource;
+use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use Exception;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -44,6 +47,33 @@ class LoginController extends Controller
         $this->middleware('guest')->except('logout');
     }
 
+    /**
+     * Generates a token and saves it in the personal_access_token table.
+     * It avoids to create many tokens for the same user. If a token already exists, it returns it.
+     */
+    private function generateToken()
+    {
+        /**
+         * @var User $user
+         */
+        $user = Auth::user();
+
+        // Buscar un token existente para el usuario
+        $tokenName = 'UserToken';
+        $token = $user->tokens->first(function ($token) use ($tokenName) {
+            return $token->name === $tokenName;
+        });
+
+        // Si no se encuentra un token existente, crea uno nuevo
+        if ($token) {
+            $token->delete();
+        }
+
+        $plainTextToken = $user->createToken($tokenName, ['*'], now()->addHours(2))->plainTextToken;
+
+        return $plainTextToken;
+    }
+
     public function login(Request $request)
     {
         if ($request->is('api/*')) {
@@ -58,17 +88,19 @@ class LoginController extends Controller
                 return $response->send();
             }
 
+            $token = $this->generateToken();
+
             $response = ApiResponse::success(
                 data: [
-                    'user' => Auth::user(),
-                    'token' => Auth::user()->createToken('My-Token')->plainTextToken,
+                    'user' => new UserResource(Auth::user()),
+                    'token' => $token,
                 ],
                 message: 'Login successful'
             );
 
             return $response->send();
         } else {
-            // Lógica de autenticación para la web
+            // Lógica de autenticación para la web. Esta lógica debe eliminarse en un futuro.
             try {
 
                 $this->validateLogin($request);
@@ -96,7 +128,7 @@ class LoginController extends Controller
                         return $response;
                     }
 
-                    $token = Auth::user()->createToken('My-Token')->plainTextToken;
+                    $token = $this->generateToken();
                     $request->session()->put('apiToken', $token);
                     $request->session()->save();
 

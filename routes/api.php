@@ -5,6 +5,7 @@ use App\Http\Controllers\Procurement\ItemCategoryController;
 use App\Http\Controllers\Procurement\ItemController;
 use App\Http\Controllers\Projects\BudgetController;
 use App\Http\Controllers\Projects\BudgetDetailController;
+use App\Http\Resources\Auth\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,7 +21,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+    return UserResource::make($request->user());
 });
 
 Route::post('/login', [LoginController::class, 'login']);
