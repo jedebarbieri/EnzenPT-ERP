@@ -192,7 +192,22 @@
         MaskedInput.overrrideVal();
 
         var budgetModal = $("#{{ $modalId }}");
+
+        /**
+         * This variable is used to know if the modal was initialized or not.
+         */
         var modalInitialized = false;
+
+        /**
+         * This variable is used to know if this is the first time the modal is opened.
+         * It is used to collapse all the categories when the modal is opened for the first time.
+         */
+        var firstOpen = true;
+
+        /**
+         * This variable is used to store the id of the budget that is being edited.
+         * Is null or 0 when is a new budget
+         */
         var budgetId = null;
         var formModal = $('#{{ $modalId }}FormBudgetMainInfo');
         var title = $("#{{ $modalId }}Label");
@@ -339,6 +354,13 @@
             
             formModal.find("#txtGainMargin").val(0);
             formModal.find("#txtTotalPeakPower").val(0);
+
+            
+            // Limpiamos la matriz para el dibujo del próximo budget y todas las referencias de las filas
+            categoryTitles = [];
+            currentSubCat = null;
+            lastMainCatReference = null;
+            lastSubCatReference = null;
             
             $("lblPricePerWP").text("-- €/Wp");
             $("lblFinalPrice").text("-- €");
@@ -475,6 +497,14 @@
             }
         }
 
+        function addCategoryRows() {
+            // Llamar a createCategoryRow para cada elemento en categoryTitles
+            for (let i = 0; i < categoryTitles.length; i++) {
+                let rowToAdd = categoryTitles[i];
+                createCategoryRow(rowToAdd);
+            }
+        }
+
         /**
          * It stores the last main category <tr/> row reference in the draw event iteration that calls createCategoryRow().
          * It is used to know which was the last main category, so when a subcategory is processed, it can be attached to the childRows
@@ -484,10 +514,6 @@
 
         /**
          * Creates a new row for the categories that has been registered on the categoryTitles array.
-         * 
-         * @param {jQuery} titleRow 
-         * @param {Object} category 
-         * @param {String} className 
          */
         function createCategoryRow(rowToAdd) {
             let mainCatRow = $('<tr/>', {
@@ -939,15 +965,12 @@
                         calculateTotalTable();
                     },
                     drawCallback: function(settings) {
-                        // Después de que DataTables ha dibujado la tabla, agregamos las filas
-                        for (let i = 0; i < categoryTitles.length; i++) {
-                            let rowToAdd = categoryTitles[i];
-                            createCategoryRow(rowToAdd);
+                        addCategoryRows();
+                        if (firstOpen) {
+                            // Only collapse all when the modal is opened for the first time no matter which budget is selected
+                            collapseAllCategories();
+                            firstOpen = false;
                         }
-
-                        // Limpiamos la matriz para el próximo dibujo
-                        categoryTitles = [];
-                        collapseAllCategories();
                     }
                 });
             } else {
@@ -997,6 +1020,10 @@
 
         // Evento para recargar la tabla luego de alguna creación, eliminación o actualización
         document.addEventListener('budgetDetailsTable.reloadTable', (event) => {
+            categoryTitles = [];
+            currentSubCat = null;
+            lastMainCatReference = null;
+            lastSubCatReference = null;
             budgetDetailsTable.ajax.reload(null, false);
         });
 
@@ -1004,6 +1031,9 @@
             addRow();
         });
 
+        /**
+         * This function is used to add a new row to the table when the user clicks on the "Add Item" button.
+         */
         function addRow() {
 
             budgetDetailsTable.settings()[0].oFeatures.bServerSide = false;
