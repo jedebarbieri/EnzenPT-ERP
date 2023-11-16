@@ -1,0 +1,40 @@
+{
+    "projects": [
+        {
+            "root": "./",
+            "packageManager": "npm",
+            "env": {
+                "browser": true,
+                "es2021": true
+            },
+            "plugins": {
+                "@swc/preset-react": {
+                    "runtime": "automatic"
+                }
+            },
+            "sourceMaps": true,
+            "include": [
+                "./resources/js/**/*"
+            ],
+            "exclude": [
+                "node_modules"
+            ],
+            "jsc": {
+                "parser": {
+                    "syntax": "ecmascript",
+                    "jsx": true
+                },
+                "target": "es2017",
+                "transform": {
+                    "react": {
+                        "pragma": "React.createElement",
+                        "pragmaFrag": "React.Fragment",
+                        "throwIfNamespace": true,
+                        "development": false,
+                        "useBuiltins": false
+                    }
+                }
+            }
+        }
+    ]
+}
