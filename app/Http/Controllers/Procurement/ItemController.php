@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Procurement;
 
+use App\Http\Controllers\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Procurement\StoreItemRequest;
 use App\Http\Requests\Procurement\UpdateItemRequest;
@@ -11,15 +12,6 @@ use Illuminate\Http\Request;
 
 class ItemController extends Controller
 {
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        //$this->middleware('auth');
-    }
 
     /**
      * Display a listing of the resource.
@@ -66,27 +58,26 @@ class ItemController extends Controller
             // Transformar la colección utilizando ItemResource
             $itemsResource = ItemResource::collection($items);
     
-            return response()->json([
-                'status' => 'success',
-                'data' => [
-                    'itemList' => $itemsResource,
-                ],
-                'metadata' => [
+            $response = ApiResponse::success(
+                data: [
+                    'items' => $itemsResource,
                     'recordsFiltered' => $items->total(),
                     'recordsTotal' => $items->total(),
+                ],
+                metadata: [
                     'draw' => $request->input('draw') ?: 1,
                 ]
-            ]);
+            );
 
         } catch (\Throwable $th) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Error fetching items',
-                'metadata' => [
+            $response = ApiResponse::error(
+                message: 'Error fetching items',
+                metadata: [
                     'errorDetails' => $th->getMessage()
-                ],
-            ], 500);
+                ]
+            );
         }
+        return $response->send();
     }
 
     /**
@@ -105,22 +96,21 @@ class ItemController extends Controller
             ], $validatedData);
 
             $item = Item::create($data);
-
-            return response()->json([
-                'status' => 'success',
-                'data' => [
+            $response = ApiResponse::success(
+                data: [
                     'item' => ItemResource::make($item)
                 ],
-            ]);
+                message: 'Item created successfully.'
+            );
         } catch (\Throwable $th) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Error creating item',
-                'metadata' => [
+            $response = ApiResponse::error(
+                message: 'Error creating item',
+                metadata: [
                     'errorDetails' => $th->getMessage()
-                ],
-            ], 500);
+                ]
+            );
         }
+        return $response->send();
     }
 
     /**
@@ -148,24 +138,23 @@ class ItemController extends Controller
                     ->except('id')
                     ->toArray()
             );
-        
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Item updated successfully.',
-                'data' => [
-                    'item' => new ItemResource($item),
+            
+            $response = ApiResponse::success(
+                data: [
+                    'item' => ItemResource::make($item)
                 ],
-            ]);
+                message: 'Item updated successfully.'
+            );
 
         } catch (\Throwable $th) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Error updating item',
-                'metadata' => [
+            $response = ApiResponse::error(
+                message: 'Error updating item',
+                metadata: [
                     'errorDetails' => $th->getMessage()
-                ],
-            ], 500);
+                ]
+            );
         }
+        return $response->send();
     }
 
     /**
@@ -181,20 +170,18 @@ class ItemController extends Controller
             
             // Marcar el item como eliminado (soft delete)
             $item->delete();
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Item successfully deleted.'
-            ]);
+            $response = ApiResponse::success(
+                message: 'Item deleted successfully.'
+            );
 
         } catch (\Throwable $th) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Error fetching items',
-                'metadata' => [
+            $response = ApiResponse::error(
+                message: 'Error deleting item',
+                metadata: [
                     'errorDetails' => $th->getMessage()
-                ],
-            ], 500);
+                ]
+            );
         }
+        return $response->send();
     }
 }

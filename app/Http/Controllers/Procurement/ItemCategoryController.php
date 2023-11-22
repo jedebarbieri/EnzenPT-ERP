@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Procurement;
 
+use App\Http\Controllers\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Procurement\ItemCategoryResource;
 use App\Models\Procurement\ItemCategory;
@@ -27,21 +28,19 @@ class ItemCategoryController extends Controller
 
             // Transform the category collection using ItemCategoryResource
             $categoriesResource = ItemCategoryResource::collection($mainCategories);
-
-            return response()->json([
-                'status' => 'success',
-                'data' => [
+            $response = ApiResponse::success(
+                data: [
                     'categoryList' => $categoriesResource,
-                ],
-            ]);
+                ]
+            );
         } catch (\Throwable $th) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Error fetching categories',
-                'metadata' => [
+            $response = ApiResponse::error(
+                message: 'Error fetching categories',
+                metadata: [
                     'errorDetails' => $th->getMessage()
-                ],
-            ], 500);
+                ]
+            );
         }
+        return $response->send();
     }
 }

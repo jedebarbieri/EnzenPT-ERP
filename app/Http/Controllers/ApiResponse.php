@@ -88,7 +88,7 @@ class ApiResponse
     public function toArray()
     {
         return [
-            'success' => $this->success ? self::STATUS_OK : self::STATUS_ERROR,
+            'success' => $this->success,
             'message' => $this->message,
             'data' => $this->data,
             'metadata' => $this->metadata,

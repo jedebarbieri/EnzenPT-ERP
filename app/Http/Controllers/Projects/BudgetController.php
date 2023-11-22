@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Projects;
 
+use App\Http\Controllers\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Projects\UpdateBudgetRequest;
 use App\Http\Requests\Projects\StoreBudgetRequest;
@@ -15,11 +16,6 @@ use Illuminate\Http\Request;
 
 class BudgetController extends Controller
 {
-    public function __construct()
-    {
-        //$this->middleware('auth');
-    }
-
     /**
      * Display a listing of the resource.
      */
@@ -71,26 +67,25 @@ class BudgetController extends Controller
             // Transformar la colección utilizando ItemResource
             $budgetsResource = BudgetResource::collection($budgets);
 
-            return response()->json([
-                'status' => 'success',
-                'data' => [
+            $response = ApiResponse::success(
+                data: [
                     'budgetList' => $budgetsResource,
-                ],
-                'metadata' => [
                     'recordsFiltered' => $budgets->total(),
                     'recordsTotal' => $budgets->total(),
+                ],
+                metadata: [
                     'draw' => $request->input('draw') ?: 1,
                 ]
-            ]);
+            );
         } catch (\Throwable $th) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Error fetching budgets',
-                'metadata' => [
+            $response = ApiResponse::error(
+                message: 'Error fetching budgets',
+                metadata: [
                     'errorDetails' => $th->getMessage()
-                ],
-            ], 500);
+                ]
+            );
         }
+        return $response->send();
     }
 
     /**
@@ -114,22 +109,21 @@ class BudgetController extends Controller
             $budget = Budget::create($data);
             $budget->setRelation('budgetDetails', []);
 
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Budget created successfully.',
-                'data' => [
+            $response = ApiResponse::success(
+                data: [
                     'budget' => BudgetResource::make($budget)
                 ],
-            ]);
+                message: 'Budget created successfully.'
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Budget could not be created.',
-                'metadata' => [
-                    'errorDetails' => $e->getMessage(),
-                ],
-            ], 500);
+            $response = ApiResponse::error(
+                message: 'Budget could not be created.',
+                metadata: [
+                    'errorDetails' => $e->getMessage()
+                ]
+            );
         }
+        return $response->send();
     }
 
     /**
@@ -165,21 +159,20 @@ class BudgetController extends Controller
             // Setting the resource to include the parent information.
             ItemCategoryResource::$with_parents = true;
 
-            return response()->json([
-                'status' => 'success',
-                'data' => [
-                    'budget' => new BudgetResource($budget)
+            $response = ApiResponse::success(
+                data: [
+                    'budget' => BudgetResource::make($budget)
                 ],
-            ]);
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => $e->getMessage(),
-                'metadata' => [
-                    'errorDetails' => $e->getMessage(),
-                ],
-            ], 500);
+            $response = ApiResponse::error(
+                message: 'Error fetching budget',
+                metadata: [
+                    'errorDetails' => $e->getMessage()
+                ]
+            );
         }
+        return $response->send();
     }
 
     /**
@@ -216,22 +209,21 @@ class BudgetController extends Controller
 
             $budget->setRelation('budgetDetails', []);
 
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Budget updated successfully.',
-                'data' => [
+            $response = ApiResponse::success(
+                data: [
                     'budget' => BudgetResource::make($budget)
                 ],
-            ]);
+                message: 'Budget updated successfully.'
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Budget could not be updated.' . $e->getMessage(),
-                'metadata' => [
-                    'errorDetails' => $e->getMessage(),
-                ],
-            ], 500);
+            $response = ApiResponse::error(
+                message: 'Budget could not be updated.',
+                metadata: [
+                    'errorDetails' => $e->getMessage()
+                ]
+            );
         }
+        return $response->send();
     }
 
     /**
@@ -241,19 +233,18 @@ class BudgetController extends Controller
     {
         try {
             $budget->delete();
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Budget deleted successfully.',
-            ]);
+            $response = ApiResponse::success(
+                message: 'Budget deleted successfully.'
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Budget could not be deleted.',
-                'metadata' => [
-                    'errorDetails' => $e->getMessage(),
-                ],
-            ], 500);
+            $response = ApiResponse::error(
+                message: 'Budget could not be deleted.',
+                metadata: [
+                    'errorDetails' => $e->getMessage()
+                ]
+            );
         }
+        return $response->send();
     }
 
     public function availableItems(Budget $budget)
@@ -266,21 +257,20 @@ class BudgetController extends Controller
                     ->where('budget_id', $budget->id);
             })->get();
 
-            return response()->json([
-                'status' => 'success',
-                'data' => [
+            $response = ApiResponse::success(
+                data: [
                     'itemList' => ItemResource::collection($items)
                 ],
-            ]);
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Error while retrieving available items.',
-                'metadata' => [
-                    'errorDetails' => $e->getMessage(),
-                ],
-            ], 500);
+            $response = ApiResponse::error(
+                message: 'Error while retrieving available items.',
+                metadata: [
+                    'errorDetails' => $e->getMessage()
+                ]
+            );
         }
+        return $response->send();
     }
 
     public function createReport(Budget $budget)
