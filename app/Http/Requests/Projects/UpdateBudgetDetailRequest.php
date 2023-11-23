@@ -23,7 +23,6 @@ class UpdateBudgetDetailRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'id' => 'required|numeric',
             'unit_price' => 'numeric|nullable',
             'sell_price' => 'numeric|nullable',
             'quantity' => 'numeric|nullable',

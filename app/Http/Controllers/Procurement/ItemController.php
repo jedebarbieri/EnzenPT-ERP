@@ -22,8 +22,8 @@ class ItemController extends Controller
 
             $columns = [
                 'id',
-                'name',
                 'internal_cod',
+                'name',
                 'unit_price'
             ];
     
@@ -31,8 +31,8 @@ class ItemController extends Controller
     
             // Applying sort
             if ($request->has('order')) {
-                $order = intval($request->input('order.0.column'));
-                $dir = $request->input('order.0.dir');
+                $order = intval($request->input('order.column'));
+                $dir = $request->input('order.dir');
                 $query->orderBy($columns[$order], $dir);
             }
     

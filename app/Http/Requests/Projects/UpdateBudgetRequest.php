@@ -24,7 +24,6 @@ class UpdateBudgetRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'id' => 'required|numeric',
             'name' => 'string|nullable|min:3',
             'status' => 'numeric|nullable|in:' . implode(',', array_keys(Budget::STATUS)),
             'total_peak_power' => 'numeric|nullable|gte:0',

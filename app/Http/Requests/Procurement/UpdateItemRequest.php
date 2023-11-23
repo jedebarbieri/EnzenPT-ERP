@@ -22,11 +22,10 @@ class UpdateItemRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'id' => 'required|numeric',
             'name' => 'string|nullable|min:3',
             'internal_cod' => 'string|nullable|min:5',
             'unit_price' => 'numeric|nullable|gte:0',
-            'item_category_id' => 'required|numeric|gte:0'
+            'item_category_id' => 'numeric|gte:0'
         ];
     }
 }

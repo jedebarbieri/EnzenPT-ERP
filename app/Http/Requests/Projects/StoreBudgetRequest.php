@@ -36,7 +36,7 @@ class StoreBudgetRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|min:3',
+            'name' => 'string|min:3',
             'project_name' => 'string|nullable',
             'project_number' => 'string|nullable',
             'project_location' => 'string|nullable',

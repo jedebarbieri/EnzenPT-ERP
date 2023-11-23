@@ -30,16 +30,21 @@ class Handler extends ExceptionHandler
         });
     }
 
+    public function render($request, Throwable $e)
+    {
+        $response = ApiResponse::error(
+            message: $e->getMessage(),
+            code: $e->getCode() ?: ApiResponse::HTTP_INTERNAL_SERVER_ERROR
+        );
+        return $response->send();
+    }
+
     protected function unauthenticated($request, AuthenticationException $exception)
     {
-        if ($request->expectsJson() || $request->is('api/*')) {
-            $response = ApiResponse::error(
-                message: 'Unauthenticated',
-                code: ApiResponse::HTTP_UNAUTHORIZED
-            );
-            return $response->send();
-        }
-
-        return redirect()->guest(route('login'));
+        $response = ApiResponse::error(
+            message: 'Unauthenticated',
+            code: ApiResponse::HTTP_UNAUTHORIZED
+        );
+        return $response->send();
     }
 }
