@@ -29,7 +29,7 @@ class ApiAuthController extends Controller
             $token->delete();
         });
 
-        return $user->createToken($tokenName, ['*'], now()->addSeconds(30));
+        return $user->createToken($tokenName, ['*'], now()->addHours(2));
     }
 
     /**
