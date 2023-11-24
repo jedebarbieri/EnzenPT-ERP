@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\ApiAuthController;
 use App\Http\Controllers\Procurement\ItemCategoryController;
 use App\Http\Controllers\Procurement\ItemController;
 use App\Http\Controllers\Projects\BudgetController;
@@ -24,9 +24,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return UserResource::make($request->user());
 });
 
-Route::post('/login', [LoginController::class, 'login']);
+Route::post('/login', [ApiAuthController::class, 'login']);
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
+    Route::post('/logout', [ApiAuthController::class, 'logout']);
+    Route::post('/refresh', [ApiAuthController::class, 'refresh']);
     Route::apiResource('itemCategories', ItemCategoryController::class);
     Route::apiResource('items', ItemController::class);
     Route::apiResource('budgets', BudgetController::class);
