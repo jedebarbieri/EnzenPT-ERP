@@ -32,6 +32,9 @@ class Handler extends ExceptionHandler
 
     public function render($request, Throwable $e)
     {
+        if ($e instanceof AuthenticationException) {
+            return $this->unauthenticated($request, $e);
+        }
         $response = ApiResponse::error(
             message: $e->getMessage(),
             code: $e->getCode() ?: ApiResponse::HTTP_INTERNAL_SERVER_ERROR
@@ -42,7 +45,7 @@ class Handler extends ExceptionHandler
     protected function unauthenticated($request, AuthenticationException $exception)
     {
         $response = ApiResponse::error(
-            message: 'Unauthenticated',
+            message: 'Unauthenticated or token expired',
             code: ApiResponse::HTTP_UNAUTHORIZED
         );
         return $response->send();

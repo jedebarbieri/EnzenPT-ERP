@@ -26,11 +26,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::post('/login', [LoginController::class, 'login']);
 
-Route::group(['middleware' => ['auth:sanctum']],function () {
+Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::apiResource('itemCategories', ItemCategoryController::class);
     Route::apiResource('items', ItemController::class);
     Route::apiResource('budgets', BudgetController::class);
     Route::apiResource('budgets.budgetDetails', BudgetDetailController::class);
-    
+
     Route::get('budgets/{budget}/availableItems', [BudgetController::class, 'availableItems']);
 });
