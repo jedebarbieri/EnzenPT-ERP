@@ -18,20 +18,3 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
-
-Route::group(['middleware' => ['auth:sanctum']], function () {
-    
-    Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-
-    Route::get('/procurement', function() {
-        return view('procurement');
-    })->name('procurement');
-
-    Route::get('/budgets', function() {
-        return view('budgets');
-    })->name('budgetsHome');
-
-    Route::get('/budgetReport/{budget}', [BudgetController::class, 'createReport'])->name('budgetReport');
-});
-
-Auth::routes();
