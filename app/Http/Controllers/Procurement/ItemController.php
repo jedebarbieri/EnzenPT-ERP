@@ -21,19 +21,24 @@ class ItemController extends Controller
         try {
 
             $columns = [
-                'id',
+                'items.id',
                 'internal_cod',
-                'name',
+                'items.name',
+                'item_categories.name',
                 'unit_price'
             ];
     
-            $query = Item::query()->with('itemCategory');
+            $query = Item::query();
+            
+            $query->join('item_categories', 'items.item_category_id', '=', 'item_categories.id');
     
             // Applying sort
-            if ($request->has('order')) {
+            if ($request->has('order') && $request->has('order.column')) {
                 $order = intval($request->input('order.column'));
-                $dir = $request->input('order.dir');
+                $dir = $request->has('order.dir') ? $request->input('order.dir') : 'asc';
                 $query->orderBy($columns[$order], $dir);
+            } else {
+                $query->orderBy('items.internal_cod', 'asc');
             }
     
             // Applying filter
@@ -53,7 +58,7 @@ class ItemController extends Controller
             $page = intval($start / $length) + 1;
     
             // Paginar la consulta con el length y la página
-            $items = $query->paginate($length, ['*'], 'page', $page);
+            $items = $query->paginate($length, ['items.*'], 'page', $page);
     
             // Transformar la colección utilizando ItemResource
             $itemsResource = ItemResource::collection($items);
