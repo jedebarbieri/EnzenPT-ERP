@@ -63,8 +63,12 @@ class ApiResponse
         $response = new ApiResponse();
         $response->success = true;
         $response->message = $message;
-        $response->data = $data;
-        $response->metadata = $metadata;
+        if ($data !== null) {
+            $response->data = $data;
+        }
+        if ($metadata !== null) {
+            $response->metadata = $metadata;
+        }
         $response->code = $code;
 
         return $response;
@@ -80,7 +84,9 @@ class ApiResponse
         $response = new ApiResponse();
         $response->success = false;
         $response->message = $message;
-        $response->metadata = $metadata;
+        if ($metadata !== null) {
+            $response->metadata = $metadata;
+        }
         $response->code = $code;
 
         // We only want to show the error details in development environments
