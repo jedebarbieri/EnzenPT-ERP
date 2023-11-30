@@ -20,13 +20,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return UserResource::make($request->user());
-});
-
 Route::post('/login', [ApiAuthController::class, 'login']);
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
+    Route::get('/user', function (Request $request) {
+        return UserResource::make($request->user());
+    });
     Route::post('/logout', [ApiAuthController::class, 'logout']);
     Route::post('/refresh', [ApiAuthController::class, 'refresh']);
     Route::apiResource('itemCategories', ItemCategoryController::class);

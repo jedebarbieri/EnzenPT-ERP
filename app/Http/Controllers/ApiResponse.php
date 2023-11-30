@@ -4,7 +4,18 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use stdClass;
+use Throwable;
 
+/**
+ * This class stores and manage all the responses for the API.
+ * @property boolean $success Indicates if the response is successful or not.
+ * @property string $message Message to be displayed to the final user.
+ * @property stdClass $data Data to be returned to the final user.
+ *                          This is the data that a frontend will use.
+ * @property stdClass $metadata Metadata to be returned to the final user. 
+ *                              This includes pagination information, errors details etc.
+ * @property int $code HTTP code to be returned to the final user.
+ */
 class ApiResponse
 {
 
@@ -62,7 +73,8 @@ class ApiResponse
     public static function error(
         string $message = '', 
         $metadata = null,
-        $code = self::HTTP_INTERNAL_SERVER_ERROR
+        $code = self::HTTP_INTERNAL_SERVER_ERROR,
+        Throwable $originalException = null
     ): ApiResponse
     {
         $response = new ApiResponse();
@@ -70,6 +82,16 @@ class ApiResponse
         $response->message = $message;
         $response->metadata = $metadata;
         $response->code = $code;
+
+        // We only want to show the error details in development environments
+        if (env('APP_ENV') !== 'production') {
+            $response->metadata->errorData = [
+                'trace' => $originalException?->getTrace() ?? [],
+                'file' => $originalException->getFile() ?? '',
+                'line' => $originalException->getLine() ?? '',
+            ];
+
+        }
 
         return $response;
     }
