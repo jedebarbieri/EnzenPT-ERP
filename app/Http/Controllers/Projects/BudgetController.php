@@ -82,7 +82,8 @@ class BudgetController extends Controller
                 message: 'Error fetching budgets',
                 metadata: [
                     'errorDetails' => $th->getMessage()
-                ]
+                ],
+                originalException: $th
             );
         }
         return $response->send();
@@ -120,7 +121,8 @@ class BudgetController extends Controller
                 message: 'Budget could not be created.',
                 metadata: [
                     'errorDetails' => $e->getMessage()
-                ]
+                ],
+                originalException: $e
             );
         }
         return $response->send();
@@ -169,7 +171,8 @@ class BudgetController extends Controller
                 message: 'Error fetching budget',
                 metadata: [
                     'errorDetails' => $e->getMessage()
-                ]
+                ],
+                originalException: $e
             );
         }
         return $response->send();
@@ -220,7 +223,8 @@ class BudgetController extends Controller
                 message: 'Budget could not be updated.',
                 metadata: [
                     'errorDetails' => $e->getMessage()
-                ]
+                ],
+                originalException: $e
             );
         }
         return $response->send();
@@ -241,7 +245,8 @@ class BudgetController extends Controller
                 message: 'Budget could not be deleted.',
                 metadata: [
                     'errorDetails' => $e->getMessage()
-                ]
+                ],
+                originalException: $e
             );
         }
         return $response->send();
@@ -267,7 +272,8 @@ class BudgetController extends Controller
                 message: 'Error while retrieving available items.',
                 metadata: [
                     'errorDetails' => $e->getMessage()
-                ]
+                ],
+                originalException: $e
             );
         }
         return $response->send();

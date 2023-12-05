@@ -79,7 +79,8 @@ class ItemController extends Controller
                 message: 'Error fetching items',
                 metadata: [
                     'errorDetails' => $th->getMessage()
-                ]
+                ],
+                originalException: $th
             );
         }
         return $response->send();
@@ -112,7 +113,8 @@ class ItemController extends Controller
                 message: 'Error creating item',
                 metadata: [
                     'errorDetails' => $th->getMessage()
-                ]
+                ],
+                originalException: $th
             );
         }
         return $response->send();
@@ -156,7 +158,8 @@ class ItemController extends Controller
                 message: 'Error updating item',
                 metadata: [
                     'errorDetails' => $th->getMessage()
-                ]
+                ],
+                originalException: $th
             );
         }
         return $response->send();
@@ -184,7 +187,8 @@ class ItemController extends Controller
                 message: 'Error deleting item',
                 metadata: [
                     'errorDetails' => $th->getMessage()
-                ]
+                ],
+                originalException: $th
             );
         }
         return $response->send();

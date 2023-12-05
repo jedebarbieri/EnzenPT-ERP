@@ -9,17 +9,6 @@ use App\Models\Procurement\ItemCategory;
 
 class ItemCategoryController extends Controller
 {
-
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        //$this->middleware('auth');
-    }
-
     public function index()
     {
         try {
@@ -38,7 +27,8 @@ class ItemCategoryController extends Controller
                 message: 'Error fetching categories',
                 metadata: [
                     'errorDetails' => $th->getMessage()
-                ]
+                ],
+                originalException: $th
             );
         }
         return $response->send();

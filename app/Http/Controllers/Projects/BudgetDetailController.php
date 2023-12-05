@@ -46,7 +46,8 @@ class BudgetDetailController extends Controller
                 message: 'Error creating budget detail',
                 metadata: [
                     'errorDetails' => $e->getMessage()
-                ]
+                ],
+                originalException: $e
             );
         }
         return $response->send();
@@ -70,7 +71,8 @@ class BudgetDetailController extends Controller
                 message: 'Error fetching budget detail',
                 metadata: [
                     'errorDetails' => $e->getMessage()
-                ]
+                ],
+                originalException: $e
             );
         }
         return $response->send();
@@ -119,7 +121,8 @@ class BudgetDetailController extends Controller
                 message: 'Error updating budget detail',
                 metadata: [
                     'errorDetails' => $e->getMessage()
-                ]
+                ],
+                originalException: $e
             );
         }
         return $response->send();
@@ -140,7 +143,8 @@ class BudgetDetailController extends Controller
                 message: 'Error deleting budget detail',
                 metadata: [
                     'errorDetails' => $e->getMessage()
-                ]
+                ],
+                originalException: $e
             );
         }
         return $response->send();

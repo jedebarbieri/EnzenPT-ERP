@@ -54,41 +54,60 @@ class ApiAuthController extends Controller
 
     public function login(Request $request)
     {
+        try {
+
             // Lógica de autenticación para la API
             $credentials = $request->only('email', 'password');
-
+            
             if (!Auth::attempt($credentials)) {
-                $response = ApiResponse::error(
-                    message: 'Invalid credentials',
-                    code: ApiResponse::HTTP_UNAUTHORIZED
-                );
-                return $response->send();
+                throw new \Exception('Invalid credentials', ApiResponse::HTTP_UNAUTHORIZED);
             }
-
+            
             $token = $this->generateToken();
-
+            
             $response = ApiResponse::success(
                 data: [
                     'user' => new UserResource(Auth::user()),
-                'token' => [
-                    'token' => $token->plainTextToken,
-                    'expires_at' => $token->accessToken->expires_at
-                ]
-                ],
+                    'token' => [
+                        'token' => $token->plainTextToken,
+                        'expires_at' => $token->accessToken->expires_at
+                        ]
+                    ],
                 message: 'Login successful'
             );
-
-            return $response->send();
+        } catch (\Throwable $th) {
+            $response = ApiResponse::error(
+                message: $th->getMessage(),
+                metadata: [
+                    'errorDetails' => $th->getMessage()
+                ],
+                code: $th->getCode(),
+                originalException: $th
+            );
+        }
+        return $response->send();
     }
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        try {
 
-        $response = ApiResponse::success(
-            message: 'Logout successful'
-        );
-
-        return $response->send();
+            $request->user()->currentAccessToken()->delete();
+            
+            $response = ApiResponse::success(
+                message: 'Logout successful'
+            );
+            
+            return $response->send();
+        } catch (\Throwable $th) {
+            $response = ApiResponse::error(
+                message: 'Error login out',
+                metadata: [
+                    'errorDetails' => $th->getMessage()
+                ],
+                code: $th->getCode(),
+                originalException: $th
+            );
+        }
     }
 }

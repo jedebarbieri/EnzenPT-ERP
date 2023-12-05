@@ -56,7 +56,7 @@ class ApiResponse
     public static function success(
         $data = null,
         string $message = '',
-        $metadata = null,
+        array | null $metadata = null,
         $code = self::HTTP_OK
     ): ApiResponse
     {
@@ -91,7 +91,7 @@ class ApiResponse
 
         // We only want to show the error details in development environments
         if (env('APP_ENV') !== 'production') {
-            $response->metadata->errorData = [
+            $response->metadata['errorData'] = [
                 'trace' => $originalException?->getTrace() ?? [],
                 'file' => $originalException->getFile() ?? '',
                 'line' => $originalException->getLine() ?? '',
