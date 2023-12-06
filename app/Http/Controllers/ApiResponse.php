@@ -42,7 +42,7 @@ class ApiResponse
     public function __construct()
     {
         $this->data = new stdClass();
-        $this->metadata = new stdClass();
+        $this->metadata = [];
     }
 
     /**
