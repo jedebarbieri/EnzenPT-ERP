@@ -13,6 +13,7 @@ use App\Models\Procurement\Item;
 use App\Models\Projects\Budget;
 use App\Services\Projects\BudgetExcelReportGenerator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class BudgetController extends Controller
 {
@@ -26,17 +27,26 @@ class BudgetController extends Controller
                 'id',
                 'name',
                 'status',
-                'updated_at'
+                'updated_at',
+                'project_name',
+                'project_location',
+                'total_peak_power',
             ];
 
             $query = Budget::without('budgetDetails');
 
             // Applying sort
-            if ($request->has('order')) {
-                $order = intval($request->input('order.0.column'));
-                $dir = $request->input('order.0.dir');
-                $query->orderBy($columns[$order], $dir);
+            if ($request->has('order') && $request->has('order.column')) {
+                $dir = $request->has('order.dir') ? $request->input('order.dir') : 'asc';
+                $orderColumn = $request->input('order.column');
+                if ($orderColumn === 'status.display') {
+                    $orderColumn = 'status';
+                } else {
+                    $orderColumn = Str::snake($orderColumn);
+                }
+                $query->orderBy($orderColumn, $dir);
             } else {
+                // Sorting by default
                 $query->orderByRaw("FIELD(status, " . Budget::STATUS_DRAFT . ", " . Budget::STATUS_APPROVED . ", " . Budget::STATUS_REJECTED . ")")
                     ->orderBy('updated_at', 'desc');
             }
@@ -45,6 +55,9 @@ class BudgetController extends Controller
             if ($request->has('search.value')) {
                 $searchValue = $request->input('search.value');
                 foreach ($columns as $column) {
+                    if (in_array($column, ['id', 'updated_at', 'total_peak_power'])) {
+                        continue;
+                    }
                     $query->orWhere($column, 'like', '%' . $searchValue . '%');
                 }
             }
