@@ -9,6 +9,7 @@ use App\Http\Requests\Procurement\UpdateItemRequest;
 use App\Http\Resources\Procurement\ItemResource;
 use App\Models\Procurement\Item;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class ItemController extends Controller
 {
@@ -24,19 +25,18 @@ class ItemController extends Controller
                 'items.id',
                 'internal_cod',
                 'items.name',
-                'item_categories.name',
+                'item_category.name',
                 'unit_price'
             ];
     
             $query = Item::query();
             
-            $query->join('item_categories', 'items.item_category_id', '=', 'item_categories.id');
+            $query->join('item_categories as item_category', 'items.item_category_id', '=', 'item_category.id');
     
             // Applying sort
             if ($request->has('order') && $request->has('order.column')) {
-                $order = intval($request->input('order.column'));
                 $dir = $request->has('order.dir') ? $request->input('order.dir') : 'asc';
-                $query->orderBy($columns[$order], $dir);
+                $query->orderBy(Str::snake($request->input('order.column')), $dir);
             } else {
                 $query->orderBy('items.internal_cod', 'asc');
             }
