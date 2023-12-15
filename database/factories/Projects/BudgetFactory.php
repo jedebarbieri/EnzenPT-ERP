@@ -32,7 +32,7 @@ class BudgetFactory extends Factory
             'project_name' => ucwords($this->faker->words(3, true)),
             'project_number' => $this->faker->regexify('[A-Z0-9]{5}'),
             'project_location' => fake('pt_PT')->city,
-            'total_peak_power' => $this->faker->randomFloat(2, 60000, 1000000),
+            'total_peak_power' => $this->faker->randomFloat(2, 500000, 3000000),
             'created_at' => $createdAt,
             'updated_at' => $updatedAt,
         ];

@@ -19,7 +19,7 @@ class ItemCategoryController extends Controller
             $categoriesResource = ItemCategoryResource::collection($mainCategories);
             $response = ApiResponse::success(
                 data: [
-                    'categoryList' => $categoriesResource,
+                    'itemCategories' => $categoriesResource,
                 ]
             );
         } catch (\Throwable $th) {
