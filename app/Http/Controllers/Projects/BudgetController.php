@@ -82,7 +82,7 @@ class BudgetController extends Controller
 
             $response = ApiResponse::success(
                 data: [
-                    'budgetList' => $budgetsResource,
+                    'budgets' => $budgetsResource,
                     'recordsFiltered' => $budgets->total(),
                     'recordsTotal' => $budgets->total(),
                 ],

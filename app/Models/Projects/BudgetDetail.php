@@ -256,7 +256,7 @@ class BudgetDetail extends Model
     public function getGainAmountAttribute()
     {
         if (is_null($this->gainAmount)) {
-            $this->gainAmount = $this->total_without_tax_after_discount - $this->cost_amount;
+            $this->gainAmount = round($this->total_without_tax_after_discount - $this->cost_amount, 2);
         }
         return $this->gainAmount;
     }
