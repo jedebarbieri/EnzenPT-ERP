@@ -107,15 +107,15 @@ class BudgetDetailController extends Controller
                     ->toArray()
             );
 
-            $budgetDetail->setRelation('budget', []);
-            $budgetDetail->setRelation('item.itemCategory', []);
+            $budgetDetail->setRelation('budget', $budget);
+            $budgetDetail->setRelation('item.itemCategory', $budgetDetail->item->itemCategory);
 
             $response = ApiResponse::success(
                 data: [
                     'budgetDetail' => BudgetDetailsResource::make($budgetDetail)
                 ],
                 message: 'Budget detail updated successfully.'
-            );;
+            );
         } catch (\Exception $e) {
             $response = ApiResponse::error(
                 message: 'Error updating budget detail',
